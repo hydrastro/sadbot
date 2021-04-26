@@ -2,7 +2,7 @@ import requests
 import json
 import sqlite3
 
-token = ""
+token = "1794848670:AAEzdrn_7BzpbWEPBX8rcCHvPvuH8q44Yfw"
 buffer_size = 1000
 
 base = "https://api.telegram.org/bot{}/".format(token)
@@ -24,8 +24,9 @@ def get_previous_message_containing(message_info, string):
     chat_id = message_info["chat_id"]
     reply_to_id = message_info["reply_to_message_id"]
     cur = con.cursor()
+    print(reply_to_id)
     if reply_to_id != None:
-        cur.execute("SELECT * FROM messages WHERE Message LIKE ? and Message NOT LIKE 's/%' and ChatID = ? and ReplyToMessageID = ? ORDER BY MessageID DESC",("%" + string + "%", chat_id, message_info["message_id"]))
+        cur.execute("SELECT * FROM messages WHERE Message LIKE ? and Message NOT LIKE 's/%' and ChatID = ? and MessageID = ? ORDER BY MessageID DESC",("%" + string + "%", chat_id, reply_to_id))
     else:
         cur.execute("SELECT * FROM messages WHERE Message LIKE ? and Message NOT LIKE 's/%' and ChatID = ? ORDER BY MessageID DESC",("%" + string + "%", chat_id))
     return cur.fetchone()
