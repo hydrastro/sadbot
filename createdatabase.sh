@@ -1,1 +1,0 @@
-cat createdb.sql | sqlite3 messages.db
