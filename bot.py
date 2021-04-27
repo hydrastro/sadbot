@@ -36,9 +36,11 @@ def get_reply(message_info):
     print(message)
     if message is not None:
         if message.startswith("s/"):
+            max_replace = 1
             if message.endswith("/"):
                 message = message[:-1]
-            elif message.endswith("g"):
+            if message.endswith("/g"):
+                max_replace = len(message)
                 message = message[:-2]
             split = message.split("/", 2)
             if len(split) != 3:
@@ -50,7 +52,7 @@ def get_reply(message_info):
                 reply_info = get_previous_message_containing(message_info, old)
                 if reply_info != None:
                     reply = "<" + reply_info[1] + ">: "
-                    reply += reply_info[4].replace(old, new)
+                    reply += reply_info[4].replace(old, new, max_replace)
     return reply
 
 def start_bot():
