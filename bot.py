@@ -2,8 +2,7 @@ import requests
 import json
 import sqlite3
 
-token = "1794848670:AAEzdrn_7BzpbWEPBX8rcCHvPvuH8q44Yfw"
-buffer_size = 1000
+token = "placeholder"
 
 base = "https://api.telegram.org/bot{}/".format(token)
 con = sqlite3.connect('messages.db')
