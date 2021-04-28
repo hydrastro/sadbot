@@ -1,5 +1,7 @@
-import requests
 import json
+import random
+import re
+import requests
 import sqlite3
 
 token = "placeholder"
@@ -23,18 +25,46 @@ def get_previous_message_containing(message_info, string):
     chat_id = message_info["chat_id"]
     reply_to_id = message_info["reply_to_message_id"]
     cur = con.cursor()
-    print(reply_to_id)
     if reply_to_id != None:
         cur.execute("SELECT * FROM messages WHERE Message LIKE ? and Message NOT LIKE 's/%' and ChatID = ? and MessageID = ? ORDER BY MessageID DESC",("%" + string + "%", chat_id, reply_to_id))
     else:
         cur.execute("SELECT * FROM messages WHERE Message LIKE ? and Message NOT LIKE 's/%' and ChatID = ? ORDER BY MessageID DESC",("%" + string + "%", chat_id))
     return cur.fetchone()
 
+def random_insult_reply():
+    insult_replies = ["no u", "take that back", "you can contribute to make me better", "stupid human", "sTuPiD bOt1!1", "lord, have mercy: they don't know that they're saying."]
+    return random.choice(insult_replies)
+
+def random_compliment_reply():
+    compliment_replies = ["t-thwanks s-senpaii *starts twerking*", "at your service, sir", "thank youu!!", "good human"]
+    return random.choice(compliment_replies)
+
+def get_roulette():
+    if random.randint(0, 5) == 0:
+        return "OH SHIIii.. you're dead, lol."
+    return "Eh.. you survived."
+
 def get_reply(message_info):
     reply = None
     message = message_info["message"]
-    print(message)
+    message_lowercase = message.lower()
     if message is not None:
+        if message.startswith(".roulette"):
+            return get_roulette()
+        if message.startswith("rand"):
+            message = message[4:];
+            if message.startswith("(") and message.endswith(")"):
+                message = message[1:-1]
+                message.replace(" ", "")
+                split = message.split(",", 1)
+                min = split[0]
+                max = split[1]
+                if(min <= max):
+                    return (random.randint(int(min), int(max)))
+        if "stupid bot" in message.lower() or "bad bot" in message.lower():
+            return random_insult_reply()
+        if "good bot" in message.lower():
+            return random_compliment_reply()
         if message.startswith("s/"):
             max_replace = 1
             if message.endswith("/"):
@@ -47,7 +77,6 @@ def get_reply(message_info):
                 return None
             old = split[1]
             new = split[2]
-            print(old, new)
             if old != "" and new != "":
                 reply_info = get_previous_message_containing(message_info, old)
                 if reply_info != None:
@@ -77,7 +106,6 @@ def start_bot():
                         reply_to_message_id = item["message"]["reply_to_message"]["message_id"]
                     current_message = {"message_id": message_id, "sender_name": sender_name, "sender_id": sender_id, "chat_id": chat_id, "message": message, "reply_to_message_id": reply_to_message_id}
                     reply = get_reply(current_message)
-                    print(reply)
                     cur = con.cursor()
                     con.execute("INSERT INTO messages (MessageID, SenderName, SenderID, ChatID, Message, ReplyToMessageID) VALUES (?,?,?,?,?,?)", (message_id, sender_name, sender_id, chat_id, message, reply))
                     con.commit()
