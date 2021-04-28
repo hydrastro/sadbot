@@ -18,7 +18,8 @@ def get_updates(offset = None):
 def send_message(message, chat_id):
     url = base + "sendMessage?chat_id={}&text={}".format(chat_id, message)
     if message is not None:
-        requests.get(url)
+        r = requests.get(url)
+    return json.loads(r.content)
 
 def get_previous_message_containing(message_info, string):
     chat_id = message_info["chat_id"]
@@ -60,9 +61,9 @@ def get_reply(message_info):
                 max = split[1]
                 if(min <= max):
                     return (random.randint(int(min), int(max)))
-        if "stupid bot" in message.lower() or "bad bot" in message.lower():
+        if "stupid bot" in message_lowercase or "bad bot" in message_lowercase:
             return random_insult_reply()
-        if "good bot" in message.lower():
+        if "good bot" in message_lowercase:
             return random_compliment_reply()
         if message.startswith("s/"):
             max_replace = 1
@@ -106,10 +107,14 @@ def start_bot():
                     current_message = {"message_id": message_id, "sender_name": sender_name, "sender_id": sender_id, "chat_id": chat_id, "message": message, "reply_to_message_id": reply_to_message_id}
                     reply = get_reply(current_message)
                     cur = con.cursor()
-                    con.execute("INSERT INTO messages (MessageID, SenderName, SenderID, ChatID, Message, ReplyToMessageID) VALUES (?,?,?,?,?,?)", (message_id, sender_name, sender_id, chat_id, message, reply))
+                    con.execute("INSERT INTO messages (MessageID, SenderName, SenderID, ChatID, Message, ReplyToMessageID) VALUES (?, ?, ?, ?, ?, ?)", (message_id, sender_name, sender_id, chat_id, message, reply))
                     con.commit()
                     if reply != None:
-                        con.execute("INSERT INTO messages (MessageID, SenderName, ChatID, Message) VALUES (?,?,?,?)", (0, "Real Human", chat_id, reply))
+                        sent_message = send_message(reply, chat_id)
+                        print(sent_message["result"]["from"])
+                        sent_message_id = sent_message["result"]["message_id"]
+                        sent_message_sender_name = sent_message["result"]["from"]["first_name"]
+                        sent_message_sender_id = sent_message["result"]["from"]["id"]
+                        con.execute("INSERT INTO messages (MessageID, SenderName, SenderID, ChatID, Message) VALUES (?, ?, ?, ?, ?)", (sent_message_id, sent_message_sender_name, sent_message_sender_id, chat_id, reply))
                         con.commit()
-                        send_message(reply, chat_id)
 start_bot()
