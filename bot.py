@@ -1,12 +1,11 @@
+import config
 import json
 import random
 import re
 import requests
 import sqlite3
 
-token = "placeholder"
-
-base = "https://api.telegram.org/bot{}/".format(token)
+base = "https://api.telegram.org/bot{}/".format(config.token)
 con = sqlite3.connect('messages.db')
 
 def get_updates(offset = None):
