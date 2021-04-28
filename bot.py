@@ -19,7 +19,8 @@ def send_message(message, chat_id):
     url = base + "sendMessage?chat_id={}&text={}".format(chat_id, message)
     if message is not None:
         r = requests.get(url)
-    return json.loads(r.content)
+        return json.loads(r.content)
+    return None
 
 def get_previous_message_containing(message_info, string):
     chat_id = message_info["chat_id"]
