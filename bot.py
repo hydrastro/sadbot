@@ -7,6 +7,7 @@ import sqlite3
 
 base = "https://api.telegram.org/bot{}/".format(config.token)
 con = sqlite3.connect('messages.db')
+con.create_function('regexp', 2, lambda x, y: 1 if re.search(x,y) else 0)
 
 def get_updates(offset = None):
     url = base + "getUpdates?timeout=50"
@@ -26,14 +27,17 @@ def get_previous_message_containing(message_info, string):
     chat_id = message_info["chat_id"]
     reply_to_id = message_info["reply_to_message_id"]
     cur = con.cursor()
+    query = "SELECT MessageID, SenderName, SenderID, ChatID, Message, ReplyToMessageID FROM messages WHERE Message REGEXP ? AND ChatID = ? "
+    parameters = (string, chat_id)
     if reply_to_id != None:
-        cur.execute("SELECT * FROM messages WHERE Message LIKE ? and Message NOT LIKE 's/%' and ChatID = ? and MessageID = ? ORDER BY MessageID DESC",("%" + string + "%", chat_id, reply_to_id))
-    else:
-        cur.execute("SELECT * FROM messages WHERE Message LIKE ? and Message NOT LIKE 's/%' and ChatID = ? ORDER BY MessageID DESC",("%" + string + "%", chat_id))
+        query += "AND MessageID = ? "
+        parameters += (reply_to_id,)
+    query += "ORDER BY MessageID DESC"
+    cur.execute(query, parameters)
     return cur.fetchone()
 
 def random_insult_reply():
-    insult_replies = ["no u", "take that back", "you can contribute to make me better", "stupid human", "sTuPiD bOt1!1", "lord, have mercy: they don't know that they're saying."]
+    insult_replies = ["no u", "take that back", "contribute to make me better", "stupid human", "sTuPiD bOt1!1", "lord, have mercy: they don't know that they're saying."]
     return random.choice(insult_replies)
 
 def random_compliment_reply():
@@ -66,23 +70,31 @@ def get_reply(message_info):
             return random_insult_reply()
         if "good bot" in message_lowercase:
             return random_compliment_reply()
-        if message.startswith("s/"):
-            max_replace = 1
+        pat = re.compile('s/.*/.*[/g]*')
+        if re.fullmatch(pat, message):
+            replace_all = False
             if message.endswith("/"):
                 message = message[:-1]
-            if message.endswith("/g"):
-                max_replace = len(message)
+            if message.endswith("/g") and (message.count("/") > 2):
+                replace_all = True
                 message = message[:-2]
             split = message.split("/", 2)
             if len(split) != 3:
                 return None
             old = split[1]
             new = split[2]
-            if old != "" and new != "":
-                reply_info = get_previous_message_containing(message_info, old)
-                if reply_info != None:
-                    reply = "<" + reply_info[1] + ">: "
-                    reply += reply_info[4].replace(old, new, max_replace)
+            is_valid = False
+            try:
+                re.compile(old)
+            except re.error:
+                return None
+            reply_info = get_previous_message_containing(message_info, old)
+            max_replace = 1
+            if replace_all:
+                max_replace = len(reply_info[4])
+            if reply_info != None:
+                reply = re.sub(old, new, reply_info[4], max_replace)
+                reply = "<" + reply_info[1] + ">: " + reply
     return reply
 
 def start_bot():
@@ -112,7 +124,6 @@ def start_bot():
                     con.commit()
                     if reply != None:
                         sent_message = send_message(reply, chat_id)
-                        print(sent_message["result"]["from"])
                         sent_message_id = sent_message["result"]["message_id"]
                         sent_message_sender_name = sent_message["result"]["from"]["first_name"]
                         sent_message_sender_id = sent_message["result"]["from"]["id"]
