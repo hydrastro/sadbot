@@ -56,6 +56,8 @@ def get_reply(message_info):
     if message is not None:
         if message.startswith(".roulette"):
             return get_roulette()
+        if message == ".roll":
+            return random.randint(0,10)
         if message.startswith("rand"):
             message = message[4:];
             if message.startswith("(") and message.endswith(")"):
@@ -65,7 +67,7 @@ def get_reply(message_info):
                 min = split[0]
                 max = split[1]
                 if(min <= max):
-                    return (random.randint(int(min), int(max)))
+                    return random.randint(int(min), int(max))
         if "stupid bot" in message_lowercase or "bad bot" in message_lowercase:
             return random_insult_reply()
         if "good bot" in message_lowercase:
@@ -78,20 +80,27 @@ def get_reply(message_info):
             if message.endswith("/g") and (message.count("/") > 2):
                 replace_all = True
                 message = message[:-2]
-            split = message.split("/", 2)
+            splita = message.split("/", 1)
+            split = ["s"]
+            split += splita[1].rsplit("/", 1)
             if len(split) != 3:
                 return None
             old = split[1]
+            print(old)
             new = split[2]
+            print(new)
             is_valid = False
             try:
                 re.compile(old)
             except re.error:
                 return None
             reply_info = get_previous_message_containing(message_info, old)
+            if reply_info == None:
+                return None
             max_replace = 1
             if replace_all:
                 max_replace = len(reply_info[4])
+            print(max_replace)
             if reply_info != None:
                 reply = re.sub(old, new, reply_info[4], max_replace)
                 reply = "<" + reply_info[1] + ">: " + reply
@@ -124,9 +133,10 @@ def start_bot():
                     con.commit()
                     if reply != None:
                         sent_message = send_message(reply, chat_id)
-                        sent_message_id = sent_message["result"]["message_id"]
-                        sent_message_sender_name = sent_message["result"]["from"]["first_name"]
-                        sent_message_sender_id = sent_message["result"]["from"]["id"]
-                        con.execute("INSERT INTO messages (MessageID, SenderName, SenderID, ChatID, Message) VALUES (?, ?, ?, ?, ?)", (sent_message_id, sent_message_sender_name, sent_message_sender_id, chat_id, reply))
-                        con.commit()
+                        if sent_message != None and "result" in sent_message:
+                            sent_message_id = sent_message["result"]["message_id"]
+                            sent_message_sender_name = sent_message["result"]["from"]["first_name"]
+                            sent_message_sender_id = sent_message["result"]["from"]["id"]
+                            con.execute("INSERT INTO messages (MessageID, SenderName, SenderID, ChatID, Message) VALUES (?, ?, ?, ?, ?)", (sent_message_id, sent_message_sender_name, sent_message_sender_id, chat_id, reply))
+                            con.commit()
 start_bot()
