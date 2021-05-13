@@ -49,6 +49,10 @@ def get_roulette():
         return "OH SHIIii.. you're dead, lol."
     return "Eh.. you survived."
 
+def get_closed_thread_reply():
+    closed_thread_replies = ["rekt", "*This thread has been archived at RebeccaBlackTech*"]
+    return random.choice(closed_thread_replies)
+
 def get_reply(message_info):
     reply = None
     message = message_info["message"]
@@ -68,6 +72,10 @@ def get_reply(message_info):
                 max = split[1]
                 if(min <= max):
                     return random.randint(int(min), int(max))
+        if "!leaf" in message_lowercase or "!canadian" in message_lowercase:
+            return "🇨🇦"
+        if "/thread" in message_lowercase:
+            return get_closed_thread_reply()
         if "stupid bot" in message_lowercase or "bad bot" in message_lowercase:
             return random_insult_reply()
         if "good bot" in message_lowercase:
@@ -85,10 +93,8 @@ def get_reply(message_info):
             split += splita[1].rsplit("/", 1)
             if len(split) != 3:
                 return None
-            old = split[1]
-            print(old)
-            new = split[2]
-            print(new)
+            old = split[1] #            print(old)
+            new = split[2] #            print(new)
             is_valid = False
             try:
                 re.compile(old)
@@ -99,8 +105,7 @@ def get_reply(message_info):
                 return None
             max_replace = 1
             if replace_all:
-                max_replace = len(reply_info[4])
-            print(max_replace)
+                max_replace = len(reply_info[4]) #            print(max_replace)
             if reply_info != None:
                 reply = re.sub(old, new, reply_info[4], max_replace)
                 reply = "<" + reply_info[1] + ">: " + reply
@@ -110,7 +115,10 @@ def start_bot():
     update_id = None
     while True:
         updates = get_updates(offset = update_id)
-        updates = updates["result"]
+        if "result" in updates:
+            updates = updates["result"]
+        else:
+            continue
         if updates:
             for item in updates:
                 update_id = item["update_id"]
