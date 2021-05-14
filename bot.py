@@ -93,8 +93,8 @@ def get_reply(message_info):
             split += splita[1].rsplit("/", 1)
             if len(split) != 3:
                 return None
-            old = split[1] #            print(old)
-            new = split[2] #            print(new)
+            old = split[1]
+            new = split[2]
             is_valid = False
             try:
                 re.compile(old)
@@ -105,7 +105,7 @@ def get_reply(message_info):
                 return None
             max_replace = 1
             if replace_all:
-                max_replace = len(reply_info[4]) #            print(max_replace)
+                max_replace = len(reply_info[4])
             if reply_info != None:
                 reply = re.sub(old, new, reply_info[4], max_replace)
                 reply = "<" + reply_info[1] + ">: " + reply
