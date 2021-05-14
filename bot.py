@@ -97,6 +97,7 @@ def get_reply(message_info):
             new = split[2]
             is_valid = False
             try:
+                print(old)
                 re.compile(old)
             except re.error:
                 return None
@@ -107,8 +108,12 @@ def get_reply(message_info):
             if replace_all:
                 max_replace = len(reply_info[4])
             if reply_info != None:
-                reply = re.sub(old, new, reply_info[4], max_replace)
-                reply = "<" + reply_info[1] + ">: " + reply
+                try:
+                    print(old + "\n" + new)
+                    reply = re.sub(old, new, reply_info[4], max_replace)
+                    reply = "<" + reply_info[1] + ">: " + reply
+                except:
+                    return None
     return reply
 
 def start_bot():
