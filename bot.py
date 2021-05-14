@@ -57,61 +57,61 @@ def get_reply(message_info):
     reply = None
     message = message_info["message"]
     message_lowercase = message.lower()
-    if message is not None:
-        if message.startswith(".roulette"):
-            return get_roulette()
-        if message == ".roll":
-            return random.randint(0, 10)
-        if message.startswith("rand"):
-            message = message[4:]
-            if message.startswith("(") and message.endswith(")"):
-                message = message[1:-1]
-                message.replace(" ", "")
-                split = message.split(",", 1)
-                min_rand = split[0]
-                max_rand = split[1]
-                if min_rand <= max_rand:
-                    return random.randint(int(min_rand), int(max_rand))
-        if "!leaf" in message_lowercase or "!canadian" in message_lowercase:
-            return "🇨🇦"
-        if "/thread" in message_lowercase:
-            return get_closed_thread_reply()
-        if "stupid bot" in message_lowercase or "bad bot" in message_lowercase:
-            return random_insult_reply()
-        if "good bot" in message_lowercase:
-            return random_compliment_reply()
-        pat = re.compile('s/.*/.*[/g]*')
-        if re.fullmatch(pat, message):
-            replace_all = False
-            if message.endswith("/"):
-                message = message[:-1]
-            if message.endswith("/g") and (message.count("/") > 2):
-                replace_all = True
-                message = message[:-2]
-            splita = message.split("/", 1)
-            split = ["s"]
-            split += splita[1].rsplit("/", 1)
-            if len(split) != 3:
-                return None
-            old = split[1]
-            new = split[2]
+    if message is None:
+        return reply
+    if message.startswith(".roulette"):
+        return get_roulette()
+    if message == ".roll":
+        return random.randint(0, 10)
+    if message.startswith("rand"):
+        message = message[4:]
+        if message.startswith("(") and message.endswith(")"):
+            message = message[1:-1]
+            message.replace(" ", "")
+            split = message.split(",", 1)
+            min_rand = split[0]
+            max_rand = split[1]
+            if min_rand <= max_rand:
+                return random.randint(int(min_rand), int(max_rand))
+    if "!leaf" in message_lowercase or "!canadian" in message_lowercase:
+        return "🇨🇦"
+    if "/thread" in message_lowercase:
+        return get_closed_thread_reply()
+    if "stupid bot" in message_lowercase or "bad bot" in message_lowercase:
+        return random_insult_reply()
+    if "good bot" in message_lowercase:
+        return random_compliment_reply()
+    if re.fullmatch(re.compile('s/.*/.*[/g]*'), message):
+        replace_all = False
+        if message.endswith("/"):
+            message = message[:-1]
+        if message.endswith("/g") and (message.count("/") > 2):
+            replace_all = True
+            message = message[:-2]
+        splita = message.split("/", 1)
+        split = ["s"]
+        split += splita[1].rsplit("/", 1)
+        if len(split) != 3:
+            return reply
+        old = split[1]
+        new = split[2]
+        try:
+            re.compile(old)
+        except re.error:
+            return None
+        reply_info = get_previous_message_containing(message_info, old)
+        if reply_info is None:
+            return None
+        max_replace = 1
+        if replace_all:
+            max_replace = len(reply_info[4])
+        if reply_info is not None:
             try:
-                re.compile(old)
-            except re.error:
-                return None
-            reply_info = get_previous_message_containing(message_info, old)
-            if reply_info is None:
-                return None
-            max_replace = 1
-            if replace_all:
-                max_replace = len(reply_info[4])
-            if reply_info is not None:
-                try:
-                    print(old + "\n" + new)
-                    reply = re.sub(old, new, reply_info[4], max_replace)
-                    reply = "<" + reply_info[1] + ">: " + reply
-                except:
-                    return reply
+                print(old + "\n" + new)
+                reply = re.sub(old, new, reply_info[4], max_replace)
+                reply = "<" + reply_info[1] + ">: " + reply
+            except:
+                return reply
     return reply
 
 def start_bot():

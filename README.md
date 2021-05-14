@@ -1,6 +1,14 @@
 # sadbot
 a simple telegram bot.
 
+## Dependencies
+The bot has the following dependencies:
+- `requests`
+Which can be installed with:
+```
+pip3 install requests
+```
+
 ## Installation
 Create the database via:
 ```
