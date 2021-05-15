@@ -1,3 +1,5 @@
+"""a sad telegram bot"""
+
 import json
 import random
 import re
@@ -10,6 +12,7 @@ con = sqlite3.connect('messages.db')
 con.create_function('regexp', 2, lambda x, y: 1 if re.search(x, y) else 0)
 
 def get_updates(offset=None):
+    """retrieves updates from the telelegram API"""
     url = BASE + "getUpdates?timeout=50"
     if offset:
         url = url + "&offset={}".format(offset + 1)
@@ -17,6 +20,7 @@ def get_updates(offset=None):
     return json.loads(req.content)
 
 def send_message(message, chat_id):
+    """sends a message in a certain chat id, using the telegram API"""
     url = BASE + "sendMessage?chat_id={}&text={}".format(chat_id, message)
     if message is not None:
         req = requests.get(url)
@@ -24,6 +28,7 @@ def send_message(message, chat_id):
     return None
 
 def get_previous_message_containing(message_info, string):
+    """retrieves a previous message from the database matching a certain regex pattern"""
     chat_id = message_info["chat_id"]
     reply_to_id = message_info["reply_to_message_id"]
     cur = con.cursor()
@@ -38,25 +43,30 @@ def get_previous_message_containing(message_info, string):
     return cur.fetchone()
 
 def random_insult_reply():
+    """gets a reply for when the bot receives an insult"""
     insult_replies = ["no u", "take that back", "contribute to make me better", \
     "stupid human", "sTuPiD bOt1!1", "lord, have mercy: they don't know that they're saying."]
     return random.choice(insult_replies)
 
 def random_compliment_reply():
+    """gets a reply for when the bot receives a compliment"""
     compliment_replies = ["t-thwanks s-senpaii *starts twerking*", "at your service, sir", \
     "thank youu!!", "good human"]
     return random.choice(compliment_replies)
 
 def get_roulette():
+    """plays the russian roulette"""
     if random.randint(0, 5) == 0:
         return "OH SHIIii.. you're dead, lol."
     return "Eh.. you survived."
 
 def get_closed_thread_reply():
+    """closes a discussion"""
     closed_thread_replies = ["rekt", "*This thread has been archived at RebeccaBlackTech*"]
     return random.choice(closed_thread_replies)
 
 def get_rand_command_reply(message):
+    """returns a random number in a user-defined range"""
     message = message[4:]
     if message.startswith("(") and message.endswith(")"):
         message = message[1:-1]
@@ -69,6 +79,7 @@ def get_rand_command_reply(message):
     return None
 
 def get_sed_command_reply(message_info):
+    """performs the sed command to a message"""
     replace_all = False
     message = message_info["message"]
     if message.endswith("/"):
@@ -103,6 +114,7 @@ def get_sed_command_reply(message_info):
     return None
 
 def get_reply(message_info):
+    """checks if a bot command is triggered and gets its reply"""
     message = message_info["message"]
     message_lowercase = message.lower()
     if message is None:
@@ -126,12 +138,14 @@ def get_reply(message_info):
     return None
 
 def insert_message_into_db(message_info):
+    """inserts a message into the database"""
     query = "INSERT INTO messages (MessageID, SenderName, SenderID, ChatID, Message, " \
     "ReplyToMessageID) VALUES (?, ?, ?, ?, ?, ?)"
     con.execute(query, list(message_info.values()))
     con.commit()
 
 def start_bot():
+    """starts the bot and keeps it running"""
     update_id = None
     while True:
         updates = get_updates(offset=update_id)
@@ -145,7 +159,7 @@ def start_bot():
             update_id = item["update_id"]
             try:
                 message = str(item["message"]["text"])
-            except:
+            except (ValueError, TypeError, KeyError):
                 continue
             if message is None:
                 continue
@@ -159,8 +173,8 @@ def start_bot():
             message_info = {"message_id": message_id, "sender_name": sender_name, \
             "sender_id": sender_id, "chat_id": chat_id, "message": message,        \
             "reply_to_message_id": reply_to_message_id}
-            insert_message_into_db(message_info)
             reply = get_reply(message_info)
+            insert_message_into_db(message_info)
             if reply is None:
                 continue
             sent_message = send_message(reply, chat_id)
