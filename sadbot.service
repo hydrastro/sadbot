@@ -1,0 +1,11 @@
+[Unit]
+Description=sad telegram bot
+After=syslog.target network.target
+
+[Service]
+WorkingDirectory=pathplaceholder
+ExecStart=/usr/bin/python3 bot.py
+Restart=always
+User=userplaceholder
+[Install]
+WantedBy=multi-user.target

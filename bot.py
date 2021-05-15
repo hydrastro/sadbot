@@ -27,7 +27,8 @@ def get_previous_message_containing(message_info, string):
     chat_id = message_info["chat_id"]
     reply_to_id = message_info["reply_to_message_id"]
     cur = con.cursor()
-    query = "SELECT MessageID, SenderName, SenderID, ChatID, Message, ReplyToMessageID FROM messages WHERE Message REGEXP ? AND ChatID = ? "
+    query = "SELECT MessageID, SenderName, SenderID, ChatID, Message, " \
+    "ReplyToMessageID FROM messages WHERE Message REGEXP ? AND ChatID = ? "
     parameters = (string, chat_id)
     if reply_to_id is not None:
         query += "AND MessageID = ? "
@@ -37,11 +38,13 @@ def get_previous_message_containing(message_info, string):
     return cur.fetchone()
 
 def random_insult_reply():
-    insult_replies = ["no u", "take that back", "contribute to make me better", "stupid human", "sTuPiD bOt1!1", "lord, have mercy: they don't know that they're saying."]
+    insult_replies = ["no u", "take that back", "contribute to make me better", \
+    "stupid human", "sTuPiD bOt1!1", "lord, have mercy: they don't know that they're saying."]
     return random.choice(insult_replies)
 
 def random_compliment_reply():
-    compliment_replies = ["t-thwanks s-senpaii *starts twerking*", "at your service, sir", "thank youu!!", "good human"]
+    compliment_replies = ["t-thwanks s-senpaii *starts twerking*", "at your service, sir", \
+    "thank youu!!", "good human"]
     return random.choice(compliment_replies)
 
 def get_roulette():
@@ -53,66 +56,80 @@ def get_closed_thread_reply():
     closed_thread_replies = ["rekt", "*This thread has been archived at RebeccaBlackTech*"]
     return random.choice(closed_thread_replies)
 
+def get_rand_command_reply(message):
+    message = message[4:]
+    if message.startswith("(") and message.endswith(")"):
+        message = message[1:-1]
+        message.replace(" ", "")
+        split = message.split(",", 1)
+        min_rand = split[0]
+        max_rand = split[1]
+        if min_rand <= max_rand:
+            return random.randint(int(min_rand), int(max_rand))
+    return None
+
+def get_sed_command_reply(message_info):
+    replace_all = False
+    message = message_info["message"]
+    if message.endswith("/"):
+        message = message[:-1]
+    if message.endswith("/g") and (message.count("/") > 2):
+        replace_all = True
+        message = message[:-2]
+    first_split = message.split("/", 1)
+    second_split = ["s"]
+    second_split += first_split[1].rsplit("/", 1)
+    if len(second_split) != 3:
+        return None
+    old = second_split[1]
+    new = second_split[2]
+    try:
+        re.compile(old)
+    except re.error:
+        return None
+    reply_info = get_previous_message_containing(message_info, old)
+    if reply_info is None:
+        return None
+    max_replace = 1
+    if replace_all:
+        max_replace = len(reply_info[4])
+    if reply_info is not None:
+        try:
+            reply = re.sub(old, new, reply_info[4], max_replace)
+            reply = "<" + reply_info[1] + ">: " + reply
+            return reply
+        except re.error:
+            return None
+    return None
+
 def get_reply(message_info):
-    reply = None
     message = message_info["message"]
     message_lowercase = message.lower()
     if message is None:
-        return reply
+        return None
+    if re.fullmatch(re.compile('s/.*/.*[/g]*'), message):
+        return get_sed_command_reply(message_info)
     if message.startswith(".roulette"):
         return get_roulette()
     if message == ".roll":
         return random.randint(0, 10)
     if message.startswith("rand"):
-        message = message[4:]
-        if message.startswith("(") and message.endswith(")"):
-            message = message[1:-1]
-            message.replace(" ", "")
-            split = message.split(",", 1)
-            min_rand = split[0]
-            max_rand = split[1]
-            if min_rand <= max_rand:
-                return random.randint(int(min_rand), int(max_rand))
+        return get_rand_command_reply(message)
     if "!leaf" in message_lowercase or "!canadian" in message_lowercase:
         return "🇨🇦"
-    if "/thread" in message_lowercase:
+    if message_lowercase in ("/thread", "fpbp", "spbp"):
         return get_closed_thread_reply()
-    if "stupid bot" in message_lowercase or "bad bot" in message_lowercase:
+    if message_lowercase in ("stupid bot", "bad bot"):
         return random_insult_reply()
-    if "good bot" in message_lowercase:
+    if message_lowercase == "good bot":
         return random_compliment_reply()
-    if re.fullmatch(re.compile('s/.*/.*[/g]*'), message):
-        replace_all = False
-        if message.endswith("/"):
-            message = message[:-1]
-        if message.endswith("/g") and (message.count("/") > 2):
-            replace_all = True
-            message = message[:-2]
-        splita = message.split("/", 1)
-        split = ["s"]
-        split += splita[1].rsplit("/", 1)
-        if len(split) != 3:
-            return reply
-        old = split[1]
-        new = split[2]
-        try:
-            re.compile(old)
-        except re.error:
-            return None
-        reply_info = get_previous_message_containing(message_info, old)
-        if reply_info is None:
-            return None
-        max_replace = 1
-        if replace_all:
-            max_replace = len(reply_info[4])
-        if reply_info is not None:
-            try:
-                print(old + "\n" + new)
-                reply = re.sub(old, new, reply_info[4], max_replace)
-                reply = "<" + reply_info[1] + ">: " + reply
-            except:
-                return reply
-    return reply
+    return None
+
+def insert_message_into_db(message_info):
+    query = "INSERT INTO messages (MessageID, SenderName, SenderID, ChatID, Message, " \
+    "ReplyToMessageID) VALUES (?, ?, ?, ?, ?, ?)"
+    con.execute(query, list(message_info.values()))
+    con.commit()
 
 def start_bot():
     update_id = None
@@ -139,10 +156,11 @@ def start_bot():
             reply_to_message_id = None
             if "reply_to_message" in item["message"]:
                 reply_to_message_id = item["message"]["reply_to_message"]["message_id"]
-            current_message = {"message_id": message_id, "sender_name": sender_name, "sender_id": sender_id, "chat_id": chat_id, "message": message, "reply_to_message_id": reply_to_message_id}
-            reply = get_reply(current_message)
-            con.execute("INSERT INTO messages (MessageID, SenderName, SenderID, ChatID, Message, ReplyToMessageID) VALUES (?, ?, ?, ?, ?, ?)", (message_id, sender_name, sender_id, chat_id, message, reply))
-            con.commit()
+            message_info = {"message_id": message_id, "sender_name": sender_name, \
+            "sender_id": sender_id, "chat_id": chat_id, "message": message,        \
+            "reply_to_message_id": reply_to_message_id}
+            insert_message_into_db(message_info)
+            reply = get_reply(message_info)
             if reply is None:
                 continue
             sent_message = send_message(reply, chat_id)
@@ -150,6 +168,8 @@ def start_bot():
                 sent_message_id = sent_message["result"]["message_id"]
                 sent_message_sender_name = sent_message["result"]["from"]["first_name"]
                 sent_message_sender_id = sent_message["result"]["from"]["id"]
-                con.execute("INSERT INTO messages (MessageID, SenderName, SenderID, ChatID, Message) VALUES (?, ?, ?, ?, ?)", (sent_message_id, sent_message_sender_name, sent_message_sender_id, chat_id, reply))
-                con.commit()
+                message_info = {"message_id": sent_message_id, "sender_name": \
+                sent_message_sender_name, "sender_id": sent_message_sender_id, \
+                "chat_id": chat_id, "message": reply, "reply_to_message_id": None}
+                insert_message_into_db(message_info)
 start_bot()

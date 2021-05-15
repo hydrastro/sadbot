@@ -1,6 +1,14 @@
 # sadbot
 a simple telegram bot.
 
+## Dependencies
+The bot has the following dependencies:
+- `requests`
+Which can be installed with:
+```
+pip3 install requests
+```
+
 ## Installation
 Create the database via:
 ```
@@ -15,4 +23,9 @@ sed -i 's/placeholder/YOURTOKENHERE' config.py
 Here's how you run the bot:  
 ```
 nohup python3 bot.py & disown
+```
+Alternatively, you can create a new systemd service:   
+```
+sudo cp sadbot.service /etc/systemd/system/
+sudo systemctl start sadbot
 ```
