@@ -14,7 +14,7 @@ Create the database via:
 ```
 cat createdb.sql | sqlite3 messages.db
 ```
-Then, place your bot token in the config file:  
+Then, place your bot token in the config file:
 ```
 sed -i 's/placeholder/YOURTOKENHERE' config.py
 ```
@@ -25,7 +25,7 @@ Here's how you run the bot manually:
 nohup python3 bot.py & disown
 ```
 Alternatively, you can create a new systemd service,
-which handles the bot restart, with these commands:   
+which handles the bot restart, with these commands:
 ```
 sed -i 's/userplaceholder/BOTUSER' sadbot.service
 sed -i 's/pathplaceholder/BOTPATH' sadbot.service
