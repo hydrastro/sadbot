@@ -75,7 +75,7 @@ def get_rand_command_reply(message):
         min_rand = split[0]
         max_rand = split[1]
         if min_rand <= max_rand:
-            return random.randint(int(min_rand), int(max_rand))
+            return str(random.randint(int(min_rand), int(max_rand)) )
     return None
 
 def get_sed_command_reply(message_info):
