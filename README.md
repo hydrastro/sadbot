@@ -21,7 +21,7 @@ sed -i 's/placeholder/YOURTOKENHERE' config.py
 ## Usage
 Here's how you run the bot manually:  
 ```
-nohup python3 sadbot & disown
+nohup PYTHONPATH=. python3 sadbot & disown
 ```
 Alternatively, you can create a new systemd service, which handles the bot restart
 restart in a more neat way, with these commands:
