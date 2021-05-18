@@ -1,4 +1,4 @@
-""" This module contains the Message class """
+"""This module contains the Message class"""
 
 from typing import Optional
 from dataclasses import dataclass

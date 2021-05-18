@@ -4,7 +4,7 @@ After=syslog.target network.target
 
 [Service]
 WorkingDirectory=pathplaceholder
-ExecStart=/usr/bin/python3 bot.py
+ExecStart=/usr/bin/python3 -m sadbot
 Restart=always
 User=userplaceholder
 [Install]

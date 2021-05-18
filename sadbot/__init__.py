@@ -1,3 +1,5 @@
+"""Bot initialization"""
+
 from sadbot.app import App
 from sadbot.message import Message
 
