@@ -8,7 +8,8 @@ The bot has the following dependencies:
 
 Which can be installed with:
 ```
-pip3 install requests
+pip3 install -r requirements.txt \
+             -r dev-requirements.txt # Add this when developing the bot
 ```
 
 ## Installation
@@ -20,7 +21,7 @@ sed -i 's/placeholder/YOURTOKENHERE' config.py
 ## Usage
 Here's how you run the bot manually:  
 ```
-nohup python3 bot.py & disown
+nohup PYTHONPATH=. python3 sadbot & disown
 ```
 Alternatively, you can create a new systemd service, which handles the bot restart
 restart in a more neat way, with these commands:
