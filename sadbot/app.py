@@ -4,6 +4,7 @@ import json
 import random
 import re
 import sqlite3
+import time
 from typing import Optional, Dict
 
 import requests
@@ -71,6 +72,7 @@ def go_schizo() -> str:
     """Goes schizo"""
     return str(random.randint(0, 999999999999999999999999999999999))
 
+
 class App:
     """Main app class. when called it starts the bot"""
 
@@ -99,7 +101,7 @@ class App:
             url = f"{url}&offset={offset + 1}"
         req = requests.get(url)
         if not req.ok:
-            print("Failed to retrieve updates from server")
+            print(f"Failed to retrieve updates from server - details: {req.json()}")
             return None
 
         return json.loads(req.content)
@@ -115,7 +117,7 @@ class App:
         )
         req = requests.get(url)
         if not req.ok:
-            print("Failed sending message")
+            print(f"Failed sending message - details: {req.json()}")
             return None
 
         return json.loads(req.content)
@@ -276,3 +278,4 @@ class App:
                         None,
                     )
                     self.insert_message(message)
+            time.sleep(1)
