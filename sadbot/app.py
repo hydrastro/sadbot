@@ -4,6 +4,7 @@ import json
 import random
 import re
 import sqlite3
+import time
 from typing import Optional, Dict
 
 import requests
@@ -70,6 +71,7 @@ def get_rand_command(message: Message) -> Optional[str]:
 def go_schizo() -> str:
     """Goes schizo"""
     return str(random.randint(0, 999999999999999999999999999999999))
+
 
 class App:
     """Main app class. when called it starts the bot"""
@@ -276,3 +278,4 @@ class App:
                         None,
                     )
                     self.insert_message(message)
+            time.sleep(1)
