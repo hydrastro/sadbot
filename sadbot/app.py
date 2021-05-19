@@ -122,7 +122,7 @@ class App:
 
         return json.loads(req.content)
 
-    def get_previous_message(self, message: Message, reg: str) -> Message:
+    def get_previous_message(self, message: Message, reg: str) -> Optional[Message]:
         """Retrieves a previous message from the database matching a certain
         regex pattern
         """
@@ -145,7 +145,9 @@ class App:
         query += "ORDER BY MessageID DESC"
         cur.execute(query, params)
         data = cur.fetchone()
-        return Message(*data)
+        if data is not None:
+            return Message(*data)
+        return None
 
     def get_sed_command(self, message: Message) -> Optional[str]:
         """Performs the sed command on a given message"""
@@ -198,7 +200,7 @@ class App:
             result = str(random.randint(0, 10))
         elif text.startswith("rand"):
             result = get_rand_command(message)
-        elif text in ("!leaf" or "!canadian"):
+        elif text in ("!leaf", "!canadian"):
             result = "🇨🇦"
         elif text in ("/thread", "fpbp", "spbp"):
             result = get_closed_thread()
