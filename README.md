@@ -1,5 +1,5 @@
 # sadbot
-a simple telegram bot.  
+A simple telegram bot.  
 Which main feature is its sed command, the famous UNIX command.
 
 ## Dependencies
@@ -13,17 +13,21 @@ pip3 install -r requirements.txt \
 ```
 
 ## Installation
-Place your bot token in the config file:
+You have to place your bot token either in the environment variables or in the
+config files:
 ```
 sed -i 's/placeholder/YOURTOKENHERE' config.py
+sed -i 's/placeholder/YOURTOKENHERE' Dockerfile # If you are using Docker/Podman
 ```
 
 ## Usage
+### Manual
 Here's how you run the bot manually:  
 ```
 nohup PYTHONPATH=. python3 -m sadbot & disown
 ```
-Alternatively, you can create a new systemd service, which handles the bot restart
+### Systemd Service
+Alternatively, you can create a new systemd service, which handles the bot
 restart in a way more neat way, with these commands:
 ```
 sed -i 's/userplaceholder/BOTUSER' sadbot.service
@@ -39,13 +43,13 @@ or, for reading the full log:
 ```
 sudo journalctl -u sadbot.service
 ```
-If you like docker or podman, you can easily build the container using the Dockerfile
+### Docker/Podman
+If you like docker or podman, you can easily build the container using the
+Dockerfile:
 ```
 sudo docker build -m sadbot .
 ```
-Don't forget to either set the token inside of the Dockerfile modifying the 
-commented line or change the token inside of `sadbot/config.py` file.
-Then you can easily start the bot with
+Then you can easily start the bot with:
 ```
 sudo docker run -it sadbot
 ```
