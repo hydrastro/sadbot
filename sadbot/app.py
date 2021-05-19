@@ -101,7 +101,7 @@ class App:
             url = f"{url}&offset={offset + 1}"
         req = requests.get(url)
         if not req.ok:
-            print("Failed to retrieve updates from server")
+            print(f"Failed to retrieve updates from server - details: {req.json()}")
             return None
 
         return json.loads(req.content)
@@ -117,7 +117,7 @@ class App:
         )
         req = requests.get(url)
         if not req.ok:
-            print("Failed sending message")
+            print(f"Failed sending message - details: {req.json()}")
             return None
 
         return json.loads(req.content)
