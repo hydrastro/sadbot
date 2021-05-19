@@ -21,10 +21,10 @@ sed -i 's/placeholder/YOURTOKENHERE' config.py
 ## Usage
 Here's how you run the bot manually:  
 ```
-nohup PYTHONPATH=. python3 sadbot & disown
+nohup PYTHONPATH=. python3 -m sadbot & disown
 ```
 Alternatively, you can create a new systemd service, which handles the bot restart
-restart in a more neat way, with these commands:
+restart in a way more neat way, with these commands:
 ```
 sed -i 's/userplaceholder/BOTUSER' sadbot.service
 sed -i 's/pathplaceholder/BOTPATH' sadbot.service
@@ -33,12 +33,15 @@ sudo service sadbot start
 ```
 And to check the bot status you can simply type:
 ```
-service sadbot status
+sudo service sadbot status
+```
+or, for reading the full log:
+```
+sudo journalctl -u sadbot.service
 ```
 
-## Todo
+## Todo list
 - [ ] Place the bot commands in modules which can be unplugged from the
 main application (?).
-- [ ] Put everything in a class.
 - [ ] Pass the database connection through dependency injection, to the
 functions that require it.

@@ -67,11 +67,15 @@ def get_rand_command(message: Message) -> Optional[str]:
     return None
 
 
+def go_schizo() -> str:
+    """Goes schizo"""
+    return str(random.randint(0, 999999999999999999999999999999999))
+
 class App:
     """Main app class. when called it starts the bot"""
 
     def __init__(self, token: str) -> None:
-        self.con = sqlite3.connect("messages.db")
+        self.con = sqlite3.connect("./messages.db")
 
         self.con.create_function("regexp", 2, _create_func)
         self.base_url = f"https://api.telegram.org/bot{token}/"
@@ -89,7 +93,7 @@ class App:
         self.start_bot()
 
     def get_updates(self, offset: Optional[int] = None) -> Optional[Dict]:
-        """retrieves updates from the telelegram API"""
+        """Retrieves updates from the telelegram API"""
         url = f"{self.base_url}getUpdates?timeout=50"
         if offset:
             url = f"{url}&offset={offset + 1}"
@@ -177,7 +181,7 @@ class App:
         return None
 
     def get_reply(self, message: Message) -> Optional[str]:
-        """checks if a bot command is triggered and gets its reply"""
+        """Checks if a bot command is triggered and gets its reply"""
         text = message.text
         if not text:
             return None
@@ -192,19 +196,21 @@ class App:
             result = str(random.randint(0, 10))
         elif text.startswith("rand"):
             result = get_rand_command(message)
-        elif "!leaf" in text or "!canadian" in text:
+        elif text in ("!leaf" or "!canadian"):
             result = "🇨🇦"
         elif text in ("/thread", "fpbp", "spbp"):
             result = get_closed_thread()
         elif text in ("stupid bot", "bad bot"):
             result = random_insult()
-        elif text == "good bot":
+        elif text in ("good bot", "based bot"):
             result = random_compliment()
+        elif text == "go schizo":
+            result = go_schizo()
 
         return result
 
     def insert_message(self, message: Message) -> None:
-        """inserts a message into the database"""
+        """Inserts a message into the database"""
         query = """
           INSERT INTO messages (
             MessageID,
@@ -229,7 +235,7 @@ class App:
         self.con.commit()
 
     def start_bot(self) -> None:
-        """starts the bot"""
+        """Starts the bot"""
         update_id = None
         while True:
             updates = self.get_updates(offset=update_id) or {}
@@ -259,7 +265,8 @@ class App:
 
                 new_message = Message(chat_id=message.chat_id, text=reply)
                 sent_message = self.send_message(new_message) or {}
-                if result := sent_message.get("result"):
+                if sent_message.get("result"):
+                    result = sent_message.get("result")
                     message = Message(
                         result["message_id"],
                         result["from"]["first_name"],
