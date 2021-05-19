@@ -39,6 +39,16 @@ or, for reading the full log:
 ```
 sudo journalctl -u sadbot.service
 ```
+If you like docker or podman, you can easily build the container using the Dockerfile
+```
+sudo docker build -m sadbot .
+```
+Don't forget to either set the token inside of the Dockerfile modifying the 
+commented line or change the token inside of `sadbot/config.py` file.
+Then you can easily start the bot with
+```
+sudo docker run -it sadbot
+```
 
 ## Todo list
 - [ ] Place the bot commands in modules which can be unplugged from the
