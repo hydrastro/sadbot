@@ -16,8 +16,8 @@ pip3 install -r requirements.txt \
 You have to place your bot token either in the environment variables or in the
 config files:
 ```
-sed -i 's/placeholder/YOURTOKENHERE' config.py
-sed -i 's/placeholder/YOURTOKENHERE' Dockerfile # If you are using Docker/Podman
+sed -i 's/placeholder/YOURTOKENHERE/' config.py
+sed -i 's/placeholder/YOURTOKENHERE/' Dockerfile # If you are using Docker/Podman
 ```
 
 ## Usage
@@ -33,6 +33,7 @@ restart in a way more neat way, with these commands:
 sed -i 's/userplaceholder/BOTUSER' sadbot.service
 sed -i 's/pathplaceholder/BOTPATH' sadbot.service
 sudo cp sadbot.service /etc/systemd/system/
+sudo systemctl daemon-reload
 sudo service sadbot start
 ```
 And to check the bot status you can simply type:
