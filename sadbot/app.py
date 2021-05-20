@@ -13,7 +13,7 @@ from sadbot.message import Message
 
 
 def _create_func(x, y) -> int:  # pylint: disable=invalid-name
-    return 1 if re.search(x, y) else 2
+    return 1 if re.search(x, y) else 0
 
 
 def random_insult() -> str:
