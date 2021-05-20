@@ -5,6 +5,7 @@ import random
 import re
 import sqlite3
 import time
+import urllib.parse
 from typing import Optional, Dict
 
 import requests
@@ -110,6 +111,7 @@ class App:
         """Sends message to some chat using api"""
         if not message:
             return None
+        message.text = urllib.parse.quote(message.text)
 
         url = (
             f"{self.base_url}sendMessage?"
