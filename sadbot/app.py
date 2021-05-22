@@ -10,6 +10,7 @@ from typing import Optional, Dict
 
 import requests
 
+from sadbot.config import CRINGE_CHANNEL, CRINGE_RSS
 from sadbot.message import Message
 
 
@@ -81,13 +82,13 @@ def get_cringe() -> str:
     prefix = ""
 
     if cringe_mode == 0:
-        url = "https://www.youtube.com/c/LukeSmithxyz/videos"
+        url = f"{CRINGE_CHANNEL}/videos"
         regex = r'"videoId":"(.*?)"'
         prefix = "https://www.youtube.com/watch?v="
     else:
-        url = "https://lukesmith.xyz/rss.xml"
+        url = CRINGE_RSS
         regex = r'<p>(.*?)</p>'
-        prefix = "Luke Smith: "
+        prefix = f"<b>here is some cringe from <a href=\"{CRINGE_RSS}\">{CRINGE_RSS}</a>:</b>\n"
 
     headers = {"User-Agent":"Mozilla/5.0 (X11; Linux x86_64; \
         rv:88.0) Gecko/20100101 Firefox/88.0"}
@@ -97,7 +98,7 @@ def get_cringe() -> str:
         return
     cringes = list(set(re.findall(regex, req.text)))
     if len(cringes) == 0:
-        return "Lol RIP Luke"
+        return "Lol RIP"
     random_cringe = random.choice(cringes)
     return f"{prefix}{random_cringe}"
 
