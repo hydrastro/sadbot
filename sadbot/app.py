@@ -59,7 +59,7 @@ class App:
                 snake_to_pascal_case(command_name) + "BotCommand",
             )(self.con)
             self.commands.append(
-                {"regex": command_class.get_regex(), "class": command_class}
+                {"regex": command_class.get_regex, "class": command_class}
             )
 
     def get_updates(self, offset: Optional[int] = None) -> Optional[Dict]:
@@ -80,12 +80,14 @@ class App:
             return None
         message.text = urllib.parse.quote(message.text)
 
-        url = (
-            f"{self.base_url}sendMessage?"
-            f"chat_id={message.chat_id}&text={message.text}"
+        req = requests.post(
+            f"{self.base_url}sendMessage",
+            data={"chat_id": message.chat_id, "text": message.text},
+            headers={"Conent-Type": "application/json"},
         )
-        req = requests.get(url)
+
         if not req.ok:
+            print(req)
             print(f"Failed sending message - details: {req.json()}")
             return None
 
@@ -96,10 +98,8 @@ class App:
         text = message.text
         if not text:
             return None
-        text = text.lower()
         for command in self.commands:
             try:
-                # TODO: allow partial match
                 if re.fullmatch(re.compile(command["regex"]), text):
                     return command["class"].get_reply(message)
             except re.error:

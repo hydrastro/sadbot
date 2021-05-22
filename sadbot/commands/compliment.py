@@ -14,9 +14,12 @@ class ComplimentBotCommand(CommandsInterface):
     def __init__(self, con: str):
         self.con = con
 
+    @property
     def get_regex(self) -> str:
         """Returns the regex for matching compliments"""
-        return r"(good bot|based bot)"
+        return (
+            r"(([Gg][Oo]{2}[Dd]|[Bb][Aa][Ss][Ee][Dd]|[Nn][Ii][Cc][Ee])( [Bb][Oo][Tt]))"
+        )
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[str]:
         """Gets a reply for when the bot receives a compliment"""

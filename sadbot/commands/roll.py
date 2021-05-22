@@ -14,10 +14,12 @@ class RollBotCommand(CommandsInterface):
     def __init__(self, con: str):
         self.con = con
 
+    @property
     def get_regex(self) -> str:
         """Returns the regex for matching the roll command"""
-        return r"^(.roll)$"
+        return r"(\.[Rr][Oo][Ll]{2})"
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[str]:
+        print("FUCK")
         """Rolls a number"""
         return str(random.randint(0, 9))

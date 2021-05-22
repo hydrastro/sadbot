@@ -14,16 +14,18 @@ class RandBotCommand(CommandsInterface):
     def __init__(self, con: str):
         self.con = con
 
+    @property
     def get_regex(self) -> str:
         """Returns the regex for matching the rand command"""
-        return r"^rand\([0-9]+,[0-9]+\)"
+        return r"[Rr][Aa][Nn][Dd]\([0-9]+,(\s+)?[0-9]+\)"
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[str]:
         """Gets a random number in a user-defined range"""
         text = message.text[4:]
+        print(text)
         if text.startswith("(") and text.endswith(")"):
             text = text[1:-1]
-            text.replace(" ", "")
+            text = text.replace(" ", "")
             min_rand, max_rand = text.split(",", 1)
             if min_rand <= max_rand:
                 return str(random.randint(int(min_rand), int(max_rand)))

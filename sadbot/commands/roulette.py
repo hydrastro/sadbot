@@ -14,9 +14,10 @@ class RouletteBotCommand(CommandsInterface):
     def __init__(self, con: str):
         self.con = con
 
+    @property
     def get_regex(self) -> str:
         """Returns the regex for matching the roulette command"""
-        return r"^(.roulette)$"
+        return r"(\.[Rr][Oo][Uu][Ll][Ee][Tt]{2}[Ee])"
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[str]:
         """Plays the Russian roulette"""

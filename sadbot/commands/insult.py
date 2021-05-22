@@ -14,9 +14,10 @@ class InsultBotCommand(CommandsInterface):
     def __init__(self, con: str):
         self.con = con
 
+    @property
     def get_regex(self) -> str:
         """Returns the regex for matching insults"""
-        return r"(bad bot|stupid bot)"
+        return r"(([Bb][Aa][Dd]|[Ss][Tt][Uu][Pp][Ii][Dd])( [Bb][Oo][Tt]))"
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[str]:
         """Gets a reply for when the bot receives an insult"""
