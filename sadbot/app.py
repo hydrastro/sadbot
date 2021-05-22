@@ -1,77 +1,29 @@
 """ This module contains the main app class and friends """
 
+import glob
 import json
-import random
 import re
 import sqlite3
 import time
 import urllib.parse
+from os.path import dirname, basename, isfile, join
 from typing import Optional, Dict
 
 import requests
 
 from sadbot.message import Message
+from sadbot.commands import *
 
 
-def _create_func(x, y) -> int:  # pylint: disable=invalid-name
-    return 1 if re.search(x, y) else 0
+def snake_to_pascal_case(snake_str: str):
+    """Converts a given snake_case string to PascalCase"""
+    components = snake_str.split("_")
+    return "".join(x.title() for x in components[0:])
 
 
-def random_insult() -> str:
-    """Gets a reply for when the bot receives an insult"""
-    insult_replies = [
-        "no u",
-        "take that back",
-        "contribute to make me better",
-        "stupid human",
-        "sTuPiD bOt1!1",
-        "lord, have mercy: they don't know that they're saying.",
-    ]
-    return random.choice(insult_replies)
-
-
-def random_compliment() -> str:
-    """Gets a reply for when the bot receives a compliment"""
-    compliment_replies = [
-        "t-thwanks s-senpaii *starts twerking*",
-        "at your service, sir",
-        "thank youu!!",
-        "good human",
-    ]
-    return random.choice(compliment_replies)
-
-
-def get_roulette() -> str:
-    """Plays russian roulette"""
-    if random.randint(0, 5) == 0:
-        return "OH SHIIii.. you're dead, lol."
-    return "Eh.. you survived."
-
-
-def get_closed_thread() -> str:
-    """Closes a discussion"""
-    closed_thread_replies = [
-        "rekt",
-        "*This thread has been archived at RebeccaBlackTech*",
-    ]
-    return random.choice(closed_thread_replies)
-
-
-def get_rand_command(message: Message) -> Optional[str]:
-    """Returns a random number in a user-defined range"""
-    text = message.text[4:]
-    if text.startswith("(") and text.endswith(")"):
-        text = text[1:-1]
-        text.replace(" ", "")
-        min_rand, max_rand = text.split(",", 1)
-        if min_rand <= max_rand:
-            return str(random.randint(int(min_rand), int(max_rand)))
-    return None
-
-
-def go_schizo() -> str:
-    """Goes schizo"""
-    return str(random.randint(0, 999999999999999999999999999999999))
+def _create_func(x_val, y_val) -> int:
+    """Labda function for the regex query"""
+    return 1 if re.search(x_val, y_val) else 0
 
 
 class App:
@@ -79,7 +31,6 @@ class App:
 
     def __init__(self, token: str) -> None:
         self.con = sqlite3.connect("./messages.db")
-
         self.con.create_function("regexp", 2, _create_func)
         self.base_url = f"https://api.telegram.org/bot{token}/"
         self.con.execute(
@@ -93,7 +44,23 @@ class App:
               ReplyToMessageID int
             )"""
         )
+        self.commands = []
+        self.load_commands()
         self.start_bot()
+
+    def load_commands(self):
+        """Loads the bot commands"""
+        commands = glob.glob(join(dirname(__file__), "commands", "*.py"))
+        for command_name in [basename(f)[:-3] for f in commands if isfile(f)]:
+            if command_name in ("__init__", "interface"):
+                continue
+            command_class = getattr(
+                globals()[command_name],
+                snake_to_pascal_case(command_name) + "BotCommand",
+            )(self.con)
+            self.commands.append(
+                {"regex": command_class.get_regex(), "class": command_class}
+            )
 
     def get_updates(self, offset: Optional[int] = None) -> Optional[Dict]:
         """Retrieves updates from the telelegram API"""
@@ -124,96 +91,20 @@ class App:
 
         return json.loads(req.content)
 
-    def get_previous_message(self, message: Message, reg: str) -> Optional[Message]:
-        """Retrieves a previous message from the database matching a certain
-        regex pattern
-        """
-        cur = self.con.cursor()
-        query = """
-          SELECT
-            MessageID,
-            SenderName,
-            SenderID,
-            ChatID,
-            Message,
-            ReplyToMessageID
-          FROM messages
-          WHERE Message REGEXP ? AND ChatID = ?
-        """
-        params = [reg, message.chat_id]
-        if message.reply_id:
-            query += "AND MessageID = ? "
-            params.append(message.reply_id)
-        query += "ORDER BY MessageID DESC"
-        cur.execute(query, params)
-        data = cur.fetchone()
-        if data is not None:
-            return Message(*data)
-        return None
-
-    def get_sed_command(self, message: Message) -> Optional[str]:
-        """Performs the sed command on a given message"""
-        replace_all = False
-        text = message.text
-        if text.endswith("/"):
-            text = text[:-1]
-        if text.endswith("/g") and (text.count("/") > 2):
-            replace_all = True
-            text = text[:-2]
-        first_split = text.split("/", 1)
-        second_split = ["s"]
-        second_split += first_split[1].rsplit("/", 1)
-        if len(second_split) != 3:
-            return None
-        old = second_split[1]
-        new = second_split[2]
-        try:
-            re.compile(old)
-        except re.error:
-            return None
-        reply_message = self.get_previous_message(message, old)
-        if reply_message is None:
-            return None
-        max_replace = 1
-        if replace_all:
-            max_replace = len(reply_message.text)
-        if reply_message is not None:
-            try:
-                reply = re.sub(old, new, reply_message.text, max_replace)
-                reply = "<" + reply_message.sender_name + ">: " + reply
-                return reply
-            except re.error:
-                return None
-        return None
-
     def get_reply(self, message: Message) -> Optional[str]:
         """Checks if a bot command is triggered and gets its reply"""
         text = message.text
         if not text:
             return None
-
-        result: Optional[str] = None
         text = text.lower()
-        if re.fullmatch(re.compile("s/.*/.*[/g]*"), text):
-            result = self.get_sed_command(message)
-        elif text.startswith(".roulette"):
-            result = get_roulette()
-        elif text == ".roll":
-            result = str(random.randint(0, 10))
-        elif text.startswith("rand"):
-            result = get_rand_command(message)
-        elif text in ("!leaf", "!canadian"):
-            result = "🇨🇦"
-        elif text in ("/thread", "fpbp", "spbp"):
-            result = get_closed_thread()
-        elif text in ("stupid bot", "bad bot"):
-            result = random_insult()
-        elif text in ("good bot", "based bot"):
-            result = random_compliment()
-        elif text == "go schizo":
-            result = go_schizo()
-
-        return result
+        for command in self.commands:
+            try:
+                # TODO: allow partial match
+                if re.fullmatch(re.compile(command["regex"]), text):
+                    return command["class"].get_reply(message)
+            except re.error:
+                return None
+        return None
 
     def insert_message(self, message: Message) -> None:
         """Inserts a message into the database"""
@@ -249,7 +140,7 @@ class App:
                 update_id = item["update_id"]
                 try:
                     text = str(item["message"]["text"])
-                except Exception:  # pylint: disable=broad-except
+                except (ValueError, KeyError, TypeError):
                     continue
 
                 if not text:

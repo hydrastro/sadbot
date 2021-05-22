@@ -2,7 +2,6 @@
 
 import os
 from sadbot import config
-
 from sadbot import App
 
 if __name__ == "__main__":
