@@ -10,6 +10,7 @@ from typing import Optional, Dict
 
 import requests
 
+from sadbot.config import CRINGE_CHANNEL, CRINGE_RSS
 from sadbot.message import Message
 
 
@@ -74,6 +75,34 @@ def go_schizo() -> str:
     return str(random.randint(0, 999999999999999999999999999999999))
 
 
+def get_cringe() -> str:
+    cringe_mode = random.randint(0, 1)
+    url = ""
+    regex = ""
+    prefix = ""
+
+    if cringe_mode == 0:
+        url = f"{CRINGE_CHANNEL}/videos"
+        regex = r'"videoId":"(.*?)"'
+        prefix = "https://www.youtube.com/watch?v="
+    else:
+        url = CRINGE_RSS
+        regex = r'<p>(.*?)</p>'
+        prefix = f"<b>here is some cringe from <a href=\"{CRINGE_RSS}\">{CRINGE_RSS}</a>:</b>\n"
+
+    headers = {"User-Agent":"Mozilla/5.0 (X11; Linux x86_64; \
+        rv:88.0) Gecko/20100101 Firefox/88.0"}
+    req = requests.get(url, headers=headers)
+    if not req.ok:
+        print(f"Failed getting cringe - details: {req.text}")
+        return
+    cringes = list(set(re.findall(regex, req.text)))
+    if len(cringes) == 0:
+        return "Lol RIP"
+    random_cringe = random.choice(cringes)
+    return f"{prefix}{random_cringe}"
+
+
 class App:
     """Main app class. when called it starts the bot"""
 
@@ -115,7 +144,7 @@ class App:
 
         url = (
             f"{self.base_url}sendMessage?"
-            f"chat_id={message.chat_id}&text={message.text}"
+            f"chat_id={message.chat_id}&text={message.text}&parse_mode=HTML"
         )
         req = requests.get(url)
         if not req.ok:
@@ -212,6 +241,8 @@ class App:
             result = random_compliment()
         elif text == "go schizo":
             result = go_schizo()
+        elif text == ".cringe":
+            result = get_cringe()
 
         return result
 
