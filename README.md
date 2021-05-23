@@ -59,7 +59,8 @@ sudo docker run -it sadbot
 ```
 
 ## Todo list
-- [ ] Place the bot commands in modules which can be unplugged from the
-main application (?).
-- [ ] Pass the database connection through dependency injection, to the
-functions that require it.
+- [ ] Add media support for outgoing messages
+- [ ] Fix the roulette code
+- [ ] Eval command
+- [ ] Weather command
+- [ ] Status command

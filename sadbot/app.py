@@ -122,12 +122,11 @@ class App:
                     message.get("reply_to_message", {}).get("message_id"),
                 )
                 reply_info = self.get_reply(message)
+                self.message_repository.insert_message(message)
                 if reply_info is None:
                     continue
 
                 reply = reply_info["message"]
-                self.message_repository.insert_message(message)
-
                 new_message = Message(chat_id=message.chat_id, text=reply)
                 sent_message = (
                     self.send_message(new_message, reply_info["parsemode"]) or {}
