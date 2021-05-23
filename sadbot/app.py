@@ -56,13 +56,14 @@ class App:
 
         return json.loads(req.content)
 
-    def send_message(self, message: Message, parsemode: Optional[str]) -> Optional[Dict]:
+    def send_message(
+        self, message: Message, parsemode: Optional[str]
+    ) -> Optional[Dict]:
         """Sends message to some chat using api"""
         if not message:
             return None
 
-
-        data={"chat_id": message.chat_id, "text": message.text}
+        data = {"chat_id": message.chat_id, "text": message.text}
         if parsemode is not None:
             data.update({"parsemode": parsemode})
         req = requests.post(
@@ -85,7 +86,13 @@ class App:
         for command in self.commands:
             try:
                 if re.fullmatch(re.compile(command["regex"]), text):
-                    return {"message": command["class"].get_reply(message), "parsemode": command["class"].parsemode}
+                    reply_message = command["class"].get_reply(message)
+                    if reply_message is None:
+                        return None
+                    return {
+                        "message": reply_message,
+                        "parsemode": command["class"].parsemode,
+                    }
             except re.error:
                 return None
         return None
@@ -115,13 +122,16 @@ class App:
                     message.get("reply_to_message", {}).get("message_id"),
                 )
                 reply_info = self.get_reply(message)
-                reply = reply_info["message"]
-                self.message_repository.insert_message(message)
-                if not reply:
+                if reply_info is None:
                     continue
 
+                reply = reply_info["message"]
+                self.message_repository.insert_message(message)
+
                 new_message = Message(chat_id=message.chat_id, text=reply)
-                sent_message = self.send_message(new_message, reply_info["parsemode"]) or {}
+                sent_message = (
+                    self.send_message(new_message, reply_info["parsemode"]) or {}
+                )
                 if sent_message.get("result"):
                     result = sent_message.get("result")
                     message = Message(

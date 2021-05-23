@@ -16,9 +16,12 @@ pip3 install -r requirements.txt \
 You have to place your bot token either in the environment variables or in the
 config files:
 ```
-sed -i 's/tokenplaceholder/YOURTOKENHERE/' config.py
+sed -i 's/tokenplaceholder/YOURTOKENHERE/' sadbot/config.py
 sed -i 's/placeholder/YOURTOKENHERE/' Dockerfile # If you are using Docker/Podman
 ```
+You can also configure the ecelebs for the `.cringe` command by editing the
+`sadbot/config.py` file.
+
 
 ## Usage
 ### Manual
