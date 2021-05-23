@@ -17,7 +17,7 @@ class RollBotCommand(CommandsInterface):
     @property
     def get_regex(self) -> str:
         """Returns the regex for matching the roll command"""
-        return r"(\.[Rr][Oo][Ll]{2})"
+        return r"(\.[Rr][Oo][Ll]{2}).*"
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[str]:
         print("FUCK")

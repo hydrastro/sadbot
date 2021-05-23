@@ -5,7 +5,6 @@ import json
 import re
 import sqlite3
 import time
-import urllib.parse
 from os.path import dirname, basename, isfile, join
 from typing import Optional, Dict
 
@@ -22,7 +21,7 @@ def snake_to_pascal_case(snake_str: str):
 
 
 def _create_func(x_val, y_val) -> int:
-    """Labda function for the regex query"""
+    """Lambda function for the regex query"""
     return 1 if re.search(x_val, y_val) else 0
 
 
@@ -78,7 +77,6 @@ class App:
         """Sends message to some chat using api"""
         if not message:
             return None
-        message.text = urllib.parse.quote(message.text)
 
         req = requests.post(
             f"{self.base_url}sendMessage",
@@ -87,7 +85,6 @@ class App:
         )
 
         if not req.ok:
-            print(req)
             print(f"Failed sending message - details: {req.json()}")
             return None
 
