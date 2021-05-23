@@ -9,9 +9,7 @@ class CommandsInterface:
     """This is the interface for the bot commands, every bot command module must implement
     these functions"""
 
-    #    def __init__(self):
-    #        """Initializes the command class"""
-
+    @property
     def get_regex(self) -> str:
         """Returns the regex string that triggers this command"""
 

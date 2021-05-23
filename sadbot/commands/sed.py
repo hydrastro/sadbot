@@ -14,6 +14,7 @@ class SedBotCommand(CommandsInterface):
     def __init__(self, con: str):
         self.con = con
 
+    @property
     def get_regex(self) -> str:
         """Returns the regex for matching sed command"""
         return r"s/.*/.*[/g]*"

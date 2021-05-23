@@ -14,9 +14,10 @@ class SchizoBotCommand(CommandsInterface):
     def __init__(self, con: str):
         self.con = con
 
+    @property
     def get_regex(self) -> str:
         """Returns the regex for matching the schizo command"""
-        return r"^(go schizo)$"
+        return r"([Gg][Oo] [Ss][Cc][Hh][Ii][Zz][Oo])+"
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[str]:
         """Goes schizo"""

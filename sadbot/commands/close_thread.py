@@ -14,9 +14,10 @@ class CloseThreadBotCommand(CommandsInterface):
     def __init__(self, con: str):
         self.con = con
 
+    @property
     def get_regex(self) -> str:
         """Returns the regex for matching the closure of a discussion"""
-        return r"^(/thread)$"
+        return r"(/[Tt][Hh][Rr][Ee][Aa][Dd])"
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[str]:
         """Closes a discussion"""
