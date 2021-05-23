@@ -1,5 +1,10 @@
-"""config file: here resides the bot token"""
+"""Config file: here resides the bot token"""
 
 TOKEN = "tokenplaceholder"
-CRINGE_CHANNEL = "channelplaceholder"
-CRINGE_RSS = "rssplaceholder"
+ECELEBS = [
+    {
+        "url": "urlplaceholder",
+        "regex": r"regexplaceholder",
+        "prefix": "prefixplaceholder",
+    },
+]

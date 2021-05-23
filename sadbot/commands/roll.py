@@ -16,9 +16,14 @@ class RollBotCommand(CommandsInterface):
         self.message_repository = message_repository
 
     @property
-    def get_regex(self) -> str:
+    def command_regex(self) -> str:
         """Returns the regex for matching the roll command"""
         return r"(\.[Rr][Oo][Ll]{2}).*"
+
+    @property
+    def parsemode(self) -> Optional[str]:
+        """Returns the command parsemode"""
+        return None
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[str]:
         """Rolls a number"""

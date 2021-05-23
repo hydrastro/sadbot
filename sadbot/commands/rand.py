@@ -16,9 +16,14 @@ class RandBotCommand(CommandsInterface):
         self.message_repository = message_repository
 
     @property
-    def get_regex(self) -> str:
+    def command_regex(self) -> str:
         """Returns the regex for matching the rand command"""
         return r"[Rr][Aa][Nn][Dd]\([0-9]+,(\s+)?[0-9]+\).*"
+
+    @property
+    def parsemode(self) -> Optional[str]:
+        """Returns the command parsemode"""
+        return None
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[str]:
         """Gets a random number in a user-defined range"""

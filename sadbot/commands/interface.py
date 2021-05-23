@@ -10,8 +10,12 @@ class CommandsInterface:
     these functions"""
 
     @property
-    def get_regex(self) -> str:
+    def command_regex(self) -> str:
         """Returns the regex string that triggers this command"""
+
+    @property
+    def parsemode(self) -> Optional[str]:
+        """Returns the command parsemode"""
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[str]:
         """Returns the command output"""

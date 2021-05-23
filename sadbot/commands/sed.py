@@ -16,9 +16,14 @@ class SedBotCommand(CommandsInterface):
         self.message_repository = message_repository
 
     @property
-    def get_regex(self) -> str:
+    def command_regex(self) -> str:
         """Returns the regex for matching sed command"""
         return r"s/.*/.*[/g]*"
+
+    @property
+    def parsemode(self) -> Optional[str]:
+        """Returns the command parsemode"""
+        return None
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[str]:
         """Performs the sed command on a given message"""

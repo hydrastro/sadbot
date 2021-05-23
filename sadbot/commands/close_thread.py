@@ -16,9 +16,14 @@ class CloseThreadBotCommand(CommandsInterface):
         self.message_repository = message_repository
 
     @property
-    def get_regex(self) -> str:
+    def command_regex(self) -> str:
         """Returns the regex for matching the closure of a discussion"""
         return r"(/[Tt][Hh][Rr][Ee][Aa][Dd]).*"
+
+    @property
+    def parsemode(self) -> Optional[str]:
+        """Returns the command parsemode"""
+        return None
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[str]:
         """Closes a discussion"""
