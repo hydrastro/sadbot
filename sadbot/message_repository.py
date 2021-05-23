@@ -12,6 +12,19 @@ def _create_func(x_val, y_val) -> int:
     return 1 if re.search(x_val, y_val) else 0
 
 
+def get_table_creation_query() -> str:
+    """Returns the table creation query"""
+    return """
+    CREATE TABLE IF NOT EXISTS messages (
+      MessageID        integer,
+      SenderName       text,
+      SenderID         int,
+      ChatID           integer,
+      Message          text,
+      ReplyToMessageID int
+    )"""
+
+
 class MessageRepository:
     """This class handles the messages database"""
 
@@ -19,19 +32,7 @@ class MessageRepository:
         """Initializes the message repository class"""
         self.con = sqlite3.connect("./messages.db")
         self.con.create_function("regexp", 2, _create_func)
-        self.con.execute(self.get_table_creation_query())
-
-    def get_table_creation_query(self) -> str:
-        """Returns the table creation query"""
-        return """
-        CREATE TABLE IF NOT EXISTS messages (
-          MessageID        integer,
-          SenderName       text,
-          SenderID         int,
-          ChatID           integer,
-          Message          text,
-          ReplyToMessageID int
-        )"""
+        self.con.execute(get_table_creation_query())
 
     def insert_message(self, message: Message) -> None:
         """Inserts a message into the database"""
