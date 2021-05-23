@@ -41,7 +41,7 @@ class App:
                 snake_to_pascal_case(command_name) + "BotCommand",
             )(self.message_repository)
             self.commands.append(
-                {"regex": command_class.get_regex, "class": command_class}
+                {"regex": command_class.command_regex, "class": command_class}
             )
 
     def get_updates(self, offset: Optional[int] = None) -> Optional[Dict]:
@@ -56,14 +56,18 @@ class App:
 
         return json.loads(req.content)
 
-    def send_message(self, message: Message) -> Optional[Dict]:
+    def send_message(self, message: Message, parsemode: Optional[str]) -> Optional[Dict]:
         """Sends message to some chat using api"""
         if not message:
             return None
 
+
+        data={"chat_id": message.chat_id, "text": message.text}
+        if parsemode is not None:
+            data.update({"parsemode": parsemode})
         req = requests.post(
             f"{self.base_url}sendMessage",
-            data={"chat_id": message.chat_id, "text": message.text},
+            data=data,
             headers={"Conent-Type": "application/json"},
         )
 
@@ -73,7 +77,7 @@ class App:
 
         return json.loads(req.content)
 
-    def get_reply(self, message: Message) -> Optional[str]:
+    def get_reply(self, message: Message) -> Optional[dict]:
         """Checks if a bot command is triggered and gets its reply"""
         text = message.text
         if not text:
@@ -81,7 +85,7 @@ class App:
         for command in self.commands:
             try:
                 if re.fullmatch(re.compile(command["regex"]), text):
-                    return command["class"].get_reply(message)
+                    return {"message": command["class"].get_reply(message), "parsemode": command["class"].parsemode}
             except re.error:
                 return None
         return None
@@ -110,13 +114,14 @@ class App:
                     text,
                     message.get("reply_to_message", {}).get("message_id"),
                 )
-                reply = self.get_reply(message)
+                reply_info = self.get_reply(message)
+                reply = reply_info["message"]
                 self.message_repository.insert_message(message)
                 if not reply:
                     continue
 
                 new_message = Message(chat_id=message.chat_id, text=reply)
-                sent_message = self.send_message(new_message) or {}
+                sent_message = self.send_message(new_message, reply_info["parsemode"]) or {}
                 if sent_message.get("result"):
                     result = sent_message.get("result")
                     message = Message(

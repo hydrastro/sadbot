@@ -20,12 +20,6 @@ sed -i 's/tokenplaceholder/YOURTOKENHERE/' config.py
 sed -i 's/placeholder/YOURTOKENHERE/' Dockerfile # If you are using Docker/Podman
 ```
 
-Add a Youtube Channel and RSS feed for the .cringe command
-```
-sed -i 's/channelplaceholder/CHANNELURL/' config.py
-sed -i 's/rssplaceholder/RSSLINK/' config.py
-```
-
 ## Usage
 ### Manual
 Here's how you run the bot manually:  
