@@ -6,13 +6,14 @@ from typing import Optional
 
 from sadbot.commands.interface import CommandsInterface
 from sadbot.message import Message
+from sadbot.message_repository import MessageRepository
 
 
 class InsultBotCommand(CommandsInterface):
     """This is the insult bot command class"""
 
-    def __init__(self, con: str):
-        self.con = con
+    def __init__(self, message_repository: MessageRepository):
+        self.message_repository = message_repository
 
     @property
     def get_regex(self) -> str:

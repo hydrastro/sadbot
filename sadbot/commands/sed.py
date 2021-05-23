@@ -6,13 +6,14 @@ from typing import Optional
 
 from sadbot.commands.interface import CommandsInterface
 from sadbot.message import Message
+from sadbot.message_repository import MessageRepository
 
 
 class SedBotCommand(CommandsInterface):
     """This is the sed bot command class"""
 
-    def __init__(self, con: str):
-        self.con = con
+    def __init__(self, message_repository: MessageRepository):
+        self.message_repository = message_repository
 
     @property
     def get_regex(self) -> str:
@@ -39,7 +40,7 @@ class SedBotCommand(CommandsInterface):
             re.compile(old)
         except re.error:
             return None
-        reply_message = self.get_previous_message(message, old)
+        reply_message = self.message_repository.get_previous_message(message, old)
         if reply_message is None:
             return None
         max_replace = 1
@@ -52,31 +53,4 @@ class SedBotCommand(CommandsInterface):
                 return reply
             except re.error:
                 return None
-        return None
-
-    def get_previous_message(self, message: Message, reg: str) -> Optional[Message]:
-        """Retrieves a previous message from the database matching a certain
-        regex pattern
-        """
-        cur = self.con.cursor()
-        query = """
-          SELECT
-            MessageID,
-            SenderName,
-            SenderID,
-            ChatID,
-            Message,
-            ReplyToMessageID
-          FROM messages
-          WHERE Message REGEXP ? AND ChatID = ?
-        """
-        params = [reg, message.chat_id]
-        if message.reply_id:
-            query += "AND MessageID = ? "
-            params.append(message.reply_id)
-        query += "ORDER BY MessageID DESC"
-        cur.execute(query, params)
-        data = cur.fetchone()
-        if data is not None:
-            return Message(*data)
         return None

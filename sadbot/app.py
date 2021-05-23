@@ -3,7 +3,6 @@
 import glob
 import json
 import re
-import sqlite3
 import time
 from os.path import dirname, basename, isfile, join
 from typing import Optional, Dict
@@ -11,6 +10,7 @@ from typing import Optional, Dict
 import requests
 
 from sadbot.message import Message
+from sadbot.message_repository import MessageRepository
 from sadbot.commands import *
 
 
@@ -20,29 +20,12 @@ def snake_to_pascal_case(snake_str: str):
     return "".join(x.title() for x in components[0:])
 
 
-def _create_func(x_val, y_val) -> int:
-    """Lambda function for the regex query"""
-    return 1 if re.search(x_val, y_val) else 0
-
-
 class App:
-    """Main app class. when called it starts the bot"""
+    """Main app class, starts the bot when it's called"""
 
-    def __init__(self, token: str) -> None:
-        self.con = sqlite3.connect("./messages.db")
-        self.con.create_function("regexp", 2, _create_func)
+    def __init__(self, message_repository: MessageRepository, token: str) -> None:
         self.base_url = f"https://api.telegram.org/bot{token}/"
-        self.con.execute(
-            """
-            CREATE TABLE IF NOT EXISTS messages (
-              MessageID        integer,
-              SenderName       text,
-              SenderID         int,
-              ChatID           integer,
-              Message          text,
-              ReplyToMessageID int
-            )"""
-        )
+        self.message_repository = message_repository
         self.commands = []
         self.load_commands()
         self.start_bot()
@@ -56,7 +39,7 @@ class App:
             command_class = getattr(
                 globals()[command_name],
                 snake_to_pascal_case(command_name) + "BotCommand",
-            )(self.con)
+            )(self.message_repository)
             self.commands.append(
                 {"regex": command_class.get_regex, "class": command_class}
             )
@@ -103,31 +86,6 @@ class App:
                 return None
         return None
 
-    def insert_message(self, message: Message) -> None:
-        """Inserts a message into the database"""
-        query = """
-          INSERT INTO messages (
-            MessageID,
-            SenderName,
-            SenderID,
-            ChatID,
-            Message,
-            ReplyToMessageID
-          ) VALUES (?, ?, ?, ?, ?, ?)
-        """
-        self.con.execute(
-            query,
-            (
-                message.id,
-                message.sender_name,
-                message.sender_id,
-                message.chat_id,
-                message.text,
-                message.reply_id,
-            ),
-        )
-        self.con.commit()
-
     def start_bot(self) -> None:
         """Starts the bot"""
         update_id = None
@@ -153,7 +111,7 @@ class App:
                     message.get("reply_to_message", {}).get("message_id"),
                 )
                 reply = self.get_reply(message)
-                self.insert_message(message)
+                self.message_repository.insert_message(message)
                 if not reply:
                     continue
 
@@ -169,5 +127,5 @@ class App:
                         reply,
                         None,
                     )
-                    self.insert_message(message)
+                    self.message_repository.insert_message(message)
             time.sleep(1)
