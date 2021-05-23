@@ -16,8 +16,14 @@ pip3 install -r requirements.txt \
 You have to place your bot token either in the environment variables or in the
 config files:
 ```
-sed -i 's/placeholder/YOURTOKENHERE/' config.py
+sed -i 's/tokenplaceholder/YOURTOKENHERE/' config.py
 sed -i 's/placeholder/YOURTOKENHERE/' Dockerfile # If you are using Docker/Podman
+```
+
+Add a Youtube Channel and RSS feed for the .cringe command
+```
+sed -i 's/channelplaceholder/CHANNELURL/' config.py
+sed -i 's/rssplaceholder/RSSLINK/' config.py
 ```
 
 ## Usage

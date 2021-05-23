@@ -9,6 +9,7 @@ from typing import Optional, Dict
 
 import requests
 
+from sadbot.config import CRINGE_CHANNEL, CRINGE_RSS
 from sadbot.message import Message
 from sadbot.message_repository import MessageRepository
 from sadbot.commands import *
