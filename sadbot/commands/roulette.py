@@ -13,16 +13,20 @@ from sadbot.functions import safe_cast
 
 
 class Revolver:
+    """This is the revolver class"""
     def __init__(self, capacity: int) -> None:
+        """Initializes a revolver"""
         self.capacity = capacity
         self.drum = [0] * self.capacity
         self.fired = 0
 
     def set_capacity(self, capacity: int) -> str:
+        """Changes the revolver's capacity"""
         self.__init__(capacity)
         return "Changed revolver capacity. "
 
     def reload(self, bullets: int) -> str:
+        """Reoloads the revolver bullets"""
         if bullets >= self.capacity:
             return "There are too many bullets, y'all would be dead lmao"
         for i in range(0, bullets):
@@ -32,6 +36,7 @@ class Revolver:
         return "Reloaded!"
 
     def shoot(self) -> str:
+        """Shoots"""
         if self.fired > self.capacity - 1:
             return "No more bullets, you have to .reload"
         self.fired = self.fired + 1
@@ -44,6 +49,7 @@ class RouletteBotCommand(CommandsInterface):
     """This is the roulette bot command class"""
 
     def __init__(self, message_repository: MessageRepository):
+        """Initializes the roulette bot command class"""
         self.message_repository = message_repository
         self.bullets = REVOLVER_BULLETS
         self.revolvers = {}
@@ -51,7 +57,8 @@ class RouletteBotCommand(CommandsInterface):
     @property
     def command_regex(self) -> str:
         """Returns the regex for matching the roulette command"""
-        return r"(\.[Rr]([Oo][Uu][Ll][Ee][Tt]{2}[Ee]|[Ee][Ll][Oo][Aa][Dd]|[Ee][Vv][Oo][Ll][Vv][Ee][Rr]\s[0-9]+)).*"
+        return r"(\.[Rr]([Oo][Uu][Ll][Ee][Tt]{2}[Ee]|[Ee][Ll][Oo][Aa][Dd]|[Ee][Vv]\
+        [Oo][Ll][Vv][Ee][Rr]\s[0-9]+)).*"
 
     @property
     def parsemode(self) -> Optional[str]:
@@ -70,7 +77,7 @@ class RouletteBotCommand(CommandsInterface):
             bullets = bullets.replace(" ", "")
             bullets = safe_cast(bullets, int, self.bullets)
             return revolver.reload(bullets)
-        elif re.fullmatch(
+        if re.fullmatch(
             re.compile(r"(\.[Rr][Ee][Vv][Oo][Ll][Vv][Ee][Rr]\s[0-9]+)"), message.text
         ):
             capacity = message.text[9:]
