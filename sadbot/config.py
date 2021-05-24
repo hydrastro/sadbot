@@ -8,3 +8,5 @@ ECELEBS = [
         "prefix": "prefixplaceholder",
     },
 ]
+REVOLVER_CHAMBERS = 6
+REVOLVER_BULLETS = 1

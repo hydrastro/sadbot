@@ -64,3 +64,5 @@ sudo docker run -it sadbot
 - [ ] Eval command
 - [ ] Weather command
 - [ ] Status command
+- [ ] Seen command
+- [ ] Tay command
