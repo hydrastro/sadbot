@@ -9,6 +9,7 @@ from sadbot.commands.interface import CommandsInterface
 from sadbot.message import Message
 from sadbot.message_repository import MessageRepository
 from sadbot.config import REVOLVER_CHAMBERS, REVOLVER_BULLETS
+from sadbot.functions import safe_cast
 
 
 class Revolver:
@@ -17,9 +18,13 @@ class Revolver:
         self.drum = [0] * self.capacity
         self.fired = 0
 
+    def set_capacity(self, capacity: int) -> str:
+        self.__init__(capacity)
+        return "Changed revolver capacity. "
+
     def reload(self, bullets: int) -> str:
-        if bullets > self.capacity:
-            return "There are too many bullets lmao"
+        if bullets >= self.capacity:
+            return "There are too many bullets, y'all would be dead lmao"
         for i in range(0, bullets):
             self.drum[i] = 1
         random.shuffle(self.drum)
@@ -40,14 +45,13 @@ class RouletteBotCommand(CommandsInterface):
 
     def __init__(self, message_repository: MessageRepository):
         self.message_repository = message_repository
-        self.revolver = Revolver(REVOLVER_CHAMBERS)
         self.bullets = REVOLVER_BULLETS
-        self.revolver.reload(self.bullets)
+        self.revolvers = {}
 
     @property
     def command_regex(self) -> str:
         """Returns the regex for matching the roulette command"""
-        return r"(\.[Rr]([Oo][Uu][Ll][Ee][Tt]{2}[Ee]|[Ee][Ll][Oo][Aa][Dd])).*"
+        return r"(\.[Rr]([Oo][Uu][Ll][Ee][Tt]{2}[Ee]|[Ee][Ll][Oo][Aa][Dd]|[Ee][Vv][Oo][Ll][Vv][Ee][Rr]\s[0-9]+)).*"
 
     @property
     def parsemode(self) -> Optional[str]:
@@ -56,6 +60,21 @@ class RouletteBotCommand(CommandsInterface):
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[str]:
         """Plays the Russian roulette"""
+        if message.chat_id not in self.revolvers:
+            revolver = Revolver(REVOLVER_CHAMBERS)
+            revolver.reload(self.bullets)
+            self.revolvers.update({message.chat_id: revolver})
+        revolver = self.revolvers[message.chat_id]
         if re.fullmatch(re.compile(r"(\.[Rr][Ee][Ll][Oo][Aa][Dd]).*"), message.text):
-            return self.revolver.reload(self.bullets)
-        return self.revolver.shoot()
+            bullets = message.text[7:]
+            bullets = bullets.replace(" ", "")
+            bullets = safe_cast(bullets, int, self.bullets)
+            return revolver.reload(bullets)
+        elif re.fullmatch(
+            re.compile(r"(\.[Rr][Ee][Vv][Oo][Ll][Vv][Ee][Rr]\s[0-9]+)"), message.text
+        ):
+            capacity = message.text[9:]
+            capacity = capacity.replace(" ", "")
+            capacity = safe_cast(capacity, int, REVOLVER_CHAMBERS)
+            return revolver.set_capacity(capacity) + revolver.reload(self.bullets)
+        return revolver.shoot()
