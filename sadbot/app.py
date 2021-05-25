@@ -12,6 +12,7 @@ import requests
 from sadbot.message import Message
 from sadbot.message_repository import MessageRepository
 from sadbot.commands import *
+from sadbot.config import MAX_REPLY_LENGTH
 
 
 def snake_to_pascal_case(snake_str: str):
@@ -62,6 +63,8 @@ class App:
         """Sends message to some chat using api"""
         if not message:
             return None
+        if len(message.text) > MAX_REPLY_LENGTH:
+            message.text = message.text[:80] + "..."
 
         data = {"chat_id": message.chat_id, "text": message.text}
         if parsemode is not None:
