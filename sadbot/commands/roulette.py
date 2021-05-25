@@ -14,6 +14,7 @@ from sadbot.functions import safe_cast
 
 class Revolver:
     """This is the revolver class"""
+
     def __init__(self, capacity: int) -> None:
         """Initializes a revolver"""
         self.capacity = capacity
