@@ -14,13 +14,13 @@ pip3 install -r requirements.txt \
 
 ## Installation
 You have to place your bot token either in the environment variables or in the
-config files:
+config files, by manually editing them:
 ```
-sed -i 's/tokenplaceholder/YOURTOKENHERE/' sadbot/config.py
-sed -i 's/placeholder/YOURTOKENHERE/' Dockerfile # If you are using Docker/Podman
+nano sadbot/config.py
+nano Dockerfile # If you are using Docker/Podman
 ```
-You can also configure the ecelebs for the `.cringe` command by editing the
-`sadbot/config.py` file.
+In the `sadbot/config.py` file you can also find the settings for configurable
+bot commands (like `cringe`, `roulette` etc.)
 
 
 ## Usage
@@ -60,9 +60,15 @@ sudo docker run -it sadbot
 
 ## Todo list
 - [ ] Add media support for outgoing messages
-- [ ] Fix the roulette code
+- [X] Fix the roulette code
 - [ ] Eval command
 - [ ] Weather command
 - [ ] Status command
 - [ ] Seen command
 - [ ] Tay command
+- [ ] User ratelimit
+- [ ] Group ratelimit
+- [ ] Antiflood, samewords count and newlines count
+- [ ] FBI watchlist
+- [ ] Captcha command
+- [X] Translate command
