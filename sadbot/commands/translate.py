@@ -1,4 +1,4 @@
-"""4channel bot command"""
+"""Translate bot command"""
 
 import requests
 import re

@@ -1,4 +1,4 @@
-"""4channel bot command"""
+"""Channel bot command"""
 
 import requests
 import re
@@ -13,7 +13,7 @@ from sadbot.message_repository import MessageRepository
 
 
 class ChannelBotCommand(CommandsInterface):
-    """This is the amogus bot command class"""
+    """This is the channel bot command class"""
 
     def __init__(self, message_repository: MessageRepository):
         self.message_repository = message_repository
@@ -29,7 +29,7 @@ class ChannelBotCommand(CommandsInterface):
         return "MarkdownV2"
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[str]:
-        """4channel"""
+        """Retrieve the description of a 4channel thread"""
         try:
             m = re.findall(r"https://boards.4channel.org/.*?/thread/[0-9]*", message.text)
             req = requests.get(m[0])

@@ -87,6 +87,7 @@ class MessageRepository:
         return None
 
     def get_reply_message(self, message:Message) -> Optional[Message]:
+      """Retrieve the reply to a message from DB"""
       cur = self.con.cursor()
       query = """
           SELECT
