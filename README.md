@@ -72,3 +72,8 @@ sudo docker run -it sadbot
 - [ ] FBI watchlist
 - [ ] Captcha command
 - [X] Translate command
+
+## Contributing
+Pull requests are welcome.  
+It's recommended to use `pylint` and `black` to cleanup and review the
+code before submitting.
