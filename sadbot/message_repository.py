@@ -85,3 +85,23 @@ class MessageRepository:
         if data is not None:
             return Message(*data)
         return None
+
+    def get_reply_message(self, message:Message) -> Optional[Message]:
+      cur = self.con.cursor()
+      query = """
+          SELECT
+            MessageID,
+            SenderName,
+            SenderID,
+            ChatID,
+            Message,
+            ReplyToMessageID
+          FROM messages
+          WHERE MessageID = ? and ChatID = ?
+      """
+      params = [message.reply_id, message.chat_id]
+      cur.execute(query, params)
+      data = cur.fetchone()
+      if data is not None:
+          return Message(*data)
+      return None
