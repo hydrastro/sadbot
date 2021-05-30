@@ -86,10 +86,10 @@ class MessageRepository:
             return Message(*data)
         return None
 
-    def get_reply_message(self, message:Message) -> Optional[Message]:
-      """Retrieve the reply to a message from DB"""
-      cur = self.con.cursor()
-      query = """
+    def get_reply_message(self, message: Message) -> Optional[Message]:
+        """Retrieve the reply to a message from DB"""
+        cur = self.con.cursor()
+        query = """
           SELECT
             MessageID,
             SenderName,
@@ -100,9 +100,10 @@ class MessageRepository:
           FROM messages
           WHERE MessageID = ? and ChatID = ?
       """
-      params = [message.reply_id, message.chat_id]
-      cur.execute(query, params)
-      data = cur.fetchone()
-      if data is not None:
-          return Message(*data)
-      return None
+        params = [message.reply_id, message.chat_id]
+        print(params)
+        cur.execute(query, params)
+        data = cur.fetchone()
+        if data is not None:
+            return Message(*data)
+        return None
