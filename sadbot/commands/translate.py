@@ -5,13 +5,14 @@ import re
 
 import requests
 
+import requests
 from sadbot.commands.interface import CommandsInterface
 from sadbot.message import Message
 from sadbot.message_repository import MessageRepository
 
 
 class TranslateBotCommand(CommandsInterface):
-    """This is the amogus bot command class"""
+    """This is the translate bot command class"""
 
     def __init__(self, message_repository: MessageRepository):
         self.message_repository = message_repository
@@ -19,7 +20,7 @@ class TranslateBotCommand(CommandsInterface):
     @property
     def command_regex(self) -> str:
         """Returns the regex for matching translate commands"""
-        return r"([.]|[!])tr(.*)"
+        return r"([.]|[!])[Tt]([Rr]|[Ll])(.*)"
 
     @property
     def parsemode(self) -> Optional[str]:
@@ -32,7 +33,7 @@ class TranslateBotCommand(CommandsInterface):
             reply_message = self.message_repository.get_reply_message(message)
             url = f"https://translate.google.com/m?q={reply_message.text}"
             req = requests.get(url)
-            ans = re.findall(r"result-container\">(.*?)</", req.text)
+            ans = "Translation: " + re.findall(r"result-container\">(.*?)</", req.text)
             return ans[0]
-        except:
+        except (re.error, requests.ConnectionError):
             return None

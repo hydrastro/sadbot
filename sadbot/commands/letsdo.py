@@ -26,6 +26,8 @@ class LetsdoBotCommand(CommandsInterface):
     def get_reply(self, message: Optional[Message] = None) -> Optional[str]:
         """Returns letsdo"""
         this = message.text[8:]
-        return f"""let's do
-        {this}! {this} {this} toe {this} banana 
-        fanna foe f{this[1:]} me my moe m{this[1:]}, {this}"""
+        return (
+            f"let's do {this}! {this} {this} toe "
+            f"{this} banana fanna foe f{this[1:]} "
+            f"me my moe m{this[1:]}, {this}"
+        )
