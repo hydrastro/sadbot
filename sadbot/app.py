@@ -81,24 +81,25 @@ class App:
 
         return json.loads(req.content)
 
-    def get_reply(self, message: Message) -> Optional[dict]:
+    def get_replies(self, message: Message) -> Optional[dict]:
         """Checks if a bot command is triggered and gets its reply"""
         text = message.text
         if not text:
             return None
+        messages = []
         for command in self.commands:
             try:
                 if re.fullmatch(re.compile(command["regex"]), text):
                     reply_message = command["class"].get_reply(message)
                     if reply_message is None:
-                        return None
-                    return {
+                        continue
+                    messages.append({
                         "message": reply_message,
                         "parsemode": command["class"].parsemode,
-                    }
+                    }) 
             except re.error:
                 return None
-        return None
+        return messages
 
     def start_bot(self) -> None:
         """Starts the bot"""
@@ -124,25 +125,25 @@ class App:
                     text,
                     message.get("reply_to_message", {}).get("message_id"),
                 )
-                reply_info = self.get_reply(message)
+                replies_info = self.get_replies(message)
                 self.message_repository.insert_message(message)
-                if reply_info is None:
+                if replies_info is None:
                     continue
-
-                reply = reply_info["message"]
-                new_message = Message(chat_id=message.chat_id, text=reply)
-                sent_message = (
-                    self.send_message(new_message, reply_info["parsemode"]) or {}
-                )
-                if sent_message.get("result"):
-                    result = sent_message.get("result")
-                    message = Message(
-                        result["message_id"],
-                        result["from"]["first_name"],
-                        result["from"]["id"],
-                        message.chat_id,
-                        reply,
-                        None,
+                for reply_info in replies_info:
+                    reply = reply_info["message"]
+                    new_message = Message(chat_id=message.chat_id, text=reply)
+                    sent_message = (
+                        self.send_message(new_message, reply_info["parsemode"]) or {}
                     )
-                    self.message_repository.insert_message(message)
+                    if sent_message.get("result"):
+                        result = sent_message.get("result")
+                        message = Message(
+                            result["message_id"],
+                            result["from"]["first_name"],
+                            result["from"]["id"],
+                            message.chat_id,
+                            reply,
+                            None,
+                        )
+                        self.message_repository.insert_message(message)
             time.sleep(1)

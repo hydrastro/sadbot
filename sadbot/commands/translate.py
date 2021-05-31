@@ -1,11 +1,9 @@
 """Translate bot command"""
 
-import requests
-import re
-import html
-import markdownify
-
 from typing import Optional
+import re
+
+import requests
 
 from sadbot.commands.interface import CommandsInterface
 from sadbot.message import Message
@@ -31,11 +29,10 @@ class TranslateBotCommand(CommandsInterface):
     def get_reply(self, message: Optional[Message] = None) -> Optional[str]:
         """Get the translation"""
         try:
-            m = self.message_repository.get_reply_message(message)
-            lang = m.text[4:]
-            url = f"https://translate.google.com/m?q={m.text}"
+            reply_message = self.message_repository.get_reply_message(message)
+            url = f"https://translate.google.com/m?q={reply_message.text}"
             req = requests.get(url)
             ans = re.findall(r"result-container\">(.*?)</", req.text)
             return ans[0]
         except:
-            return ""
+            return None

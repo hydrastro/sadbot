@@ -1,11 +1,11 @@
 """Channel bot command"""
 
-import requests
 import re
 import html
-import markdownify
-
 from typing import Optional
+
+import requests
+import markdownify
 
 from sadbot.commands.interface import CommandsInterface
 from sadbot.message import Message
@@ -31,11 +31,11 @@ class ChannelBotCommand(CommandsInterface):
     def get_reply(self, message: Optional[Message] = None) -> Optional[str]:
         """Retrieve the description of a 4channel thread"""
         try:
-            m = re.findall(r"https://boards.4channel.org/.*?/thread/[0-9]*", message.text)
-            req = requests.get(m[0])
-            list = re.findall(r'post op".*?fileThumb.*?img src=\"[/][/](.*?)\" alt.*?blockquote .*?>(.*?)<[/]blockquote', req.text)
-            text = html.unescape(list[0][1])
+            url = re.findall(r"https://boards.4channel.org/.*?/thread/[0-9]*", message.text)[0]
+            req = requests.get(url)
+            post = re.findall(r'post op".*?fileThu.*?img src=\"[/][/](.*?)\" alt.*?bloc.*?>(.*?)<[/]blo', req.text)[0]
+            text = html.unescape(post[1])
             text = markdownify.markdownify(text)
-            return text + "\n" + "https://" + list[0][0] + "\n"
+            return text + "\n" + "https://" + post[0] + "\n"
         except:
-            return ""
+            return None
