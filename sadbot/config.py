@@ -1,6 +1,6 @@
 """Config file: here resides the bot token"""
 
-TOKEN = "1794848670:AAEjy3dSy6IVGOkZSbBHfvL9K_brS6g4SFE"
+TOKEN = ""
 MAX_REPLY_LENGTH = 150
 ECELEBS = [
     {
@@ -10,9 +10,7 @@ ECELEBS = [
     },
 ]
 FBI_WORDS = [
-    "oof",
-    "amogus",
-    "help"
+    "wordsplaceholder"
 ]
 REVOLVER_CHAMBERS = 6
 REVOLVER_BULLETS = 1
