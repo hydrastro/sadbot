@@ -1,6 +1,6 @@
 """Config file: here resides the bot token"""
 
-TOKEN = ""
+TOKEN = "tokenplaceholder"
 MAX_REPLY_LENGTH = 150
 ECELEBS = [
     {

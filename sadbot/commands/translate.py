@@ -5,7 +5,6 @@ import re
 
 import requests
 
-import requests
 from sadbot.commands.interface import CommandsInterface
 from sadbot.message import Message
 from sadbot.message_repository import MessageRepository

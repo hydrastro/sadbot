@@ -28,24 +28,24 @@ def get_table_creation_query() -> str:
 
 def fbi_table_creation_query() -> List[str]:
     """Return a list of queries"""
-    query_list = ["""
+    query_list = [
+        """
     CREATE TABLE IF NOT EXISTS fbi_words (
       ID         integer PRIMARY KEY,
       Word       TEXT
-    );"""]
+    );
+    CREATE TABLE IF NOT EXISTS fbi_entries (
+      SenderID     integer,
+      ChatID       integer,
+      WordID       integer,
+      Count        integer
+    );"""
+    ]
 
     for i in FBI_WORDS:
-        word_query = f"INSERT INTO fbi_words (Word) VALUES ('{i}')"
+        word_query = f"INSERT INTO fbi_words (Word) VALUES ('{i}');"
         query_list.append(word_query)
 
-    query_list.append("""
-      CREATE TABLE IF NOT EXISTS fbi_entries (
-        SenderID     integer,
-        ChatID       integer,
-        WordID       integer,
-        Count        integer
-      )
-    """)
     return query_list
 
 
@@ -58,6 +58,7 @@ class MessageRepository:
         self.con.create_function("regexp", 2, _create_func)
         self.con.execute(get_table_creation_query())
         for query in fbi_table_creation_query():
+            # this doesn't check if the fbi wordlist is already in the database
             self.con.execute(query)
 
     def insert_message(self, message: Message) -> None:
@@ -133,6 +134,9 @@ class MessageRepository:
             return Message(*data)
         return None
 
+    # all these fbi functions must be moved into the fbi command class
+    # and in order to do that, dependency injection is needed
+    # so I guess the time has come. I'll adjust everything in the next commits.
     def get_fbi_word_id(self, word: str) -> Optional[int]:
         """Retrive the WordID of the word"""
         cur = self.con.cursor()
@@ -164,7 +168,6 @@ class MessageRepository:
         cur = self.con.cursor()
         cur.execute(query, (message.sender_id, message.chat_id, word_id, 1))
         self.con.commit()
-        return None
 
     def update_fbi_entry(self, message: Message, word: str) -> None:
         """Update the count of an entry"""
@@ -181,5 +184,4 @@ class MessageRepository:
         query = """
         UPDATE fbi_entries SET count = ? WHERE SenderID = ? and ChatID = ? and WordID = ?
       """
-        self.con.execute(
-            query, (count, message.sender_id, message.chat_id, word_id))
+        self.con.execute(query, (count, message.sender_id, message.chat_id, word_id))

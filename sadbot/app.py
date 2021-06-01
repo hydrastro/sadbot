@@ -93,10 +93,12 @@ class App:
                     reply_message = command["class"].get_reply(message)
                     if reply_message is None:
                         continue
-                    messages.append({
-                        "message": reply_message,
-                        "parsemode": command["class"].parsemode,
-                    }) 
+                    messages.append(
+                        {
+                            "message": reply_message,
+                            "parsemode": command["class"].parsemode,
+                        }
+                    )
             except re.error:
                 return None
         return messages
@@ -135,6 +137,7 @@ class App:
                     sent_message = (
                         self.send_message(new_message, reply_info["parsemode"]) or {}
                     )
+                    time.sleep(1)
                     if sent_message.get("result"):
                         result = sent_message.get("result")
                         message = Message(

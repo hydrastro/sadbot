@@ -9,7 +9,7 @@ from sadbot.message_repository import MessageRepository
 
 
 class FbiBotCommand(CommandsInterface):
-    """This is the fbi bot command class"""
+    """This is the FBI bot command class"""
 
     def __init__(self, message_repository: MessageRepository):
         self.message_repository = message_repository
@@ -28,6 +28,7 @@ class FbiBotCommand(CommandsInterface):
         """Return nothing. Just add to the database"""
         forbidden_words = []
         for word in FBI_WORDS:
+            # the forbidden words should be case insensitive
             if word in message.text:
                 forbidden_words.append(word)
         for word in forbidden_words:

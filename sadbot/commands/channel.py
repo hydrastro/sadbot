@@ -21,7 +21,7 @@ class ChannelBotCommand(CommandsInterface):
     @property
     def command_regex(self) -> str:
         """Returns the regex for matching 4channel commands"""
-        return r".*https://boards.4channel.org/.*?/thread/[0-9]*?.*"
+        return r".*https://boards.4chan(nel)?.org/.*?/thread/[0-9]*?.*"
 
     @property
     def parsemode(self) -> Optional[str]:
@@ -31,11 +31,16 @@ class ChannelBotCommand(CommandsInterface):
     def get_reply(self, message: Optional[Message] = None) -> Optional[str]:
         """Retrieve the description of a 4channel thread"""
         try:
-            url = re.findall(r"https://boards.4channel.org/.*?/thread/[0-9]*", message.text)[0]
+            url = re.findall(
+                r"https://boards.4chan(nel)?.org/.*?/thread/[0-9]*", message.text
+            )[0]
             req = requests.get(url)
-            post = re.findall(r'post op".*?fileThu.*?img src=\"[/][/](.*?)\" alt.*?bloc.*?>(.*?)<[/]blo', req.text)[0]
+            post = re.findall(
+                r'post op".*?fileThu.*?img src=\"[/][/](.*?)\" alt.*?bloc.*?>(.*?)<[/]blo',
+                req.text,
+            )[0]
             text = html.unescape(post[1])
             text = markdownify.markdownify(text)
             return text + "\n" + "https://" + post[0] + "\n"
-        except:
+        except (re.error, requests.ConnectionError):
             return None
