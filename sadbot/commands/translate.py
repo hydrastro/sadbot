@@ -14,6 +14,7 @@ class TranslateBotCommand(CommandsInterface):
     """This is the translate bot command class"""
 
     def __init__(self, message_repository: MessageRepository):
+        """Initializes the transalte bot command class"""
         self.message_repository = message_repository
 
     @property

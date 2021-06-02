@@ -7,7 +7,6 @@ from typing import Optional
 
 from sadbot.commands.interface import CommandsInterface
 from sadbot.message import Message
-from sadbot.message_repository import MessageRepository
 from sadbot.config import REVOLVER_CHAMBERS, REVOLVER_BULLETS
 from sadbot.functions import safe_cast
 
@@ -49,9 +48,8 @@ class Revolver:
 class RouletteBotCommand(CommandsInterface):
     """This is the roulette bot command class"""
 
-    def __init__(self, message_repository: MessageRepository):
+    def __init__(self):
         """Initializes the roulette bot command class"""
-        self.message_repository = message_repository
         self.bullets = REVOLVER_BULLETS
         self.revolvers = {}
 
