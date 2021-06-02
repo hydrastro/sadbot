@@ -35,9 +35,12 @@ class ChannelBotCommand(CommandsInterface):
             post = re.findall(
                 r'post op".*?fileThu.*?img src=\"[/][/](.*?)\" alt.*?bloc.*?>(.*?)<[/]blo',
                 req.text,
-            )[0]
+            )
+            if not post:
+                return None
+            post = post[0]
             text = html.unescape(post[1])
             text = markdownify.markdownify(text)
-            return text + "\n" + "https://" + post[0] + "\n"
+            return "Post: " + text + "\n" + "https://" + post[0] + "\n"
         except (re.error, requests.ConnectionError):
             return None

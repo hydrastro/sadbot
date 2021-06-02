@@ -52,11 +52,8 @@ class CringeBotCommand(CommandsInterface):
         if not req.ok:
             print(f"Failed to get eceleb data - details: {req.text}")
             return None
-        data = re.findall(eceleb.regex, req.text)
-        print(req.text)
-        print(data)
+        data = re.findall(re.compile(eceleb.regex), req.text)
         if data is None:
-            print("Wrong regex")
             return None
         data = list(set(data))
         return f"{eceleb.prefix}{random.choice(data)}"
