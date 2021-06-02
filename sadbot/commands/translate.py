@@ -31,10 +31,16 @@ class TranslateBotCommand(CommandsInterface):
         """Get the translation"""
         try:
             reply_message = self.message_repository.get_reply_message(message)
-            url = f"https://translate.google.com/m?q={reply_message.text}"
+            if reply_message is None:
+                return None
+            lang = "en"
+            if len(message.text) > 4:
+                lang = message.text[4:]
+            url = f"https://translate.google.com/m?q={reply_message.text}&tl={lang}"
             req = requests.get(url)
-            return (
-                "Translation: " + re.findall(r"result-container\">(.*?)</", req.text)[0]
-            )
+            result = re.findall(r"result-container\">(.*?)</", req.text)
+            if not result:
+                return None
+            return "Translation: " + result[0]
         except (re.error, requests.ConnectionError):
             return None
