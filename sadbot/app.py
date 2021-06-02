@@ -29,7 +29,6 @@ class App:
         self.base_url = f"https://api.telegram.org/bot{token}/"
         self.classes = {}
         con = sqlite3.connect("./messages.db")
-        print(con)
         self.classes.update({"Connection": con})
         self.message_repository = MessageRepository(con)
         self.classes.update({"MessageRepository": self.message_repository})
@@ -44,21 +43,16 @@ class App:
             if command_name in ("__init__", "interface"):
                 continue
             class_name = snake_to_pascal_case(command_name) + "BotCommand"
-            arguments = {}
+            arguments = []
             command_class = getattr(globals()[command_name], class_name)
-            print(f"{class_name} class dependencies: ")
             if command_class.__init__.__class__.__name__ == "function":
                 arguments_list = command_class.__init__.__annotations__
                 for argument_name in arguments_list:
-                    print(self.classes[arguments_list[argument_name].__name__])
-                    arguments.update(
-                        {
-                            argument_name: self.classes[
+                    arguments.append(
+                            self.classes[
                                 arguments_list[argument_name].__name__
                             ]
-                        }
                     )
-            print("\n")
             command_class = command_class(*arguments)
             self.commands.append(
                 {"regex": command_class.command_regex, "class": command_class}

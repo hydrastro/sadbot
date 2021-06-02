@@ -33,7 +33,6 @@ class TranslateBotCommand(CommandsInterface):
             reply_message = self.message_repository.get_reply_message(message)
             url = f"https://translate.google.com/m?q={reply_message.text}"
             req = requests.get(url)
-            ans = "Translation: " + re.findall(r"result-container\">(.*?)</", req.text)
-            return ans[0]
+            return "Translation: " + re.findall(r"result-container\">(.*?)</", req.text)[0]
         except (re.error, requests.ConnectionError):
             return None

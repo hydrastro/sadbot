@@ -34,7 +34,6 @@ class FbiBotCommand(CommandsInterface):
     """This is the FBI bot command class"""
 
     def __init__(self, con: sqlite3.Connection):
-        print(con)
         self.con = con
         self.con.execute(fbi_words_table_creation_query())
         self.con.execute(fbi_entries_table_creation_query())
@@ -66,11 +65,11 @@ class FbiBotCommand(CommandsInterface):
 
     def initialize_forbidden_words(self):
         """Initializes the forbidden words table, inserting new words it there are any"""
-        for word in FBI_WORDS:
-            print(word)
-            if self.get_fbi_word_id(word) is None:
-                print("INSERTING")
-                self.con.execute(f"INSERT INTO fbi_words (Word) VALUES ('{word}')")
+        cur = self.con.cursor()
+        for forbidden_word in FBI_WORDS:
+            if self.get_fbi_word_id(forbidden_word) is None:
+                cur.execute("INSERT INTO fbi_words (Word) VALUES (?)", [forbidden_word])
+                self.con.commit()
 
     def get_fbi_word_id(self, word: str) -> Optional[int]:
         """Retrive the WordID of the word"""
@@ -82,8 +81,10 @@ class FbiBotCommand(CommandsInterface):
           WHERE Word = ?
         """
         row = cur.execute(query, (word,))
-        word_id = row.fetchone()[0]
-        return word_id
+        word_id = row.fetchone()
+        if not word_id:
+            return None
+        return word_id[0]
 
     def get_fbi_entry(self, message: Message, word: str) -> Optional[str]:
         """Retrieve an entry from the DB or None if there's no entry with that info"""
