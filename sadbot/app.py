@@ -3,6 +3,7 @@
 import glob
 import json
 import re
+import sqlite3
 import time
 from os.path import dirname, basename, isfile, join
 from typing import Optional, Dict
@@ -12,7 +13,7 @@ import requests
 from sadbot.message import Message
 from sadbot.message_repository import MessageRepository
 from sadbot.commands import *
-from sadbot.config import MAX_REPLY_LENGTH
+from sadbot.config import MAX_REPLY_LENGTH, UPDATES_TIMEOUT
 
 
 def snake_to_pascal_case(snake_str: str):
@@ -24,9 +25,13 @@ def snake_to_pascal_case(snake_str: str):
 class App:
     """Main app class, starts the bot when it's called"""
 
-    def __init__(self, message_repository: MessageRepository, token: str) -> None:
+    def __init__(self, token: str) -> None:
         self.base_url = f"https://api.telegram.org/bot{token}/"
-        self.message_repository = message_repository
+        self.classes = {}
+        con = sqlite3.connect("./messages.db")
+        self.classes.update({"Connection": con})
+        self.message_repository = MessageRepository(con)
+        self.classes.update({"MessageRepository": self.message_repository})
         self.commands = []
         self.load_commands()
         self.start_bot()
@@ -37,17 +42,23 @@ class App:
         for command_name in [basename(f)[:-3] for f in commands if isfile(f)]:
             if command_name in ("__init__", "interface"):
                 continue
-            command_class = getattr(
-                globals()[command_name],
-                snake_to_pascal_case(command_name) + "BotCommand",
-            )(self.message_repository)
+            class_name = snake_to_pascal_case(command_name) + "BotCommand"
+            arguments = []
+            command_class = getattr(globals()[command_name], class_name)
+            if command_class.__init__.__class__.__name__ == "function":
+                arguments_list = command_class.__init__.__annotations__
+                for argument_name in arguments_list:
+                    arguments.append(
+                        self.classes[arguments_list[argument_name].__name__]
+                    )
+            command_class = command_class(*arguments)
             self.commands.append(
                 {"regex": command_class.command_regex, "class": command_class}
             )
 
     def get_updates(self, offset: Optional[int] = None) -> Optional[Dict]:
         """Retrieves updates from the telelegram API"""
-        url = f"{self.base_url}getUpdates?timeout=50"
+        url = f"{self.base_url}getUpdates?timeout={UPDATES_TIMEOUT}"
         if offset:
             url = f"{url}&offset={offset + 1}"
         req = requests.get(url)
@@ -81,24 +92,27 @@ class App:
 
         return json.loads(req.content)
 
-    def get_reply(self, message: Message) -> Optional[dict]:
+    def get_replies(self, message: Message) -> Optional[dict]:
         """Checks if a bot command is triggered and gets its reply"""
         text = message.text
         if not text:
             return None
+        messages = []
         for command in self.commands:
             try:
                 if re.fullmatch(re.compile(command["regex"]), text):
                     reply_message = command["class"].get_reply(message)
                     if reply_message is None:
-                        return None
-                    return {
-                        "message": reply_message,
-                        "parsemode": command["class"].parsemode,
-                    }
+                        continue
+                    messages.append(
+                        {
+                            "message": reply_message,
+                            "parsemode": command["class"].parsemode,
+                        }
+                    )
             except re.error:
                 return None
-        return None
+        return messages
 
     def start_bot(self) -> None:
         """Starts the bot"""
@@ -124,25 +138,25 @@ class App:
                     text,
                     message.get("reply_to_message", {}).get("message_id"),
                 )
-                reply_info = self.get_reply(message)
+                replies_info = self.get_replies(message)
                 self.message_repository.insert_message(message)
-                if reply_info is None:
+                if replies_info is None:
                     continue
-
-                reply = reply_info["message"]
-                new_message = Message(chat_id=message.chat_id, text=reply)
-                sent_message = (
-                    self.send_message(new_message, reply_info["parsemode"]) or {}
-                )
-                if sent_message.get("result"):
-                    result = sent_message.get("result")
-                    message = Message(
-                        result["message_id"],
-                        result["from"]["first_name"],
-                        result["from"]["id"],
-                        message.chat_id,
-                        reply,
-                        None,
+                for reply_info in replies_info:
+                    reply = reply_info["message"]
+                    new_message = Message(chat_id=message.chat_id, text=reply)
+                    sent_message = (
+                        self.send_message(new_message, reply_info["parsemode"]) or {}
                     )
-                    self.message_repository.insert_message(message)
+                    if sent_message.get("result"):
+                        result = sent_message.get("result")
+                        message = Message(
+                            result["message_id"],
+                            result["from"]["first_name"],
+                            result["from"]["id"],
+                            message.chat_id,
+                            reply,
+                            None,
+                        )
+                        self.message_repository.insert_message(message)
             time.sleep(1)

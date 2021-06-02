@@ -69,9 +69,11 @@ sudo docker run -it sadbot
 - [ ] User ratelimit
 - [ ] Group ratelimit
 - [ ] Antiflood, samewords count and newlines count
-- [ ] FBI watchlist
+- [X] FBI watchlist
 - [ ] Captcha command
 - [X] Translate command
+- [ ] Outgoing messages queue
+- [ ] Asynchronous processing
 
 ## Contributing
 Pull requests are welcome.  

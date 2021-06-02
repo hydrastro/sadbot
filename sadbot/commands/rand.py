@@ -6,15 +6,11 @@ from typing import Optional
 
 from sadbot.commands.interface import CommandsInterface
 from sadbot.message import Message
-from sadbot.message_repository import MessageRepository
 from sadbot.functions import safe_cast
 
 
 class RandBotCommand(CommandsInterface):
     """This is the rand bot command class"""
-
-    def __init__(self, message_repository: MessageRepository):
-        self.message_repository = message_repository
 
     @property
     def command_regex(self) -> str:

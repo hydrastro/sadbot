@@ -1,10 +1,10 @@
 """Translate bot command"""
 
+from typing import Optional
 import re
 
-from typing import Optional
-
 import requests
+
 from sadbot.commands.interface import CommandsInterface
 from sadbot.message import Message
 from sadbot.message_repository import MessageRepository
@@ -14,6 +14,7 @@ class TranslateBotCommand(CommandsInterface):
     """This is the translate bot command class"""
 
     def __init__(self, message_repository: MessageRepository):
+        """Initializes the transalte bot command class"""
         self.message_repository = message_repository
 
     @property
@@ -29,13 +30,11 @@ class TranslateBotCommand(CommandsInterface):
     def get_reply(self, message: Optional[Message] = None) -> Optional[str]:
         """Get the translation"""
         try:
-            untranslated = self.message_repository.get_reply_message(message)
-            print(untranslated)
-            lang = message.text[4:]
-            url = f"https://translate.google.com/m?q={untranslated.text}&tl={lang}"
-            print(url)
+            reply_message = self.message_repository.get_reply_message(message)
+            url = f"https://translate.google.com/m?q={reply_message.text}"
             req = requests.get(url)
-            ans = "Translation: " + re.findall(r"result-container\">(.*?)</", req.text)
-            return ans[0]
+            return (
+                "Translation: " + re.findall(r"result-container\">(.*?)</", req.text)[0]
+            )
         except (re.error, requests.ConnectionError):
             return None

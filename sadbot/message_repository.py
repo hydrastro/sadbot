@@ -22,15 +22,16 @@ def get_table_creation_query() -> str:
       ChatID           integer,
       Message          text,
       ReplyToMessageID int
-    )"""
+    )
+    """
 
 
 class MessageRepository:
     """This class handles the messages database"""
 
-    def __init__(self) -> None:
+    def __init__(self, con: sqlite3.Connection) -> None:
         """Initializes the message repository class"""
-        self.con = sqlite3.connect("./messages.db")
+        self.con = con
         self.con.create_function("regexp", 2, _create_func)
         self.con.execute(get_table_creation_query())
 
@@ -98,10 +99,9 @@ class MessageRepository:
             Message,
             ReplyToMessageID
           FROM messages
-          WHERE MessageID = ? and ChatID = ?
-      """
+          WHERE MessageID = ? AND ChatID = ?
+        """
         params = [message.reply_id, message.chat_id]
-        print(params)
         cur.execute(query, params)
         data = cur.fetchone()
         if data is not None:
