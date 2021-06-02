@@ -72,6 +72,8 @@ sudo docker run -it sadbot
 - [X] FBI watchlist
 - [ ] Captcha command
 - [X] Translate command
+- [ ] Outgoing messages queue
+- [ ] Asynchronous processing
 
 ## Contributing
 Pull requests are welcome.  

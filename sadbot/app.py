@@ -49,9 +49,7 @@ class App:
                 arguments_list = command_class.__init__.__annotations__
                 for argument_name in arguments_list:
                     arguments.append(
-                            self.classes[
-                                arguments_list[argument_name].__name__
-                            ]
+                        self.classes[arguments_list[argument_name].__name__]
                     )
             command_class = command_class(*arguments)
             self.commands.append(
@@ -150,7 +148,6 @@ class App:
                     sent_message = (
                         self.send_message(new_message, reply_info["parsemode"]) or {}
                     )
-                    time.sleep(1)
                     if sent_message.get("result"):
                         result = sent_message.get("result")
                         message = Message(
