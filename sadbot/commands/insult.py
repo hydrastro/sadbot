@@ -14,7 +14,7 @@ class InsultBotCommand(CommandsInterface):
     @property
     def command_regex(self) -> str:
         """Returns the regex for matching insults"""
-        return r".*(([Bb][Aa][Dd]|[Ss][Tt][Uu][Pp][Ii][Dd])(\s+[Bb][Oo][Tt])).*"
+        return r".*(([Bb][Aa][Dd]|[Ss][Tt][Uu][Pp][Ii][Dd]|[Ss][Hh][Ii][Tt])(\s+[Bb][Oo][Tt])).*"
 
     @property
     def parsemode(self) -> Optional[str]:
