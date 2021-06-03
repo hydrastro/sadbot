@@ -12,7 +12,6 @@ import requests
 
 from sadbot.message import Message
 from sadbot.message_repository import MessageRepository
-from sadbot.commands import *
 from sadbot.config import MAX_REPLY_LENGTH, UPDATES_TIMEOUT
 
 
@@ -44,7 +43,10 @@ class App:
                 continue
             class_name = snake_to_pascal_case(command_name) + "BotCommand"
             arguments = []
-            command_class = getattr(globals()[command_name], class_name)
+            command_class = getattr(
+                __import__("sadbot.commands." + command_name, fromlist=[class_name]),
+                class_name,
+            )
             if command_class.__init__.__class__.__name__ == "function":
                 arguments_list = command_class.__init__.__annotations__
                 for argument_name in arguments_list:
