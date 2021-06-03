@@ -58,6 +58,69 @@ Then you can easily start the bot with:
 sudo docker run -it sadbot
 ```
 
+## Contributing
+Pull requests are welcome.  
+It's recommended to use `pylint` and `black` to cleanup and review the
+code before submitting.
+
+### Writing a new bot command
+If you want to add a new command you just have to write a new module file in the
+commands directory.  
+Here is a sample bot command, `sample_command.py`, it's code is pretty
+self-explanatory:
+```
+"""Sample bot command"""
+# these imports are optional:
+import re
+import sqlite3
+
+# these imports are required in every module:
+from typing import Optional
+
+from sadbot.commands import CommandsInterface
+from sadbot.message import Message
+
+# the class name must be the pascal case of the module filename + "BotCommand"
+class SampleCommandBotCommand(CommandsInterface):
+    """This is the sample command bot command class"""
+
+    # the constructor is not required, but if the bot command need some
+    # dependencies, they will be automatically injected through it
+    def __init__(self, con: sqlite3.Connection):
+        self.con = con
+
+    @property
+    def command_regex(self) -> str:
+        # here is the regex that triggers this bot command
+        regex = r""
+        return regex
+
+    @property
+    def parsemode(self) -> Optional[str]:
+        # here is the bot reply parsemode: it can be None, HTML, Markdown
+        # (deprecated) or MarkdownV2
+        parsemode = None
+        return parsemode
+
+    def get_reply(self, message: Optional[Message] = None) -> Optional[str]:
+        reply = "" # here is the reply that will be sent by the bot
+        # this is an example on how you can process the message that triggered
+        # the command to get a custom reply
+        pattern = message.message[4:]
+        cur = self.con.cursor()
+        cur.execute("SELECT Message FROM messages WHERE Message REGEXP ? \
+                          AND ChatID = ?", [pattern, message.chat_id])
+        result = cur.fetchone()
+        if result is None:
+            return None
+        result = Message(*result)
+        try:
+            reply = re.sub(r"(\w{3})", r"\1w", result.text)
+        except re.error:
+            reply = none
+        return reply
+```
+
 ## Todo list
 - [ ] Add media support for outgoing messages
 - [X] Fix the roulette code
@@ -79,80 +142,3 @@ sudo docker run -it sadbot
 - [ ] Beaver command
 - [ ] Reminder tag/bookmark command
 
-## Contributing
-Pull requests are welcome.  
-It's recommended to use `pylint` and `black` to cleanup and review the
-code before submitting.
-
-### Writing a new bot command
-If you want to add a new command you just have to write a new module file.  
-Here is a sample bot command, `sample_command.py`, it's pretty self explanatory:
-```
-"""Sample bot command"""
-# these imports are required in every module
-from typing import Optional
-
-from sadbot.commands import CommandsInterface
-from sadbot.message import Message
-
-
-class SampleCommandBotCommand(CommandsInterface): # the class name must be the
-pascal case of the module filename + "BotCommand"
-    """This is the sample command bot command class"""
-
-    @property
-    def command_regex(self) -> str:
-        regex = r"" # here is the regex that triggers this bot command
-        return regex
-
-    @property
-    def parsemode(self) -> Optional[str]:
-        parsemode = None # here is the bot reply parsemode: it can be None,
-HTML, Markdown (deprecated) or MarkdownV2
-        return parsemode
-
-    def get_reply(self, message: Optional[Message] = None) -> Optional[str]:
-        reply = "" # here is the reply that will be sent by the bot
-        return reply
-```
-Here is the same example with some dependencies and more code manipulation:
-```
-"""Sample bot command"""
-# here are some unrequired imports
-import re
-import sqlite3
-
-# these imports are required in every module
-from typing import Optional
-
-from sadbot.commands import CommandsInterface
-from sadbot.message import Message
-
-
-class SampleCommandBotCommand(CommandsInterface): # the class name must be the
-pascal case of the module filename + "BotCommand"
-    """This is the sample command bot command class"""
-
-    # the constructor is not required, but if the bot command need some
-dependencies, they will be automatically injected through it
-    def __init__(self, message_repository: MessageRepository, con: sqlite3.Connection):
-        self.message_repository = message_repository
-        self.con = con
-
-    @property
-    def command_regex(self) -> str:
-        regex = r"" # here is the regex that triggers this bot command
-        return regex
-
-    @property
-    def parsemode(self) -> Optional[str]:
-        parsemode = None # here is the bot reply parsemode: it can be None,
-HTML, Markdown (deprecated) or MarkdownV2
-        return parsemode
-
-    def get_reply(self, message: Optional[Message] = None) -> Optional[str]:
-        reply = "" # here is the reply that will be sent by the bot
-        re.sub(r"(\w{3})", r"\1w", message.text) # this is an example on how you
-can process the message that triggered the command to get a custom reply
-        return reply
-```
