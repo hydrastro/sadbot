@@ -28,19 +28,15 @@ class ChannelBotCommand(CommandsInterface):
         """Retrieve the description of a 4channel thread"""
         try:
             url = re.findall(
-                r"https://boards.4chan(?:nel)?.org/.*?/thread/[0-9]*", message.text
-            )
-            url = url[0]
-            req = requests.get(url)
-            post = re.findall(
-                r'post op".*?fileThu.*?img src=\"[/][/](.*?)\" alt.*?bloc.*?>(.*?)<[/]blo',
+                r'post op".*?fileThu.*?href=\"[/][/](.*?)\".*?bloc.*?>(.*?)<[/]blo',
                 req.text,
             )
             if not post:
                 return None
             post = post[0]
+            image = post[0]
             text = html.unescape(post[1])
             text = markdownify.markdownify(text)
-            return "Post: " + text + "\n" + "https://" + post[0] + "\n"
+            return "Post: " + text + "\n" + "https://" + image + "\n"
         except (re.error, requests.ConnectionError):
             return None
