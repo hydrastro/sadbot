@@ -138,7 +138,7 @@ class SampleCommandBotCommand(CommandsInterface):
 - [ ] Outgoing messages queue
 - [ ] Asynchronous processing
 - [ ] Welcome messages
-- [ ] Big chan url pictures
+- [X] Big chan url pictures
 - [ ] Beaver command
 - [ ] Reminder tag/bookmark command
 
