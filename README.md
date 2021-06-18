@@ -141,4 +141,4 @@ class SampleCommandBotCommand(CommandsInterface):
 - [X] Big chan url pictures
 - [ ] Beaver command
 - [ ] Reminder tag/bookmark command
-
+- [ ] VC Radio
