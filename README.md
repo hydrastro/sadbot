@@ -79,12 +79,13 @@ from typing import Optional
 
 from sadbot.commands import CommandsInterface
 from sadbot.message import Message
+from sadbot.bot_reply import BotReply, BOT_REPLY_TYPE_TEXT
 
 # the class name must be the pascal case of the module filename + "BotCommand"
 class SampleCommandBotCommand(CommandsInterface):
     """This is the sample command bot command class"""
 
-    # the constructor is not required, but if the bot command need some
+    # the constructor is NOT required. Anyway if the bot command need some
     # dependencies, they will be automatically injected through it
     def __init__(self, con: sqlite3.Connection):
         self.con = con
@@ -94,13 +95,6 @@ class SampleCommandBotCommand(CommandsInterface):
         # here is the regex that triggers this bot command
         regex = r""
         return regex
-
-    @property
-    def parsemode(self) -> Optional[str]:
-        # here is the bot reply parsemode: it can be None, HTML, Markdown
-        # (deprecated) or MarkdownV2
-        parsemode = None
-        return parsemode
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[str]:
         reply = "" # here is the reply that will be sent by the bot
@@ -118,11 +112,15 @@ class SampleCommandBotCommand(CommandsInterface):
             reply = re.sub(r"(\w{3})", r"\1w", result.text)
         except re.error:
             reply = none
-        return reply
+        return BotReply(
+            BOT_REPLY_TYPE_TEXT,
+            reply_text=reply,
+            reply_text_parsemode,
+        )
 ```
 
 ## Todo list
-- [ ] Add media support for outgoing messages
+- [X] Add media support for outgoing messages
 - [X] Fix the roulette code
 - [ ] Eval command
 - [ ] Weather command
@@ -142,3 +140,5 @@ class SampleCommandBotCommand(CommandsInterface):
 - [ ] Beaver command
 - [ ] Reminder tag/bookmark command
 - [ ] VC Radio
+- [ ] Stay cool on weed questions
+- [ ] Group admin settings: enabled modules etc.
