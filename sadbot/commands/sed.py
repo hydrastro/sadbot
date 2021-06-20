@@ -4,12 +4,13 @@ import re
 
 from typing import Optional
 
-from sadbot.commands.interface import CommandsInterface
+from sadbot.command_interface import CommandInterface
 from sadbot.message import Message
 from sadbot.message_repository import MessageRepository
+from sadbot.bot_reply import BotReply, BOT_REPLY_TYPE_TEXT
 
 
-class SedBotCommand(CommandsInterface):
+class SedBotCommand(CommandInterface):
     """This is the sed bot command class"""
 
     def __init__(self, message_repository: MessageRepository):
@@ -20,12 +21,7 @@ class SedBotCommand(CommandsInterface):
         """Returns the regex for matching sed command"""
         return r"s/.*/.*[/g]*"
 
-    @property
-    def parsemode(self) -> Optional[str]:
-        """Returns the command parsemode"""
-        return None
-
-    def get_reply(self, message: Optional[Message] = None) -> Optional[str]:
+    def get_reply(self, message: Optional[Message] = None) -> Optional[BotReply]:
         """Performs the sed command on a given message"""
         replace_all = False
         text = message.text
@@ -55,7 +51,7 @@ class SedBotCommand(CommandsInterface):
             try:
                 reply = re.sub(old, new, reply_message.text, max_replace)
                 reply = "<" + reply_message.sender_name + ">: " + reply
-                return reply
+                return BotReply(BOT_REPLY_TYPE_TEXT, reply_text=reply)
             except re.error:
                 return None
         return None

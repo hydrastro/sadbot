@@ -2,17 +2,17 @@
 
 import random
 import re
-
 from typing import Optional
 from dataclasses import dataclass
 import requests
 
-from sadbot.commands.interface import CommandsInterface
+from sadbot.command_interface import CommandInterface
 from sadbot.message import Message
 from sadbot.config import ECELEBS
+from sadbot.bot_reply import BotReply, BOT_REPLY_TYPE_TEXT
 
 
-class CringeBotCommand(CommandsInterface):
+class CringeBotCommand(CommandInterface):
     """This is the schizo bot command class"""
 
     @property
@@ -25,7 +25,7 @@ class CringeBotCommand(CommandsInterface):
         """Returns the command parsemode"""
         return "HTML"
 
-    def get_reply(self, message: Optional[Message] = None) -> Optional[str]:
+    def get_reply(self, message: Optional[Message] = None) -> Optional[BotReply]:
         """Returns cringy stuff"""
 
         @dataclass
@@ -56,4 +56,6 @@ class CringeBotCommand(CommandsInterface):
         if data is None:
             return None
         data = list(set(data))
-        return f"{eceleb.prefix}{random.choice(data)}"
+        return BotReply(
+            BOT_REPLY_TYPE_TEXT, reply_text=f"{eceleb.prefix}{random.choice(data)}"
+        )

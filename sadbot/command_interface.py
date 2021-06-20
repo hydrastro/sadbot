@@ -3,9 +3,10 @@
 from typing import Optional
 
 from sadbot.message import Message
+from sadbot.bot_reply import BotReply
 
 
-class CommandsInterface:
+class CommandInterface:
     """This is the interface for the bot commands, every bot command module must implement
     these functions"""
 
@@ -13,9 +14,5 @@ class CommandsInterface:
     def command_regex(self) -> str:
         """Returns the regex string that triggers this command"""
 
-    @property
-    def parsemode(self) -> Optional[str]:
-        """Returns the command parsemode"""
-
-    def get_reply(self, message: Optional[Message] = None) -> Optional[str]:
+    def get_reply(self, message: Optional[Message] = None) -> Optional[BotReply]:
         """Returns the command output"""

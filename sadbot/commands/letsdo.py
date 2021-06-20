@@ -2,11 +2,12 @@
 
 from typing import Optional
 
-from sadbot.commands.interface import CommandsInterface
+from sadbot.command_interface import CommandInterface
 from sadbot.message import Message
+from sadbot.bot_reply import BotReply, BOT_REPLY_TYPE_TEXT
 
 
-class LetsdoBotCommand(CommandsInterface):
+class LetsdoBotCommand(CommandInterface):
     """This is the letsdo bot command class"""
 
     @property
@@ -14,16 +15,12 @@ class LetsdoBotCommand(CommandsInterface):
         """Returns the regex for matching letsdo commands"""
         return r"((!|\.)([Ll][Ee][Tt][Ss][Dd][Oo]\s+\w+))"
 
-    @property
-    def parsemode(self) -> Optional[str]:
-        """Returns the command parsemode"""
-        return None
-
-    def get_reply(self, message: Optional[Message] = None) -> Optional[str]:
+    def get_reply(self, message: Optional[Message] = None) -> Optional[BotReply]:
         """Returns letsdo"""
         this = message.text[8:]
-        return (
+        this = (
             f"let's do {this}! {this} {this} toe "
             f"{this} banana fanna foe f{this[1:]} "
             f"me my moe m{this[1:]}, {this}"
         )
+        return BotReply(BOT_REPLY_TYPE_TEXT, reply_text=this)

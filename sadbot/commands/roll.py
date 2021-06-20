@@ -1,14 +1,14 @@
 """Roll bot command"""
 
 import random
-
 from typing import Optional
 
-from sadbot.commands.interface import CommandsInterface
+from sadbot.command_interface import CommandInterface
 from sadbot.message import Message
+from sadbot.bot_reply import BotReply, BOT_REPLY_TYPE_TEXT
 
 
-class RollBotCommand(CommandsInterface):
+class RollBotCommand(CommandInterface):
     """This is the roll bot command class"""
 
     @property
@@ -16,11 +16,6 @@ class RollBotCommand(CommandsInterface):
         """Returns the regex for matching the roll command"""
         return r"(\.[Rr][Oo][Ll]{2}).*"
 
-    @property
-    def parsemode(self) -> Optional[str]:
-        """Returns the command parsemode"""
-        return None
-
-    def get_reply(self, message: Optional[Message] = None) -> Optional[str]:
+    def get_reply(self, message: Optional[Message] = None) -> Optional[BotReply]:
         """Rolls a number"""
-        return str(random.randint(0, 9))
+        return BotReply(BOT_REPLY_TYPE_TEXT, reply_text=str(random.randint(0, 9)))

@@ -2,13 +2,13 @@
 
 import random
 import re
-
 from typing import Optional
 
-from sadbot.commands.interface import CommandsInterface
+from sadbot.command_interface import CommandInterface
 from sadbot.message import Message
 from sadbot.config import REVOLVER_CHAMBERS, REVOLVER_BULLETS
 from sadbot.functions import safe_cast
+from sadbot.bot_reply import BotReply, BOT_REPLY_TYPE_TEXT
 
 
 class Revolver:
@@ -45,7 +45,7 @@ class Revolver:
         return "Eh.. you survived."
 
 
-class RouletteBotCommand(CommandsInterface):
+class RouletteBotCommand(CommandInterface):
     """This is the roulette bot command class"""
 
     def __init__(self):
@@ -59,12 +59,7 @@ class RouletteBotCommand(CommandsInterface):
         return r"(\.[Rr]([Oo][Uu][Ll][Ee][Tt]{2}[Ee]|[Ee][Ll][Oo][Aa][Dd]|[Ee][Vv]\
         [Oo][Ll][Vv][Ee][Rr]\s[0-9]+)).*"
 
-    @property
-    def parsemode(self) -> Optional[str]:
-        """Returns the command parsemode"""
-        return None
-
-    def get_reply(self, message: Optional[Message] = None) -> Optional[str]:
+    def get_reply(self, message: Optional[Message] = None) -> Optional[BotReply]:
         """Plays the Russian roulette"""
         if message.chat_id not in self.revolvers:
             revolver = Revolver(REVOLVER_CHAMBERS)
@@ -75,12 +70,16 @@ class RouletteBotCommand(CommandsInterface):
             bullets = message.text[7:]
             bullets = bullets.replace(" ", "")
             bullets = safe_cast(bullets, int, self.bullets)
-            return revolver.reload(bullets)
+            return BotReply(BOT_REPLY_TYPE_TEXT, reply_text=revolver.reload(bullets))
         if re.fullmatch(
             re.compile(r"(\.[Rr][Ee][Vv][Oo][Ll][Vv][Ee][Rr]\s[0-9]+)"), message.text
         ):
             capacity = message.text[9:]
             capacity = capacity.replace(" ", "")
             capacity = safe_cast(capacity, int, REVOLVER_CHAMBERS)
-            return revolver.set_capacity(capacity) + revolver.reload(self.bullets)
-        return revolver.shoot()
+            return BotReply(
+                BOT_REPLY_TYPE_TEXT,
+                reply_text=revolver.set_capacity(capacity)
+                + revolver.reload(self.bullets),
+            )
+        return BotReply(BOT_REPLY_TYPE_TEXT, reply_text=revolver.shoot())

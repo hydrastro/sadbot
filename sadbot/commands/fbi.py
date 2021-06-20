@@ -1,12 +1,12 @@
 """FBI bot command"""
 
 import sqlite3
-
 from typing import Optional
 
 from sadbot.config import FBI_WORDS
-from sadbot.commands.interface import CommandsInterface
+from sadbot.command_interface import CommandInterface
 from sadbot.message import Message
+from sadbot.bot_reply import BotReply
 
 
 def fbi_words_table_creation_query() -> str:
@@ -30,7 +30,7 @@ def fbi_entries_table_creation_query() -> str:
     """
 
 
-class FbiBotCommand(CommandsInterface):
+class FbiBotCommand(CommandInterface):
     """This is the FBI bot command class"""
 
     def __init__(self, con: sqlite3.Connection):
@@ -44,12 +44,7 @@ class FbiBotCommand(CommandsInterface):
         """Returns the regex for matching 4channel commands"""
         return r".*"
 
-    @property
-    def parsemode(self) -> Optional[str]:
-        """Returns the command parsemode"""
-        return None
-
-    def get_reply(self, message: Optional[Message] = None) -> Optional[str]:
+    def get_reply(self, message: Optional[Message] = None) -> Optional[BotReply]:
         """Doesn't really return a reply, just monitors words"""
         forbidden_words = []
         for word in FBI_WORDS:

@@ -1,14 +1,14 @@
 """Compliment bot command"""
 
 import random
-
 from typing import Optional
 
-from sadbot.commands.interface import CommandsInterface
+from sadbot.command_interface import CommandInterface
 from sadbot.message import Message
+from sadbot.bot_reply import BotReply, BOT_REPLY_TYPE_TEXT
 
 
-class ComplimentBotCommand(CommandsInterface):
+class ComplimentBotCommand(CommandInterface):
     """This is the compliment bot command class"""
 
     @property
@@ -16,12 +16,7 @@ class ComplimentBotCommand(CommandsInterface):
         """Returns the regex for matching compliments"""
         return r".*(([Gg][Oo]{2}[Dd]|[Bb][Aa][Ss][Ee][Dd]|[Nn][Ii][Cc][Ee])(\s+[Bb][Oo][Tt])).*"
 
-    @property
-    def parsemode(self) -> Optional[str]:
-        """Returns the command parsemode"""
-        return None
-
-    def get_reply(self, message: Optional[Message] = None) -> Optional[str]:
+    def get_reply(self, message: Optional[Message] = None) -> Optional[BotReply]:
         """Gets a reply for when the bot receives a compliment"""
         compliment_replies = [
             "t-thwanks s-senpaii *starts twerking*",
@@ -29,4 +24,6 @@ class ComplimentBotCommand(CommandsInterface):
             "thank youu!!",
             "good human",
         ]
-        return random.choice(compliment_replies)
+        return BotReply(
+            BOT_REPLY_TYPE_TEXT, reply_text=random.choice(compliment_replies)
+        )

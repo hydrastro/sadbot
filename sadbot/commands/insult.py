@@ -1,14 +1,14 @@
 """Insult bot command"""
 
 import random
-
 from typing import Optional
 
-from sadbot.commands.interface import CommandsInterface
+from sadbot.command_interface import CommandInterface
 from sadbot.message import Message
+from sadbot.bot_reply import BotReply, BOT_REPLY_TYPE_TEXT
 
 
-class InsultBotCommand(CommandsInterface):
+class InsultBotCommand(CommandInterface):
     """This is the insult bot command class"""
 
     @property
@@ -16,19 +16,15 @@ class InsultBotCommand(CommandsInterface):
         """Returns the regex for matching insults"""
         return r".*(([Bb][Aa][Dd]|[Ss][Tt][Uu][Pp][Ii][Dd]|[Ss][Hh][Ii][Tt])(\s+[Bb][Oo][Tt])).*"
 
-    @property
-    def parsemode(self) -> Optional[str]:
-        """Returns the command parsemode"""
-        return None
-
-    def get_reply(self, message: Optional[Message] = None) -> Optional[str]:
+    def get_reply(self, message: Optional[Message] = None) -> Optional[BotReply]:
         """Gets a reply for when the bot receives an insult"""
         insult_replies = [
             "no u",
             "take that back",
-            "contribute to make me better",
+            "contribute to make me better: http://github.com/hydrastro/sadbot",
             "stupid human",
             "sTuPiD bOt1!1",
             "lord, have mercy: they don't know that they're saying.",
+            "seethe dilate cope freetards btfo",
         ]
-        return random.choice(insult_replies)
+        return BotReply(BOT_REPLY_TYPE_TEXT, reply_text=random.choice(insult_replies))

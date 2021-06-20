@@ -10,8 +10,7 @@ ECELEBS = [
         "prefix": "prefixplaceholder",
     },
 ]
-FBI_WORDS = [
-    "wordplaceholder"
-]
+FBI_WORDS = ["wordplaceholder"]
 REVOLVER_CHAMBERS = 6
 REVOLVER_BULLETS = 1
+PASTAS = {"pastaname": "pasta text"}

@@ -8,7 +8,7 @@ from dataclasses import dataclass
 class Message:
     """Message class"""
 
-    id: int = 0  # pylint: disable=invalid-name
+    message_id: int = 0
     sender_name: str = ""
     sender_id: int = 0
     chat_id: int = 0

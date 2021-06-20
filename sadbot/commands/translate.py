@@ -2,15 +2,15 @@
 
 from typing import Optional
 import re
-
 import requests
 
-from sadbot.commands.interface import CommandsInterface
+from sadbot.command_interface import CommandInterface
 from sadbot.message import Message
 from sadbot.message_repository import MessageRepository
+from sadbot.bot_reply import BotReply, BOT_REPLY_TYPE_TEXT
 
 
-class TranslateBotCommand(CommandsInterface):
+class TranslateBotCommand(CommandInterface):
     """This is the translate bot command class"""
 
     def __init__(self, message_repository: MessageRepository):
@@ -22,12 +22,7 @@ class TranslateBotCommand(CommandsInterface):
         """Returns the regex for matching translate commands"""
         return r"([.]|[!])[Tt]([Rr]|[Ll])(.*)"
 
-    @property
-    def parsemode(self) -> Optional[str]:
-        """Returns the command parsemode"""
-        return None
-
-    def get_reply(self, message: Optional[Message] = None) -> Optional[str]:
+    def get_reply(self, message: Optional[Message] = None) -> Optional[BotReply]:
         """Get the translation"""
         try:
             reply_message = self.message_repository.get_reply_message(message)
@@ -41,6 +36,6 @@ class TranslateBotCommand(CommandsInterface):
             result = re.findall(r"result-container\">(.*?)</", req.text)
             if not result:
                 return None
-            return "Translation: " + result[0]
+            return BotReply(BOT_REPLY_TYPE_TEXT, reply_text="Translation: " + result[0])
         except (re.error, requests.ConnectionError):
             return None

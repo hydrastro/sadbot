@@ -1,14 +1,14 @@
 """Amogus bot command"""
 
 import random
-
 from typing import Optional
 
-from sadbot.commands.interface import CommandsInterface
+from sadbot.command_interface import CommandInterface
 from sadbot.message import Message
+from sadbot.bot_reply import BotReply, BOT_REPLY_TYPE_TEXT
 
 
-class AmogusBotCommand(CommandsInterface):
+class AmogusBotCommand(CommandInterface):
     """This is the amogus bot command class"""
 
     @property
@@ -16,16 +16,11 @@ class AmogusBotCommand(CommandsInterface):
         """Returns the regex for matching leaf commands"""
         return r".*([Aa][Mm][Oo][Gg][Uu][Ss]).*|([Ss][Uu][Ss])"
 
-    @property
-    def parsemode(self) -> Optional[str]:
-        """Returns the command parsemode"""
-        return None
-
-    def get_reply(self, message: Optional[Message] = None) -> Optional[str]:
+    def get_reply(self, message: Optional[Message] = None) -> Optional[BotReply]:
         """Amogus"""
         amogus_replies = [
             "amogus",
             "sus",
             f"i saw the sus impostor {message.sender_name} vent in elec",
         ]
-        return random.choice(amogus_replies)
+        return BotReply(BOT_REPLY_TYPE_TEXT, reply_text=random.choice(amogus_replies))

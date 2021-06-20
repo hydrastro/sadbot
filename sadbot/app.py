@@ -13,6 +13,14 @@ import requests
 from sadbot.message import Message
 from sadbot.message_repository import MessageRepository
 from sadbot.config import MAX_REPLY_LENGTH, UPDATES_TIMEOUT
+from sadbot.bot_reply import (
+    BotReply,
+    BOT_REPLY_TYPE_TEXT,
+    BOT_REPLY_TYPE_IMAGE,
+    BOT_REPLY_TYPE_AUDIO,
+    BOT_REPLY_TYPE_FILE,
+    BOT_REPLY_TYPE_VOICE,
+)
 
 
 def snake_to_pascal_case(snake_str: str):
@@ -39,7 +47,7 @@ class App:
         """Loads the bot commands"""
         commands = glob.glob(join(dirname(__file__), "commands", "*.py"))
         for command_name in [basename(f)[:-3] for f in commands if isfile(f)]:
-            if command_name in ("__init__", "interface"):
+            if command_name == "__init__":
                 continue
             class_name = snake_to_pascal_case(command_name) + "BotCommand"
             arguments = []
@@ -70,28 +78,42 @@ class App:
 
         return json.loads(req.content)
 
-    def send_message(
-        self, message: Message, parsemode: Optional[str]
-    ) -> Optional[Dict]:
-        """Sends message to some chat using api"""
-        if not message:
-            return None
-        if len(message.text) > MAX_REPLY_LENGTH:
-            message.text = message.text[:80] + "..."
-
-        data = {"chat_id": message.chat_id, "text": message.text}
-        if parsemode is not None:
-            data.update({"parsemode": parsemode})
+    def send_message(self, chat_id: int, reply: BotReply) -> Optional[Dict]:
+        """Sends a message"""
+        data = {"chat_id": chat_id}
+        files = None
+        if reply.reply_type == BOT_REPLY_TYPE_TEXT:
+            api_method = "sendMessage"
+            if not reply.reply_text:
+                return None
+            reply_text = reply.reply_text
+            if len(reply_text) > MAX_REPLY_LENGTH:
+                reply_text = reply_text[:MAX_REPLY_LENGTH] + "..."
+            data.update({"text": reply_text})
+            parsemode = reply.reply_text_parsemode
+            if parsemode is not None:
+                data.update({"parsemode": parsemode})
+        elif reply.reply_type == BOT_REPLY_TYPE_IMAGE:
+            api_method = "sendPhoto"
+            files = {"photo": reply.reply_image}
+        elif reply.reply_type == BOT_REPLY_TYPE_AUDIO:
+            api_method = "sendAudio"
+            files = {"audio": reply.reply_audio}
+        elif reply.reply_type == BOT_REPLY_TYPE_FILE:
+            api_method = "sendDocument"
+            files = {"file": reply.reply_file}
+        elif reply.reply_type == BOT_REPLY_TYPE_VOICE:
+            api_method = "sendVoice"
+            files = {"voice": reply.reply_voice}
         req = requests.post(
-            f"{self.base_url}sendMessage",
+            f"{self.base_url}{api_method}",
             data=data,
             headers={"Conent-Type": "application/json"},
+            files=files,
         )
-
         if not req.ok:
             print(f"Failed sending message - details: {req.json()}")
             return None
-
         return json.loads(req.content)
 
     def get_replies(self, message: Message) -> Optional[dict]:
@@ -106,12 +128,7 @@ class App:
                     reply_message = command["class"].get_reply(message)
                     if reply_message is None:
                         continue
-                    messages.append(
-                        {
-                            "message": reply_message,
-                            "parsemode": command["class"].parsemode,
-                        }
-                    )
+                    messages.append(reply_message)
             except re.error:
                 return None
         return messages
@@ -145,19 +162,19 @@ class App:
                 if replies_info is None:
                     continue
                 for reply_info in replies_info:
-                    reply = reply_info["message"]
-                    new_message = Message(chat_id=message.chat_id, text=reply)
-                    sent_message = (
-                        self.send_message(new_message, reply_info["parsemode"]) or {}
-                    )
-                    if sent_message.get("result"):
+                    sent_message = self.send_message(message.chat_id, reply_info) or {}
+                    # this needs to be done better
+                    if (
+                        sent_message.get("result")
+                        and reply_info.reply_type == BOT_REPLY_TYPE_TEXT
+                    ):
                         result = sent_message.get("result")
                         message = Message(
                             result["message_id"],
                             result["from"]["first_name"],
                             result["from"]["id"],
                             message.chat_id,
-                            reply,
+                            reply_info.reply_text,
                             None,
                         )
                         self.message_repository.insert_message(message)

@@ -50,7 +50,7 @@ class MessageRepository:
         self.con.execute(
             query,
             (
-                message.id,
+                message.message_id,
                 message.sender_name,
                 message.sender_id,
                 message.chat_id,
