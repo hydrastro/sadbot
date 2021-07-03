@@ -1,8 +1,7 @@
 """Sed bot command"""
 
 import re
-
-from typing import Optional
+from typing import Optional, List
 
 from sadbot.command_interface import CommandInterface
 from sadbot.message import Message
@@ -21,7 +20,7 @@ class SedBotCommand(CommandInterface):
         """Returns the regex for matching sed command"""
         return r"s/.*/.*[/g]*"
 
-    def get_reply(self, message: Optional[Message] = None) -> Optional[BotReply]:
+    def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotReply]]:
         """Performs the sed command on a given message"""
         replace_all = False
         text = message.text
@@ -51,7 +50,7 @@ class SedBotCommand(CommandInterface):
             try:
                 reply = re.sub(old, new, reply_message.text, max_replace)
                 reply = "<" + reply_message.sender_name + ">: " + reply
-                return BotReply(BOT_REPLY_TYPE_TEXT, reply_text=reply)
+                return [BotReply(BOT_REPLY_TYPE_TEXT, reply_text=reply)]
             except re.error:
                 return None
         return None

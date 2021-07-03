@@ -2,7 +2,7 @@
 
 import re
 import html
-from typing import Optional
+from typing import Optional, List
 import requests
 import markdownify
 
@@ -24,7 +24,7 @@ class ChannelBotCommand(CommandInterface):
         """Returns the command parsemode"""
         return "MarkdownV2"
 
-    def get_reply(self, message: Optional[Message] = None) -> Optional[BotReply]:
+    def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotReply]]:
         """Retrieve the description of a 4channel thread"""
         try:
             url = re.findall(
@@ -43,6 +43,6 @@ class ChannelBotCommand(CommandInterface):
             text = html.unescape(post[1])
             text = markdownify.markdownify(text)
             text = "Post: " + text + "\n" + "https://" + image + "\n"
-            return BotReply(BOT_REPLY_TYPE_TEXT, reply_text=text)
+            return [BotReply(BOT_REPLY_TYPE_TEXT, reply_text=text)]
         except (re.error, requests.ConnectionError):
             return None

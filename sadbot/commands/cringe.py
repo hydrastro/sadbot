@@ -2,7 +2,7 @@
 
 import random
 import re
-from typing import Optional
+from typing import Optional, List
 from dataclasses import dataclass
 import requests
 
@@ -25,7 +25,7 @@ class CringeBotCommand(CommandInterface):
         """Returns the command parsemode"""
         return "HTML"
 
-    def get_reply(self, message: Optional[Message] = None) -> Optional[BotReply]:
+    def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotReply]]:
         """Returns cringy stuff"""
 
         @dataclass
@@ -56,6 +56,8 @@ class CringeBotCommand(CommandInterface):
         if data is None:
             return None
         data = list(set(data))
-        return BotReply(
-            BOT_REPLY_TYPE_TEXT, reply_text=f"{eceleb.prefix}{random.choice(data)}"
-        )
+        return [
+            BotReply(
+                BOT_REPLY_TYPE_TEXT, reply_text=f"{eceleb.prefix}{random.choice(data)}"
+            )
+        ]

@@ -1,7 +1,7 @@
 """Schizo bot command"""
 
 import random
-from typing import Optional
+from typing import Optional, List
 
 from sadbot.command_interface import CommandInterface
 from sadbot.message import Message
@@ -16,9 +16,11 @@ class SchizoBotCommand(CommandInterface):
         """Returns the regex for matching the schizo command"""
         return r".*([Gg][Oo]\s+[Ss][Cc][Hh][Ii][Zz][Oo]).*"
 
-    def get_reply(self, message: Optional[Message] = None) -> Optional[BotReply]:
+    def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotReply]]:
         """Goes schizo"""
-        return BotReply(
-            BOT_REPLY_TYPE_TEXT,
-            reply_text=str(random.randint(0, 999999999999999999999999999999999)),
-        )
+        return [
+            BotReply(
+                BOT_REPLY_TYPE_TEXT,
+                reply_text=str(random.randint(0, 999999999999999999999999999999999)),
+            )
+        ]

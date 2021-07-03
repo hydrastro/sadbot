@@ -1,7 +1,7 @@
 """FBI bot command"""
 
 import sqlite3
-from typing import Optional
+from typing import Optional, List
 
 from sadbot.config import FBI_WORDS
 from sadbot.command_interface import CommandInterface
@@ -44,7 +44,7 @@ class FbiBotCommand(CommandInterface):
         """Returns the regex for matching 4channel commands"""
         return r".*"
 
-    def get_reply(self, message: Optional[Message] = None) -> Optional[BotReply]:
+    def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotReply]]:
         """Doesn't really return a reply, just monitors words"""
         forbidden_words = []
         for word in FBI_WORDS:
@@ -56,6 +56,8 @@ class FbiBotCommand(CommandInterface):
                 self.insert_fbi_entry(message, word)
                 return None
             self.update_fbi_entry(message, word)
+        if "fbi watchlist" in message.text.lower():
+            reply_text = ""
         return None
 
     def initialize_forbidden_words(self):
@@ -96,6 +98,17 @@ class FbiBotCommand(CommandInterface):
         cur = self.con.cursor()
         cur.execute(query, (message.sender_id, message.chat_id, word_id))
         return cur.fetchone()
+
+    def get_most_wanted(self, list_length: int) -> List:
+        """TO BE DONE"""
+        query = """
+          SELECT
+            SenderID
+          JOIN
+          ON
+          WHERE
+          LIMIT ?
+        """
 
     def insert_fbi_entry(self, message: Message, word: str) -> None:
         """Insert an entry into the database"""

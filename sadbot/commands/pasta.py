@@ -1,7 +1,7 @@
 """Pasta bot command"""
 
 import random
-from typing import Optional
+from typing import Optional, List
 
 from sadbot.command_interface import CommandInterface
 from sadbot.message import Message
@@ -17,7 +17,7 @@ class PastaBotCommand(CommandInterface):
         """Returns the regex for matching pasta commands"""
         return r"((!|\.)([Pp][Aa][Ss][Tt][Aa])).*"
 
-    def get_reply(self, message: Optional[Message] = None) -> Optional[BotReply]:
+    def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotReply]]:
         """Returns a pasta"""
         key = None
         if len(message.text) > 7:
@@ -26,4 +26,4 @@ class PastaBotCommand(CommandInterface):
             reply = PASTAS[key]
         else:
             reply = random.choice(list(PASTAS.values()))
-        return BotReply(BOT_REPLY_TYPE_TEXT, reply_text=reply)
+        return [BotReply(BOT_REPLY_TYPE_TEXT, reply_text=reply)]

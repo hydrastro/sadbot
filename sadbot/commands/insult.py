@@ -1,7 +1,7 @@
 """Insult bot command"""
 
 import random
-from typing import Optional
+from typing import Optional, List
 
 from sadbot.command_interface import CommandInterface
 from sadbot.message import Message
@@ -16,7 +16,7 @@ class InsultBotCommand(CommandInterface):
         """Returns the regex for matching insults"""
         return r".*(([Bb][Aa][Dd]|[Ss][Tt][Uu][Pp][Ii][Dd]|[Ss][Hh][Ii][Tt])(\s+[Bb][Oo][Tt])).*"
 
-    def get_reply(self, message: Optional[Message] = None) -> Optional[BotReply]:
+    def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotReply]]:
         """Gets a reply for when the bot receives an insult"""
         insult_replies = [
             "no u",
@@ -27,4 +27,4 @@ class InsultBotCommand(CommandInterface):
             "lord, have mercy: they don't know that they're saying.",
             "seethe dilate cope freetards btfo",
         ]
-        return BotReply(BOT_REPLY_TYPE_TEXT, reply_text=random.choice(insult_replies))
+        return [BotReply(BOT_REPLY_TYPE_TEXT, reply_text=random.choice(insult_replies))]

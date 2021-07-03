@@ -1,6 +1,6 @@
 """Bot commands modules interface"""
 
-from typing import Optional
+from typing import Optional, List
 
 from sadbot.message import Message
 from sadbot.bot_reply import BotReply
@@ -14,5 +14,5 @@ class CommandInterface:
     def command_regex(self) -> str:
         """Returns the regex string that triggers this command"""
 
-    def get_reply(self, message: Optional[Message] = None) -> Optional[BotReply]:
+    def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotReply]]:
         """Returns the command output"""

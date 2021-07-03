@@ -1,6 +1,6 @@
 """Letsdo bot command"""
 
-from typing import Optional
+from typing import Optional, List
 
 from sadbot.command_interface import CommandInterface
 from sadbot.message import Message
@@ -15,7 +15,7 @@ class LetsdoBotCommand(CommandInterface):
         """Returns the regex for matching letsdo commands"""
         return r"((!|\.)([Ll][Ee][Tt][Ss][Dd][Oo]\s+\w+))"
 
-    def get_reply(self, message: Optional[Message] = None) -> Optional[BotReply]:
+    def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotReply]]:
         """Returns letsdo"""
         this = message.text[8:]
         this = (
@@ -23,4 +23,4 @@ class LetsdoBotCommand(CommandInterface):
             f"{this} banana fanna foe f{this[1:]} "
             f"me my moe m{this[1:]}, {this}"
         )
-        return BotReply(BOT_REPLY_TYPE_TEXT, reply_text=this)
+        return [BotReply(BOT_REPLY_TYPE_TEXT, reply_text=this)]

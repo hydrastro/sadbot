@@ -1,6 +1,6 @@
 """Leaf bot command"""
 
-from typing import Optional
+from typing import Optional, List
 
 from sadbot.command_interface import CommandInterface
 from sadbot.message import Message
@@ -15,6 +15,6 @@ class CanadianBotCommand(CommandInterface):
         """Returns the regex for matching leaf commands"""
         return r"((!|\.)([Ll][Ee][Aa][Ff]|[Cc][Aa][Nn][Aa][Dd][Ii][Aa][Nn])).*"
 
-    def get_reply(self, message: Optional[Message] = None) -> Optional[str]:
+    def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotReply]]:
         """Returns leaf"""
-        return BotReply(BOT_REPLY_TYPE_TEXT, reply_text="🇨🇦")
+        return [BotReply(BOT_REPLY_TYPE_TEXT, reply_text="🇨🇦")]

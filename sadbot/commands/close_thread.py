@@ -1,7 +1,7 @@
 """Close thread bot command"""
 
 import random
-from typing import Optional
+from typing import Optional, List
 
 from sadbot.command_interface import CommandInterface
 from sadbot.message import Message
@@ -16,12 +16,14 @@ class CloseThreadBotCommand(CommandInterface):
         """Returns the regex for matching the closure of a discussion"""
         return r"(\s)?(/[Tt][Hh][Rr][Ee][Aa][Dd]).*"
 
-    def get_reply(self, message: Optional[Message] = None) -> Optional[BotReply]:
+    def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotReply]]:
         """Closes a discussion"""
         closed_thread_replies = [
             "rekt",
             "*This thread has been archived at RebeccaBlackTech*",
         ]
-        return BotReply(
-            BOT_REPLY_TYPE_TEXT, reply_text=random.choice(closed_thread_replies)
-        )
+        return [
+            BotReply(
+                BOT_REPLY_TYPE_TEXT, reply_text=random.choice(closed_thread_replies)
+            )
+        ]

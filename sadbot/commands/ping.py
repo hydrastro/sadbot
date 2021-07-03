@@ -1,6 +1,6 @@
 """Ping bot command"""
 
-from typing import Optional
+from typing import Optional, List
 
 from sadbot.command_interface import CommandInterface
 from sadbot.message import Message
@@ -15,6 +15,6 @@ class PingBotCommand(CommandInterface):
         """Returns the regex for matching ping commands"""
         return r"((!|\.)([Pp][Ii][Nn][Gg])).*"
 
-    def get_reply(self, message: Optional[Message] = None) -> Optional[BotReply]:
+    def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotReply]]:
         """Returns pong"""
-        return BotReply(BOT_REPLY_TYPE_TEXT, reply_text="pong")
+        return [BotReply(BOT_REPLY_TYPE_TEXT, reply_text="pong")]

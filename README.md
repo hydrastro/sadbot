@@ -96,11 +96,11 @@ class SampleCommandBotCommand(CommandsInterface):
         regex = r""
         return regex
 
-    def get_reply(self, message: Optional[Message] = None) -> Optional[str]:
+    def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotReply]]:
         reply = "" # here is the reply that will be sent by the bot
         # this is an example on how you can process the message that triggered
         # the command to get a custom reply
-        pattern = message.message[4:]
+        pattern = message.text[4:]
         cur = self.con.cursor()
         cur.execute("SELECT Message FROM messages WHERE Message REGEXP ? \
                           AND ChatID = ?", [pattern, message.chat_id])
@@ -142,3 +142,6 @@ class SampleCommandBotCommand(CommandsInterface):
 - [ ] VC Radio
 - [ ] Stay cool on weed questions
 - [ ] Group admin settings: enabled modules etc.
+- [ ] Multiple messages per command (return a list)
+- [ ] Chat events handlers
+- [ ] Add new tables: for images, for edits and for usernames

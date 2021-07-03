@@ -2,7 +2,7 @@
 
 import random
 import re
-from typing import Optional
+from typing import Optional, List
 
 from sadbot.command_interface import CommandInterface
 from sadbot.message import Message
@@ -59,7 +59,7 @@ class RouletteBotCommand(CommandInterface):
         return r"(\.[Rr]([Oo][Uu][Ll][Ee][Tt]{2}[Ee]|[Ee][Ll][Oo][Aa][Dd]|[Ee][Vv]\
         [Oo][Ll][Vv][Ee][Rr]\s[0-9]+)).*"
 
-    def get_reply(self, message: Optional[Message] = None) -> Optional[BotReply]:
+    def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotReply]]:
         """Plays the Russian roulette"""
         if message.chat_id not in self.revolvers:
             revolver = Revolver(REVOLVER_CHAMBERS)
@@ -70,16 +70,18 @@ class RouletteBotCommand(CommandInterface):
             bullets = message.text[7:]
             bullets = bullets.replace(" ", "")
             bullets = safe_cast(bullets, int, self.bullets)
-            return BotReply(BOT_REPLY_TYPE_TEXT, reply_text=revolver.reload(bullets))
+            return [BotReply(BOT_REPLY_TYPE_TEXT, reply_text=revolver.reload(bullets))]
         if re.fullmatch(
             re.compile(r"(\.[Rr][Ee][Vv][Oo][Ll][Vv][Ee][Rr]\s[0-9]+)"), message.text
         ):
             capacity = message.text[9:]
             capacity = capacity.replace(" ", "")
             capacity = safe_cast(capacity, int, REVOLVER_CHAMBERS)
-            return BotReply(
-                BOT_REPLY_TYPE_TEXT,
-                reply_text=revolver.set_capacity(capacity)
-                + revolver.reload(self.bullets),
-            )
-        return BotReply(BOT_REPLY_TYPE_TEXT, reply_text=revolver.shoot())
+            return [
+                BotReply(
+                    BOT_REPLY_TYPE_TEXT,
+                    reply_text=revolver.set_capacity(capacity)
+                    + revolver.reload(self.bullets),
+                )
+            ]
+        return [BotReply(BOT_REPLY_TYPE_TEXT, reply_text=revolver.shoot())]

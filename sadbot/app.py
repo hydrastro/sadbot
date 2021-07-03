@@ -6,7 +6,7 @@ import re
 import sqlite3
 import time
 from os.path import dirname, basename, isfile, join
-from typing import Optional, Dict
+from typing import Optional, Dict, List
 
 import requests
 
@@ -20,6 +20,7 @@ from sadbot.bot_reply import (
     BOT_REPLY_TYPE_AUDIO,
     BOT_REPLY_TYPE_FILE,
     BOT_REPLY_TYPE_VOICE,
+    BOT_REPLY_TYPE_KICK_USER,
 )
 
 
@@ -67,7 +68,7 @@ class App:
             )
 
     def get_updates(self, offset: Optional[int] = None) -> Optional[Dict]:
-        """Retrieves updates from the telelegram API"""
+        """Retrieves updates from the Telegram API"""
         url = f"{self.base_url}getUpdates?timeout={UPDATES_TIMEOUT}"
         if offset:
             url = f"{url}&offset={offset + 1}"
@@ -78,15 +79,15 @@ class App:
 
         return json.loads(req.content)
 
-    def send_message(self, chat_id: int, reply: BotReply) -> Optional[Dict]:
+    def send_message(self, chat_id: int, reply: BotReply) -> Optional[List]:
         """Sends a message"""
         data = {"chat_id": chat_id}
         files = None
+        reply_text = reply.reply_text
         if reply.reply_type == BOT_REPLY_TYPE_TEXT:
             api_method = "sendMessage"
             if not reply.reply_text:
                 return None
-            reply_text = reply.reply_text
             if len(reply_text) > MAX_REPLY_LENGTH:
                 reply_text = reply_text[:MAX_REPLY_LENGTH] + "..."
             data.update({"text": reply_text})
@@ -96,6 +97,7 @@ class App:
         elif reply.reply_type == BOT_REPLY_TYPE_IMAGE:
             api_method = "sendPhoto"
             files = {"photo": reply.reply_image}
+            data.update({"caption": reply_text})
         elif reply.reply_type == BOT_REPLY_TYPE_AUDIO:
             api_method = "sendAudio"
             files = {"audio": reply.reply_audio}
@@ -105,6 +107,10 @@ class App:
         elif reply.reply_type == BOT_REPLY_TYPE_VOICE:
             api_method = "sendVoice"
             files = {"voice": reply.reply_voice}
+        elif reply.reply_type == BOT_REPLY_TYPE_KICK_USER:
+            api_method = ""
+        else:
+            return
         req = requests.post(
             f"{self.base_url}{api_method}",
             data=data,
@@ -116,7 +122,7 @@ class App:
             return None
         return json.loads(req.content)
 
-    def get_replies(self, message: Message) -> Optional[dict]:
+    def get_replies(self, message: Message) -> Optional[list]:
         """Checks if a bot command is triggered and gets its reply"""
         text = message.text
         if not text:
@@ -128,10 +134,38 @@ class App:
                     reply_message = command["class"].get_reply(message)
                     if reply_message is None:
                         continue
-                    messages.append(reply_message)
+                    messages += reply_message
             except re.error:
                 return None
         return messages
+
+    def handle_messages(self, message: Message) -> None:
+        replies_info = self.get_replies(message)
+        if replies_info is None:
+            return
+        for reply_info in replies_info:
+            sent_message = self.send_message(message.chat_id, reply_info) or {}
+            # this needs to be done better, along with the storage for non-text messages
+            if (
+                sent_message.get("result")
+                and reply_info.reply_type == BOT_REPLY_TYPE_TEXT
+            ):
+                result = sent_message.get("result")
+                message = Message(
+                    result["message_id"],
+                    result["from"]["first_name"],
+                    result["from"]["id"],
+                    message.chat_id,
+                    reply_info.reply_text,
+                    None,
+                )
+                self.message_repository.insert_message(message)
+
+    def handle_new_chat_members(self) -> None:
+        return
+
+    def handle_photos(self, message) -> None:
+        return
 
     def start_bot(self) -> None:
         """Starts the bot"""
@@ -140,42 +174,27 @@ class App:
             updates = self.get_updates(offset=update_id) or {}
             for item in updates.get("result", []):
                 update_id = item["update_id"]
-                try:
-                    text = str(item["message"]["text"])
-                except (ValueError, KeyError, TypeError):
-                    continue
-
-                if not text:
-                    continue
-
-                message = item["message"]
-                message = Message(
-                    message["message_id"],
-                    message["from"]["first_name"],
-                    message["from"]["id"],
-                    message["chat"]["id"],
-                    text,
-                    message.get("reply_to_message", {}).get("message_id"),
-                )
-                replies_info = self.get_replies(message)
-                self.message_repository.insert_message(message)
-                if replies_info is None:
-                    continue
-                for reply_info in replies_info:
-                    sent_message = self.send_message(message.chat_id, reply_info) or {}
-                    # this needs to be done better
-                    if (
-                        sent_message.get("result")
-                        and reply_info.reply_type == BOT_REPLY_TYPE_TEXT
-                    ):
-                        result = sent_message.get("result")
-                        message = Message(
-                            result["message_id"],
-                            result["from"]["first_name"],
-                            result["from"]["id"],
-                            message.chat_id,
-                            reply_info.reply_text,
-                            None,
-                        )
-                        self.message_repository.insert_message(message)
+                # catching the text messages
+                if "message" in item:
+                    message = Message(
+                        item["message"]["message_id"],
+                        item["message"]["from"]["first_name"],
+                        item["message"]["from"]["id"],
+                        item["message"]["chat"]["id"],
+                        "",
+                        item["message"].get("reply_to_message", {}).get("message_id"),
+                    )
+                    if "text" in item["message"]:
+                        message.text = str(item["message"]["text"])
+                        self.handle_messages(message)
+                    if "photo" in item["message"]:
+                        message.text = str(item["message"]["caption"])
+                    if "new_chat_member" in item["message"]:
+                        self.handle_new_chat_members()
+                    self.message_repository.insert_message(message)
+                if "edited_message" in item:
+                    if "text" in item["edited_message"]:
+                        text = item["edited_message"]["text"]
+                        message_id = item["edited_message"]["message_id"]
+                        self.message_repository.edit_message(message_id, text)
             time.sleep(1)

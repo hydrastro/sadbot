@@ -59,6 +59,7 @@ class MessageRepository:
             ),
         )
         self.con.commit()
+        return
 
     def get_previous_message(self, message: Message, reg: str) -> Optional[Message]:
         """Retrieves a previous message from the database matching a certain
@@ -86,6 +87,19 @@ class MessageRepository:
         if data is not None:
             return Message(*data)
         return None
+
+    def edit_message(self, message_id: int, message_text: str) -> None:
+        """Edits a message in the messages table and updates the events table"""
+        cur = self.con.cursor()
+        query = """
+          UPDATE messages
+          SET
+            Message = ?
+          WHERE MessageID = ?
+        """
+        params = [message_id, message_id]
+        cur.execute(query, params)
+        return
 
     def get_reply_message(self, message: Message) -> Optional[Message]:
         """Retrieve the reply to a message from DB"""

@@ -1,6 +1,6 @@
 """Translate bot command"""
 
-from typing import Optional
+from typing import Optional, List
 import re
 import requests
 
@@ -22,7 +22,7 @@ class TranslateBotCommand(CommandInterface):
         """Returns the regex for matching translate commands"""
         return r"([.]|[!])[Tt]([Rr]|[Ll])(.*)"
 
-    def get_reply(self, message: Optional[Message] = None) -> Optional[BotReply]:
+    def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotReply]]:
         """Get the translation"""
         try:
             reply_message = self.message_repository.get_reply_message(message)
@@ -36,6 +36,8 @@ class TranslateBotCommand(CommandInterface):
             result = re.findall(r"result-container\">(.*?)</", req.text)
             if not result:
                 return None
-            return BotReply(BOT_REPLY_TYPE_TEXT, reply_text="Translation: " + result[0])
+            return [
+                BotReply(BOT_REPLY_TYPE_TEXT, reply_text="Translation: " + result[0])
+            ]
         except (re.error, requests.ConnectionError):
             return None

@@ -9,6 +9,7 @@ BOT_REPLY_TYPE_IMAGE = 1
 BOT_REPLY_TYPE_AUDIO = 2
 BOT_REPLY_TYPE_FILE = 4
 BOT_REPLY_TYPE_VOICE = 5
+BOT_REPLY_TYPE_KICK_USER = 6
 
 
 @dataclass
@@ -22,3 +23,4 @@ class BotReply:
     reply_audio: Optional[BytesIO] = None
     reply_file: Optional[BytesIO] = None
     reply_voice: Optional[BytesIO] = None
+    reply_kick_user_id: Optional[int] = None
