@@ -14,13 +14,20 @@ from sadbot.message import Message
 from sadbot.message_repository import MessageRepository
 from sadbot.config import MAX_REPLY_LENGTH, UPDATES_TIMEOUT
 from sadbot.bot_reply import (
-    BotReply,
-    BOT_REPLY_TYPE_TEXT,
-    BOT_REPLY_TYPE_IMAGE,
-    BOT_REPLY_TYPE_AUDIO,
-    BOT_REPLY_TYPE_FILE,
-    BOT_REPLY_TYPE_VOICE,
-    BOT_REPLY_TYPE_KICK_USER,
+    BotAction,
+    BOT_ACTION_TYPE_REPLY_TEXT,
+    BOT_ACTION_TYPE_REPLY_IMAGE,
+    BOT_ACTION_TYPE_REPLY_AUDIO,
+    BOT_ACTION_TYPE_REPLY_FILE,
+    BOT_ACTION_TYPE_REPLY_VOICE,
+    BOT_ACTION_TYPE_KICK_USER,
+)
+from sadbot.command_interface import (
+    BOT_HANDLER_TYPE_NEW_USER,
+    BOT_HANDLER_TYPE_KEYBOARD_INPUT,
+    BOT_HANDLER_TYPE_MESSAGE,
+    BOT_HANDLER_TYPE_EDITED_MESSAGE,
+    BOT_HANDLER_TYPE_PICTURE,
 )
 
 
@@ -75,16 +82,36 @@ class App:
         req = requests.get(url)
         if not req.ok:
             print(f"Failed to retrieve updates from server - details: {req.json()}")
+            print(url)
             return None
 
         return json.loads(req.content)
 
-    def send_message(self, chat_id: int, reply: BotReply) -> Optional[List]:
+    def send_message_and_update_db(self, message: Message, reply_info: BotAction) -> Optional[List]:
+        sent_message = self.send_message(message.chat_id, reply_info)
+        # this needs to be done better, along with the storage for non-text messages
+        if (
+                sent_message.get("result")
+                and reply_info.reply_type == BOT_ACTION_TYPE_REPLY_TEXT
+        ):
+            result = sent_message.get("result")
+            message = Message(
+                result["message_id"],
+                result["from"]["first_name"],
+                result["from"]["id"],
+                message.chat_id,
+                reply_info.reply_text,
+                None,
+            )
+            self.message_repository.insert_message(message)
+        return sent_message
+
+    def send_message(self, chat_id: int, reply: BotAction) -> Optional[List]:
         """Sends a message"""
         data = {"chat_id": chat_id}
         files = None
         reply_text = reply.reply_text
-        if reply.reply_type == BOT_REPLY_TYPE_TEXT:
+        if reply.reply_type == BOT_ACTION_TYPE_REPLY_TEXT:
             api_method = "sendMessage"
             if not reply.reply_text:
                 return None
@@ -94,20 +121,20 @@ class App:
             parsemode = reply.reply_text_parsemode
             if parsemode is not None:
                 data.update({"parsemode": parsemode})
-        elif reply.reply_type == BOT_REPLY_TYPE_IMAGE:
+        elif reply.reply_type == BOT_ACTION_TYPE_REPLY_IMAGE:
             api_method = "sendPhoto"
             files = {"photo": reply.reply_image}
             data.update({"caption": reply_text})
-        elif reply.reply_type == BOT_REPLY_TYPE_AUDIO:
+        elif reply.reply_type == BOT_ACTION_TYPE_REPLY_AUDIO:
             api_method = "sendAudio"
             files = {"audio": reply.reply_audio}
-        elif reply.reply_type == BOT_REPLY_TYPE_FILE:
+        elif reply.reply_type == BOT_ACTION_TYPE_REPLY_FILE:
             api_method = "sendDocument"
             files = {"file": reply.reply_file}
-        elif reply.reply_type == BOT_REPLY_TYPE_VOICE:
+        elif reply.reply_type == BOT_ACTION_TYPE_REPLY_VOICE:
             api_method = "sendVoice"
             files = {"voice": reply.reply_voice}
-        elif reply.reply_type == BOT_REPLY_TYPE_KICK_USER:
+        elif reply.reply_type == BOT_ACTION_TYPE_KICK_USER:
             api_method = ""
         else:
             return
@@ -129,42 +156,39 @@ class App:
             return None
         messages = []
         for command in self.commands:
-            try:
-                if re.fullmatch(re.compile(command["regex"]), text):
-                    reply_message = command["class"].get_reply(message)
-                    if reply_message is None:
-                        continue
-                    messages += reply_message
-            except re.error:
-                return None
+            if command["class"].handler_type == BOT_HANDLER_TYPE_MESSAGE:
+                try:
+                    if re.fullmatch(re.compile(command["regex"]), text):
+                        reply_message = command["class"].get_reply(message)
+                        if reply_message is None:
+                            continue
+                        messages += reply_message
+                except re.error:
+                    return None
         return messages
 
     def handle_messages(self, message: Message) -> None:
+        """Handles the messages"""
         replies_info = self.get_replies(message)
         if replies_info is None:
             return
         for reply_info in replies_info:
-            sent_message = self.send_message(message.chat_id, reply_info) or {}
-            # this needs to be done better, along with the storage for non-text messages
-            if (
-                sent_message.get("result")
-                and reply_info.reply_type == BOT_REPLY_TYPE_TEXT
-            ):
-                result = sent_message.get("result")
-                message = Message(
-                    result["message_id"],
-                    result["from"]["first_name"],
-                    result["from"]["id"],
-                    message.chat_id,
-                    reply_info.reply_text,
-                    None,
-                )
-                self.message_repository.insert_message(message)
+            self.send_message_and_update_db(message, reply_info) or {}
 
-    def handle_new_chat_members(self) -> None:
+    def handle_new_chat_members(self, message: Message) -> None:
+        """Handles new chat members events"""
+        for command in self.commands:
+            if command["class"].handler_type == BOT_HANDLER_TYPE_NEW_USER:
+                reply_message = command["class"].get_reply(message)
+                if reply_message is None:
+                    continue
+                for reply in reply_message:
+                    self.send_message_and_update_db(message, reply) or {}
         return
 
-    def handle_photos(self, message) -> None:
+    def handle_photos(self, message: Message) -> None:
+        """Handles photo messages"""
+        # here you can do what you want
         return
 
     def start_bot(self) -> None:
@@ -181,16 +205,18 @@ class App:
                         item["message"]["from"]["first_name"],
                         item["message"]["from"]["id"],
                         item["message"]["chat"]["id"],
-                        "",
+                        None,
                         item["message"].get("reply_to_message", {}).get("message_id"),
                     )
                     if "text" in item["message"]:
                         message.text = str(item["message"]["text"])
                         self.handle_messages(message)
                     if "photo" in item["message"]:
-                        message.text = str(item["message"]["caption"])
+                        if "caption" in item["message"]:
+                            message.text = str(item["message"]["caption"])
+                        self.handle_photos(message)
                     if "new_chat_member" in item["message"]:
-                        self.handle_new_chat_members()
+                        self.handle_new_chat_members(message)
                     self.message_repository.insert_message(message)
                 if "edited_message" in item:
                     if "text" in item["edited_message"]:

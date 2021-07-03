@@ -79,7 +79,7 @@ from typing import Optional
 
 from sadbot.commands import CommandsInterface
 from sadbot.message import Message
-from sadbot.bot_reply import BotReply, BOT_REPLY_TYPE_TEXT
+from sadbot.bot_reply import BotAction, BOT_ACTION_TYPE_TEXT
 
 # the class name must be the pascal case of the module filename + "BotCommand"
 class SampleCommandBotCommand(CommandsInterface):
@@ -96,7 +96,7 @@ class SampleCommandBotCommand(CommandsInterface):
         regex = r""
         return regex
 
-    def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotReply]]:
+    def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
         reply = "" # here is the reply that will be sent by the bot
         # this is an example on how you can process the message that triggered
         # the command to get a custom reply
@@ -112,8 +112,8 @@ class SampleCommandBotCommand(CommandsInterface):
             reply = re.sub(r"(\w{3})", r"\1w", result.text)
         except re.error:
             reply = none
-        return BotReply(
-            BOT_REPLY_TYPE_TEXT,
+        return BotAction(
+            BOT_ACTION_TYPE_TEXT,
             reply_text=reply,
             reply_text_parsemode,
         )

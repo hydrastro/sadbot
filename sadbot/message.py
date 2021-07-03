@@ -12,5 +12,5 @@ class Message:
     sender_name: str = ""
     sender_id: int = 0
     chat_id: int = 0
-    text: str = ""
+    text: Optional[str] = None
     reply_id: Optional[int] = None

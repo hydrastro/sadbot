@@ -4,10 +4,10 @@ from typing import Optional, List
 import re
 import requests
 
-from sadbot.command_interface import CommandInterface
+from sadbot.command_interface import CommandInterface, BOT_HANDLER_TYPE_MESSAGE
 from sadbot.message import Message
 from sadbot.message_repository import MessageRepository
-from sadbot.bot_reply import BotReply, BOT_REPLY_TYPE_TEXT
+from sadbot.bot_reply import BotAction, BOT_ACTION_TYPE_REPLY_TEXT
 
 
 class TranslateBotCommand(CommandInterface):
@@ -18,11 +18,16 @@ class TranslateBotCommand(CommandInterface):
         self.message_repository = message_repository
 
     @property
+    def handler_type(self) -> str:
+        """Returns the type of event handled by the command"""
+        return BOT_HANDLER_TYPE_MESSAGE
+
+    @property
     def command_regex(self) -> str:
         """Returns the regex for matching translate commands"""
         return r"([.]|[!])[Tt]([Rr]|[Ll])(.*)"
 
-    def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotReply]]:
+    def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
         """Get the translation"""
         try:
             reply_message = self.message_repository.get_reply_message(message)
@@ -37,7 +42,7 @@ class TranslateBotCommand(CommandInterface):
             if not result:
                 return None
             return [
-                BotReply(BOT_REPLY_TYPE_TEXT, reply_text="Translation: " + result[0])
+                BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text="Translation: " + result[0])
             ]
         except (re.error, requests.ConnectionError):
             return None

@@ -3,10 +3,10 @@
 import re
 from typing import Optional, List
 
-from sadbot.command_interface import CommandInterface
+from sadbot.command_interface import CommandInterface, BOT_HANDLER_TYPE_MESSAGE
 from sadbot.message import Message
 from sadbot.message_repository import MessageRepository
-from sadbot.bot_reply import BotReply, BOT_REPLY_TYPE_TEXT
+from sadbot.bot_reply import BotAction, BOT_ACTION_TYPE_REPLY_TEXT
 
 
 class SedBotCommand(CommandInterface):
@@ -16,11 +16,16 @@ class SedBotCommand(CommandInterface):
         self.message_repository = message_repository
 
     @property
+    def handler_type(self) -> str:
+        """Returns the type of event handled by the command"""
+        return BOT_HANDLER_TYPE_MESSAGE
+
+    @property
     def command_regex(self) -> str:
         """Returns the regex for matching sed command"""
         return r"s/.*/.*[/g]*"
 
-    def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotReply]]:
+    def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
         """Performs the sed command on a given message"""
         replace_all = False
         text = message.text
@@ -50,7 +55,7 @@ class SedBotCommand(CommandInterface):
             try:
                 reply = re.sub(old, new, reply_message.text, max_replace)
                 reply = "<" + reply_message.sender_name + ">: " + reply
-                return [BotReply(BOT_REPLY_TYPE_TEXT, reply_text=reply)]
+                return [BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text=reply)]
             except re.error:
                 return None
         return None

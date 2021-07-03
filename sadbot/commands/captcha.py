@@ -1,20 +1,15 @@
 """Captcha bot command"""
 
-# READ THIS
-# This isn't really a bot command, so it should be moved somewhere else I guess
-# The captcha handling class should be placed somewhere else in the main dir
-# and the rest (new user and inline keyboard/text reply handling) should probably
-# be splitted in two. I don't know if I should write an interface for handling all those cases
-
 import sqlite3
 from typing import Optional, List, Tuple
 from os import path
+from io import BytesIO
 import random
 from PIL import Image, ImageFont, ImageDraw
 
-from sadbot.command_interface import CommandInterface
+from sadbot.command_interface import CommandInterface, BOT_HANDLER_TYPE_NEW_USER
 from sadbot.message import Message
-from sadbot.bot_reply import BotReply, BOT_REPLY_TYPE_IMAGE, BOT_REPLY_TYPE_KICK_USER
+from sadbot.bot_reply import BotAction, BOT_ACTION_TYPE_REPLY_IMAGE, BOT_ACTION_TYPE_KICK_USER
 from sadbot.config import (
     CAPTCHA_BACKGROUND_COLOR,
     CAPTCHA_TEXT_COLOR,
@@ -41,6 +36,7 @@ from sadbot.config import (
 
 
 def get_captcha_table_creation_query() -> str:
+    """"Returns the query for creating the captchas table"""
     return """
     CREATE TABLE IF NOT EXISTS captchas (
       CaptchaID text,
@@ -58,9 +54,9 @@ class Captcha:
         self.con.execute(get_captcha_table_creation_query())
 
     @staticmethod
-    def get_random_color(self) -> Tuple[int, int, int]:
+    def get_random_color() -> Tuple[int, int, int]:
         """Returns a random RGB color as a list"""
-        return (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+        return random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)
 
     def verify_captcha(self, captcha_id: str, captcha_text: str) -> bool:
         """Verifies if a given captcha is in the database"""
@@ -79,11 +75,13 @@ class Captcha:
         return data is not None
 
     @staticmethod
-    def get_random_border_coordinates(self, x: int, y: int) -> Tuple[int, int]:
+    def get_random_border_coordinates() -> Tuple[int, int]:
         """Returns some random coordinates in the border of the image"""
+        x = CAPTCHA_WIDTH
+        y = CAPTCHA_HEIGHT
         random_boolean = bool(random.getrandbits(1))
         if CAPTCHA_USE_BORDER_LINEAR_RANDOMNESS:
-            rand = random.randint(CAPTCHA_WIDTH + CAPTCHA_HEIGHT)
+            rand = random.randint(x + y)
             if rand <= x:
                 x = rand
                 y = CAPTCHA_HEIGHT if random_boolean else 0
@@ -101,13 +99,14 @@ class Captcha:
         return x, y
 
     @staticmethod
-    def get_captcha_string(self) -> str:
+    def get_captcha_string() -> str:
+        """Returns the text used for the captcha"""
         return "".join(random.choice(CAPTCHA_CHARACTERS) for _ in range(CAPTCHA_LENGTH))
 
     def get_captcha(self, captcha_id: str):
         captcha_text = self.get_captcha_string()
         self.insert_captcha_into_db(captcha_id, captcha_text)
-        return self.get_captcha_image(captcha_text)
+        return captcha_text, self.get_captcha_image(captcha_text)
 
     def insert_captcha_into_db(self, captcha_id: str, captcha_text: str) -> None:
         """Inserts a message into the database"""
@@ -124,7 +123,7 @@ class Captcha:
         self.con.commit()
         return
 
-    def get_captcha_image(self, captcha_text: str):
+    def get_captcha_image(self, captcha_text: str) -> Image:
         """Generates a cool captcha and returns it as a image"""
         background_color = (
             self.get_random_color()
@@ -180,20 +179,20 @@ class Captcha:
         for i in range(0, CAPTCHA_LINES_NUMBER):
             if CAPTCHA_LINES_START_FROM_BORDER:
                 foo = self.get_random_border_coordinates()
-                x0 = foo[0]
-                y0 = foo[1]
+                x_0 = foo[0]
+                y_0 = foo[1]
                 foo = self.get_random_border_coordinates()
-                x1 = foo[0]
-                y1 = foo[1]
+                x_1 = foo[0]
+                y_1 = foo[1]
             else:
-                x0 = random.randint(0, CAPTCHA_WIDTH)
-                y0 = random.randint(0, CAPTCHA_HEIGHT)
-                x1 = random.randint(0, CAPTCHA_WIDTH)
-                y1 = random.randint(0, CAPTCHA_HEIGHT)
+                x_0 = random.randint(0, CAPTCHA_WIDTH)
+                y_0 = random.randint(0, CAPTCHA_HEIGHT)
+                x_1 = random.randint(0, CAPTCHA_WIDTH)
+                y_1 = random.randint(0, CAPTCHA_HEIGHT)
             draw = ImageDraw.Draw(image)
             if CAPTCHA_RANDOMIZE_LINES_COLORS:
                 lines_color = self.get_random_color()
-            draw.line((x0, y0, x1, y1), fill=lines_color, width=1)
+            draw.line((x_0, y_0, x_1, y_1), fill=lines_color, width=1)
         return image
 
 
@@ -205,16 +204,28 @@ class CaptchaBotCommand(CommandInterface):
         self.captcha = Captcha(con)
 
     @property
+    def handler_type(self) -> str:
+        return BOT_HANDLER_TYPE_NEW_USER
+
+    @property
     def command_regex(self) -> str:
         """Returns the regex for matching new users"""
         return r"test"
 
-    def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotReply]]:
-        """Returns a captcha or a command to kick a "user" who failed it"""
-        return [BotReply(BOT_REPLY_TYPE_IMAGE)]
+    def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
+        """'Welcomes' a new user"""
+        captcha_id = str(message.chat_id) + "." + str(message.sender_id)
+        captcha_text, captcha_image = self.captcha.get_captcha(captcha_id)
+        bytes_io = BytesIO()
+        bytes_io.name = "captcha.jpeg"
+        captcha_image.save(bytes_io, "JPEG")
+        bytes_io.seek(0)
+        # here we should add another bot action which replies with an inline keyboard
+        # also we need to welcome hte user with a proper message
+        return [BotAction(BOT_ACTION_TYPE_REPLY_IMAGE, reply_image=bytes_io, reply_text=captcha_text)]
 
-    def kick_user(self, user_id: int) -> Optional[BotReply]:
+    def kick_user(self, user_id: int) -> Optional[BotAction]:
         return
 
-    def get_captcha(self, captcha: str, filename: str) -> Optional[BotReply]:
+    def get_captcha(self, captcha: str, filename: str) -> Optional[BotAction]:
         return

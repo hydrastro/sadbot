@@ -6,14 +6,19 @@ from typing import Optional, List
 from dataclasses import dataclass
 import requests
 
-from sadbot.command_interface import CommandInterface
+from sadbot.command_interface import CommandInterface, BOT_HANDLER_TYPE_MESSAGE
 from sadbot.message import Message
 from sadbot.config import ECELEBS
-from sadbot.bot_reply import BotReply, BOT_REPLY_TYPE_TEXT
+from sadbot.bot_reply import BotAction, BOT_ACTION_TYPE_REPLY_TEXT
 
 
 class CringeBotCommand(CommandInterface):
     """This is the schizo bot command class"""
+
+    @property
+    def handler_type(self) -> str:
+        """Returns the type of event handled by the command"""
+        return BOT_HANDLER_TYPE_MESSAGE
 
     @property
     def command_regex(self) -> str:
@@ -25,7 +30,7 @@ class CringeBotCommand(CommandInterface):
         """Returns the command parsemode"""
         return "HTML"
 
-    def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotReply]]:
+    def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
         """Returns cringy stuff"""
 
         @dataclass
@@ -57,7 +62,7 @@ class CringeBotCommand(CommandInterface):
             return None
         data = list(set(data))
         return [
-            BotReply(
-                BOT_REPLY_TYPE_TEXT, reply_text=f"{eceleb.prefix}{random.choice(data)}"
+            BotAction(
+                BOT_ACTION_TYPE_REPLY_TEXT, reply_text=f"{eceleb.prefix}{random.choice(data)}"
             )
         ]

@@ -6,13 +6,18 @@ from typing import Optional, List
 import requests
 import markdownify
 
-from sadbot.command_interface import CommandInterface
+from sadbot.command_interface import CommandInterface, BOT_HANDLER_TYPE_MESSAGE
 from sadbot.message import Message
-from sadbot.bot_reply import BotReply, BOT_REPLY_TYPE_TEXT
+from sadbot.bot_reply import BotAction, BOT_ACTION_TYPE_REPLY_TEXT
 
 
 class ChannelBotCommand(CommandInterface):
     """This is the channel bot command class"""
+
+    @property
+    def handler_type(self) -> str:
+        """Returns the type of event handled by the command"""
+        return BOT_HANDLER_TYPE_MESSAGE
 
     @property
     def command_regex(self) -> str:
@@ -24,7 +29,7 @@ class ChannelBotCommand(CommandInterface):
         """Returns the command parsemode"""
         return "MarkdownV2"
 
-    def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotReply]]:
+    def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
         """Retrieve the description of a 4channel thread"""
         try:
             url = re.findall(
@@ -43,6 +48,6 @@ class ChannelBotCommand(CommandInterface):
             text = html.unescape(post[1])
             text = markdownify.markdownify(text)
             text = "Post: " + text + "\n" + "https://" + image + "\n"
-            return [BotReply(BOT_REPLY_TYPE_TEXT, reply_text=text)]
+            return [BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text=text)]
         except (re.error, requests.ConnectionError):
             return None
