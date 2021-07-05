@@ -21,6 +21,7 @@ from sadbot.bot_reply import (
     BOT_ACTION_TYPE_REPLY_FILE,
     BOT_ACTION_TYPE_REPLY_VOICE,
     BOT_ACTION_TYPE_KICK_USER,
+    BOT_ACTION_TYPE_INLINE_KEYBOARD,
 )
 from sadbot.command_interface import (
     BOT_HANDLER_TYPE_NEW_USER,
@@ -35,6 +36,11 @@ def snake_to_pascal_case(snake_str: str):
     """Converts a given snake_case string to PascalCase"""
     components = snake_str.split("_")
     return "".join(x.title() for x in components[0:])
+
+def pascal_to_snake_case(pascal_str: str):
+    """Converts a given PascalCase string to snake_case"""
+    pascal_str = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', pascal_str)
+    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', pascal_str).lower()
 
 
 class App:
@@ -51,6 +57,26 @@ class App:
         self.load_commands()
         self.start_bot()
 
+    def load_class(self, import_name: str, class_name: str) -> bool:
+        arguments = []
+        command_class = getattr(
+            __import__(import_name, fromlist=[class_name]),
+            class_name,
+        )
+        if command_class.__init__.__class__.__name__ == "function":
+            arguments_list = command_class.__init__.__annotations__
+            for argument_name in arguments_list:
+                dependency_class_name = arguments_list[argument_name].__name__
+                if dependency_class_name in self.classes or self.load_class(f"sadbot.classes.{pascal_to_snake_case(dependency_class_name)}", dependency_class_name):
+                    arguments.append(
+                        self.classes[dependency_class_name]
+                    )
+                else:
+                    continue
+        command_class = command_class(*arguments)
+        self.classes.update({class_name: command_class})
+        return True
+
     def load_commands(self):
         """Loads the bot commands"""
         commands = glob.glob(join(dirname(__file__), "commands", "*.py"))
@@ -58,18 +84,9 @@ class App:
             if command_name == "__init__":
                 continue
             class_name = snake_to_pascal_case(command_name) + "BotCommand"
-            arguments = []
-            command_class = getattr(
-                __import__("sadbot.commands." + command_name, fromlist=[class_name]),
-                class_name,
-            )
-            if command_class.__init__.__class__.__name__ == "function":
-                arguments_list = command_class.__init__.__annotations__
-                for argument_name in arguments_list:
-                    arguments.append(
-                        self.classes[arguments_list[argument_name].__name__]
-                    )
-            command_class = command_class(*arguments)
+            if not self.load_class(f"sadbot.commands.{command_name}", class_name):
+                continue
+            command_class = self.classes[class_name]
             self.commands.append(
                 {"regex": command_class.command_regex, "class": command_class}
             )
@@ -89,6 +106,8 @@ class App:
 
     def send_message_and_update_db(self, message: Message, reply_info: BotAction) -> Optional[List]:
         sent_message = self.send_message(message.chat_id, reply_info)
+        if sent_message is None:
+            return
         # this needs to be done better, along with the storage for non-text messages
         if (
                 sent_message.get("result")
@@ -102,6 +121,7 @@ class App:
                 message.chat_id,
                 reply_info.reply_text,
                 None,
+                result["message"]["from"]["username"]
             )
             self.message_repository.insert_message(message)
         return sent_message
@@ -135,13 +155,20 @@ class App:
             api_method = "sendVoice"
             files = {"voice": reply.reply_voice}
         elif reply.reply_type == BOT_ACTION_TYPE_KICK_USER:
-            api_method = ""
+            api_method = "kickChatMember"
+            data.update({chat_id, reply.reply_kick_user_id})
+        elif reply.reply_type == BOT_ACTION_TYPE_INLINE_KEYBOARD:
+            # here we need to check reply_type
+            api_method = "sendPhoto"
+            files = {"photo": reply.reply_image}
+            data.update({"caption": reply_text})
+            data.update({"reply_markup": json.dumps({"inline_keyboard": reply.reply_inline_keyboard})})
         else:
             return
+        # headers={"Content-Type": "application/json"},
         req = requests.post(
             f"{self.base_url}{api_method}",
             data=data,
-            headers={"Conent-Type": "application/json"},
             files=files,
         )
         if not req.ok:
@@ -184,12 +211,14 @@ class App:
                     continue
                 for reply in reply_message:
                     self.send_message_and_update_db(message, reply) or {}
-        return
 
     def handle_photos(self, message: Message) -> None:
         """Handles photo messages"""
-        # here you can do what you want
-        return
+        return self.handle_messages(message)
+
+    def handle_inline_keyboard_input(self, message: Message) -> None:
+        """Handles inline keyboard inputs"""
+        return self.handle_messages(message)
 
     def start_bot(self) -> None:
         """Starts the bot"""
@@ -207,6 +236,7 @@ class App:
                         item["message"]["chat"]["id"],
                         None,
                         item["message"].get("reply_to_message", {}).get("message_id"),
+                        item["message"]["from"]["username"]
                     )
                     if "text" in item["message"]:
                         message.text = str(item["message"]["text"])

@@ -1,6 +1,6 @@
 """This module contains the BotAction class"""
 
-from typing import Optional
+from typing import Optional, List
 from dataclasses import dataclass
 from io import BytesIO
 
@@ -10,6 +10,7 @@ BOT_ACTION_TYPE_REPLY_AUDIO = 2
 BOT_ACTION_TYPE_REPLY_FILE = 4
 BOT_ACTION_TYPE_REPLY_VOICE = 5
 BOT_ACTION_TYPE_KICK_USER = 6
+BOT_ACTION_TYPE_INLINE_KEYBOARD = 7
 
 
 @dataclass
@@ -24,3 +25,4 @@ class BotAction:
     reply_file: Optional[BytesIO] = None
     reply_voice: Optional[BytesIO] = None
     reply_kick_user_id: Optional[int] = None
+    reply_inline_keyboard: Optional[List] = None

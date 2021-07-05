@@ -1,15 +1,8 @@
-"""Captcha bot command"""
-
 import sqlite3
-from typing import Optional, List, Tuple
-from os import path
-from io import BytesIO
+from typing import Tuple
 import random
 from PIL import Image, ImageFont, ImageDraw
 
-from sadbot.command_interface import CommandInterface, BOT_HANDLER_TYPE_NEW_USER
-from sadbot.message import Message
-from sadbot.bot_reply import BotAction, BOT_ACTION_TYPE_REPLY_IMAGE, BOT_ACTION_TYPE_KICK_USER
 from sadbot.config import (
     CAPTCHA_BACKGROUND_COLOR,
     CAPTCHA_TEXT_COLOR,
@@ -40,7 +33,8 @@ def get_captcha_table_creation_query() -> str:
     return """
     CREATE TABLE IF NOT EXISTS captchas (
       CaptchaID text,
-      CaptchaText text
+      CaptchaText text,
+      Expiration timestamp
     )
     """
 
@@ -194,38 +188,3 @@ class Captcha:
                 lines_color = self.get_random_color()
             draw.line((x_0, y_0, x_1, y_1), fill=lines_color, width=1)
         return image
-
-
-class CaptchaBotCommand(CommandInterface):
-    """This is the captcha bot command class"""
-
-    def __init__(self, con: sqlite3.Connection):
-        """Initializes the captcha command"""
-        self.captcha = Captcha(con)
-
-    @property
-    def handler_type(self) -> str:
-        return BOT_HANDLER_TYPE_NEW_USER
-
-    @property
-    def command_regex(self) -> str:
-        """Returns the regex for matching new users"""
-        return r"test"
-
-    def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
-        """'Welcomes' a new user"""
-        captcha_id = str(message.chat_id) + "." + str(message.sender_id)
-        captcha_text, captcha_image = self.captcha.get_captcha(captcha_id)
-        bytes_io = BytesIO()
-        bytes_io.name = "captcha.jpeg"
-        captcha_image.save(bytes_io, "JPEG")
-        bytes_io.seek(0)
-        # here we should add another bot action which replies with an inline keyboard
-        # also we need to welcome hte user with a proper message
-        return [BotAction(BOT_ACTION_TYPE_REPLY_IMAGE, reply_image=bytes_io, reply_text=captcha_text)]
-
-    def kick_user(self, user_id: int) -> Optional[BotAction]:
-        return
-
-    def get_captcha(self, captcha: str, filename: str) -> Optional[BotAction]:
-        return

@@ -26,6 +26,6 @@ class AmogusBotCommand(CommandInterface):
         amogus_replies = [
             "amogus",
             "sus",
-            f"i saw the sus impostor {message.sender_name} vent in elec",
+            f"i saw the sus impostor {message.sender_username} vent in elec",
         ]
         return [BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text=random.choice(amogus_replies))]

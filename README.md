@@ -131,11 +131,11 @@ class SampleCommandBotCommand(CommandsInterface):
 - [ ] Group ratelimit
 - [ ] Antiflood, samewords count and newlines count
 - [X] FBI watchlist
-- [ ] Captcha command
+- [X] Captcha command
 - [X] Translate command
 - [ ] Outgoing messages queue
 - [ ] Asynchronous processing
-- [ ] Welcome messages
+- [X] Welcome messages
 - [X] Big chan url pictures
 - [ ] Beaver command
 - [ ] Reminder tag/bookmark command
@@ -145,3 +145,4 @@ class SampleCommandBotCommand(CommandsInterface):
 - [ ] Multiple messages per command (return a list)
 - [ ] Chat events handlers
 - [ ] Add new tables: for images, for edits and for usernames
+- [ ] Mute command

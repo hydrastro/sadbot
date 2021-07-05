@@ -14,3 +14,4 @@ class Message:
     chat_id: int = 0
     text: Optional[str] = None
     reply_id: Optional[int] = None
+    sender_username: Optional[str] = None
