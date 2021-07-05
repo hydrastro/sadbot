@@ -68,18 +68,24 @@ class CaptchaWelcomeBotCommand(CommandInterface):
             )
         random.shuffle(keyboard_data)
         keyboard_data = [keyboard_data]
-        permissions = [{
-            "can_send_messages": False,
-            "can_send_media_messages": False,
-            "can_send_polls": False,
-            "can_send_other_messages": False,
-            "can_add_web_page_previews": False,
-            "can_change_info": False,
-            "can_invite_users": False,
-            "can_pin_messages": False,
-        }]
+        permissions = [
+            {
+                "can_send_messages": False,
+                "can_send_media_messages": False,
+                "can_send_polls": False,
+                "can_send_other_messages": False,
+                "can_add_web_page_previews": False,
+                "can_change_info": False,
+                "can_invite_users": False,
+                "can_pin_messages": False,
+            }
+        ]
         return [
-            BotAction(BOT_ACTION_TYPE_RESTRICT_CHAT_MEMBER, reply_permissions=permissions, reply_ban_user_id=message.sender_id),
+            BotAction(
+                BOT_ACTION_TYPE_RESTRICT_CHAT_MEMBER,
+                reply_permissions=permissions,
+                reply_ban_user_id=message.sender_id,
+            ),
             BotAction(
                 BOT_ACTION_TYPE_INLINE_KEYBOARD,
                 reply_text=welcome_message,

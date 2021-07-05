@@ -65,16 +65,18 @@ class CaptchaKickBotCommand(CommandInterface):
             ]
             welcome_reply = random.choice(welcome_replies)
             self.captcha.delete_captcha(captcha_id)
-            permissions = [{
-                "can_send_messages": True,
-                "can_send_media_messages": True,
-                "can_send_polls": True,
-                "can_send_other_messages": True,
-                "can_add_web_page_previews": True,
-                "can_change_info": True,
-                "can_invite_users": True,
-                "can_pin_messages": True,
-            }]
+            permissions = [
+                {
+                    "can_send_messages": True,
+                    "can_send_media_messages": True,
+                    "can_send_polls": True,
+                    "can_send_other_messages": True,
+                    "can_add_web_page_previews": True,
+                    "can_change_info": True,
+                    "can_invite_users": True,
+                    "can_pin_messages": True,
+                }
+            ]
             return [
                 BotAction(
                     BOT_ACTION_TYPE_ANSWER_CALLBACK_QUERY,
@@ -87,7 +89,11 @@ class CaptchaKickBotCommand(CommandInterface):
                     reply_ban_user_id=message.sender_id,
                     reply_delete_message_id=message.reply_id,
                 ),
-                BotAction(BOT_ACTION_TYPE_RESTRICT_CHAT_MEMBER, reply_permissions=permissions, reply_ban_user_id=message.sender_id)
+                BotAction(
+                    BOT_ACTION_TYPE_RESTRICT_CHAT_MEMBER,
+                    reply_permissions=permissions,
+                    reply_ban_user_id=message.sender_id,
+                ),
             ]
         new_user = message.sender_username
         kick_text = [
@@ -105,7 +111,8 @@ class CaptchaKickBotCommand(CommandInterface):
                 BOT_ACTION_TYPE_ANSWER_CALLBACK_QUERY,
                 reply_callback_query_id=message.message_id,
                 reply_text=kick_text,
-            ), # BotAction(BOT_ACTION_TYPE_BAN_USER, reply_ban_user_id=message.sender_id),
+            ),
+            BotAction(BOT_ACTION_TYPE_BAN_USER, reply_ban_user_id=message.sender_id),
             BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text=kick_text),
             BotAction(
                 BOT_ACTION_TYPE_DELETE_MESSAGE, reply_delete_message_id=message.reply_id
