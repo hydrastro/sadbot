@@ -75,7 +75,11 @@ class RouletteBotCommand(CommandInterface):
             bullets = message.text[7:]
             bullets = bullets.replace(" ", "")
             bullets = safe_cast(bullets, int, self.bullets)
-            return [BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text=revolver.reload(bullets))]
+            return [
+                BotAction(
+                    BOT_ACTION_TYPE_REPLY_TEXT, reply_text=revolver.reload(bullets)
+                )
+            ]
         if re.fullmatch(
             re.compile(r"(\.[Rr][Ee][Vv][Oo][Ll][Vv][Ee][Rr]\s[0-9]+)"), message.text
         ):

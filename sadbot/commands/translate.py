@@ -42,7 +42,9 @@ class TranslateBotCommand(CommandInterface):
             if not result:
                 return None
             return [
-                BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text="Translation: " + result[0])
+                BotAction(
+                    BOT_ACTION_TYPE_REPLY_TEXT, reply_text="Translation: " + result[0]
+                )
             ]
         except (re.error, requests.ConnectionError):
             return None

@@ -20,12 +20,15 @@ from sadbot.bot_reply import (
     BOT_ACTION_TYPE_REPLY_AUDIO,
     BOT_ACTION_TYPE_REPLY_FILE,
     BOT_ACTION_TYPE_REPLY_VOICE,
-    BOT_ACTION_TYPE_KICK_USER,
+    BOT_ACTION_TYPE_BAN_USER,
     BOT_ACTION_TYPE_INLINE_KEYBOARD,
+    BOT_ACTION_TYPE_ANSWER_CALLBACK_QUERY,
+    BOT_ACTION_TYPE_DELETE_MESSAGE,
+    BOT_ACTION_TYPE_RESTRICT_CHAT_MEMBER,
 )
 from sadbot.command_interface import (
     BOT_HANDLER_TYPE_NEW_USER,
-    BOT_HANDLER_TYPE_KEYBOARD_INPUT,
+    BOT_HANDLER_TYPE_CALLBACK_QUERY,
     BOT_HANDLER_TYPE_MESSAGE,
     BOT_HANDLER_TYPE_EDITED_MESSAGE,
     BOT_HANDLER_TYPE_PICTURE,
@@ -37,10 +40,11 @@ def snake_to_pascal_case(snake_str: str):
     components = snake_str.split("_")
     return "".join(x.title() for x in components[0:])
 
+
 def pascal_to_snake_case(pascal_str: str):
     """Converts a given PascalCase string to snake_case"""
-    pascal_str = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', pascal_str)
-    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', pascal_str).lower()
+    pascal_str = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", pascal_str)
+    return re.sub("([a-z0-9])([A-Z])", r"\1_\2", pascal_str).lower()
 
 
 class App:
@@ -67,10 +71,11 @@ class App:
             arguments_list = command_class.__init__.__annotations__
             for argument_name in arguments_list:
                 dependency_class_name = arguments_list[argument_name].__name__
-                if dependency_class_name in self.classes or self.load_class(f"sadbot.classes.{pascal_to_snake_case(dependency_class_name)}", dependency_class_name):
-                    arguments.append(
-                        self.classes[dependency_class_name]
-                    )
+                if dependency_class_name in self.classes or self.load_class(
+                    f"sadbot.classes.{pascal_to_snake_case(dependency_class_name)}",
+                    dependency_class_name,
+                ):
+                    arguments.append(self.classes[dependency_class_name])
                 else:
                     continue
         command_class = command_class(*arguments)
@@ -99,19 +104,20 @@ class App:
         req = requests.get(url)
         if not req.ok:
             print(f"Failed to retrieve updates from server - details: {req.json()}")
-            print(url)
             return None
 
         return json.loads(req.content)
 
-    def send_message_and_update_db(self, message: Message, reply_info: BotAction) -> Optional[List]:
+    def send_message_and_update_db(
+        self, message: Message, reply_info: BotAction
+    ) -> Optional[List]:
         sent_message = self.send_message(message.chat_id, reply_info)
         if sent_message is None:
             return
         # this needs to be done better, along with the storage for non-text messages
         if (
-                sent_message.get("result")
-                and reply_info.reply_type == BOT_ACTION_TYPE_REPLY_TEXT
+            sent_message.get("result")
+            and reply_info.reply_type == BOT_ACTION_TYPE_REPLY_TEXT
         ):
             result = sent_message.get("result")
             message = Message(
@@ -121,7 +127,7 @@ class App:
                 message.chat_id,
                 reply_info.reply_text,
                 None,
-                result["message"]["from"]["username"]
+                result["from"]["username"],
             )
             self.message_repository.insert_message(message)
         return sent_message
@@ -154,15 +160,49 @@ class App:
         elif reply.reply_type == BOT_ACTION_TYPE_REPLY_VOICE:
             api_method = "sendVoice"
             files = {"voice": reply.reply_voice}
-        elif reply.reply_type == BOT_ACTION_TYPE_KICK_USER:
-            api_method = "kickChatMember"
-            data.update({chat_id, reply.reply_kick_user_id})
+        elif reply.reply_type == BOT_ACTION_TYPE_BAN_USER:
+            api_method = "banChatMember"
+            data.update(
+                {
+                    "chat_id": chat_id,
+                    "user_id": reply.reply_ban_user_id,
+                }
+            )
+        elif reply.reply_type == BOT_ACTION_TYPE_RESTRICT_CHAT_MEMBER:
+            api_method = "restrictChatMember"
+            data.update(
+                {
+                    "chat_id": chat_id,
+                    "user_id": reply.reply_ban_user_id,
+                    "permissions": json.dumps(reply.reply_permissions[0]),
+                    "until_date": reply.reply_restrict_until_date,
+                }
+            )
         elif reply.reply_type == BOT_ACTION_TYPE_INLINE_KEYBOARD:
             # here we need to check reply_type
             api_method = "sendPhoto"
             files = {"photo": reply.reply_image}
             data.update({"caption": reply_text})
-            data.update({"reply_markup": json.dumps({"inline_keyboard": reply.reply_inline_keyboard})})
+            data.update(
+                {
+                    "reply_markup": json.dumps(
+                        {"inline_keyboard": reply.reply_inline_keyboard}
+                    )
+                }
+            )
+        elif reply.reply_type == BOT_ACTION_TYPE_ANSWER_CALLBACK_QUERY:
+            api_method = "answerCallbackQuery"
+            data.update(
+                {
+                    "callback_query_id": reply.reply_callback_query_id,
+                    "text": reply.reply_text,
+                }
+            )
+        elif reply.reply_type == BOT_ACTION_TYPE_DELETE_MESSAGE:
+            api_method = "deleteMessage"
+            data.update(
+                {"chat_id": chat_id, "message_id": reply.reply_delete_message_id}
+            )
         else:
             return
         # headers={"Content-Type": "application/json"},
@@ -216,9 +256,19 @@ class App:
         """Handles photo messages"""
         return self.handle_messages(message)
 
-    def handle_inline_keyboard_input(self, message: Message) -> None:
+    def handle_callback_query(self, message: Message) -> None:
         """Handles inline keyboard inputs"""
-        return self.handle_messages(message)
+        for command in self.commands:
+            if command["class"].handler_type == BOT_HANDLER_TYPE_CALLBACK_QUERY:
+                try:
+                    if re.fullmatch(re.compile(command["regex"]), message.text):
+                        reply_message = command["class"].get_reply(message)
+                        if reply_message is None:
+                            continue
+                        for reply in reply_message:
+                            self.send_message_and_update_db(message, reply) or {}
+                except re.error:
+                    return None
 
     def start_bot(self) -> None:
         """Starts the bot"""
@@ -236,7 +286,7 @@ class App:
                         item["message"]["chat"]["id"],
                         None,
                         item["message"].get("reply_to_message", {}).get("message_id"),
-                        item["message"]["from"]["username"]
+                        item["message"]["from"]["username"],
                     )
                     if "text" in item["message"]:
                         message.text = str(item["message"]["text"])
@@ -246,6 +296,14 @@ class App:
                             message.text = str(item["message"]["caption"])
                         self.handle_photos(message)
                     if "new_chat_member" in item["message"]:
+                        message.sender_id = item["message"]["new_chat_member"]["id"]
+                        message.sender_username = item["message"]["new_chat_member"][
+                            "username"
+                        ]
+                        message.sender_name = item["message"]["new_chat_member"][
+                            "first_name"
+                        ]
+                        message.is_bot = item["message"]["new_chat_member"]["is_bot"]
                         self.handle_new_chat_members(message)
                     self.message_repository.insert_message(message)
                 if "edited_message" in item:
@@ -253,4 +311,15 @@ class App:
                         text = item["edited_message"]["text"]
                         message_id = item["edited_message"]["message_id"]
                         self.message_repository.edit_message(message_id, text)
+                if "callback_query" in item:
+                    message = Message(
+                        item["callback_query"]["id"],
+                        item["callback_query"]["from"]["first_name"],
+                        item["callback_query"]["from"]["id"],
+                        item["callback_query"]["message"]["chat"]["id"],
+                        item["callback_query"]["data"],
+                        item["callback_query"]["message"]["message_id"],
+                        item["callback_query"]["from"]["username"],
+                    )
+                    self.handle_callback_query(message)
             time.sleep(1)

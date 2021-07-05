@@ -29,6 +29,7 @@ class CloseThreadBotCommand(CommandInterface):
         ]
         return [
             BotAction(
-                BOT_ACTION_TYPE_REPLY_TEXT, reply_text=random.choice(closed_thread_replies)
+                BOT_ACTION_TYPE_REPLY_TEXT,
+                reply_text=random.choice(closed_thread_replies),
             )
         ]

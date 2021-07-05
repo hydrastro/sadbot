@@ -28,4 +28,8 @@ class AmogusBotCommand(CommandInterface):
             "sus",
             f"i saw the sus impostor {message.sender_username} vent in elec",
         ]
-        return [BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text=random.choice(amogus_replies))]
+        return [
+            BotAction(
+                BOT_ACTION_TYPE_REPLY_TEXT, reply_text=random.choice(amogus_replies)
+            )
+        ]

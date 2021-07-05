@@ -30,5 +30,7 @@ class ComplimentBotCommand(CommandInterface):
             "good human",
         ]
         return [
-            BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text=random.choice(compliment_replies))
+            BotAction(
+                BOT_ACTION_TYPE_REPLY_TEXT, reply_text=random.choice(compliment_replies)
+            )
         ]

@@ -25,8 +25,10 @@ class LenovoBotCommand(CommandInterface):
         """Returns lenovo"""
         based_models = [
             "X220",
-            "X230" "T420",
-            "W530" "T440",
+            "X230",
+            "T420",
+            "W530",
+            "T440",
             "W540",
             "T480",
             "X210",

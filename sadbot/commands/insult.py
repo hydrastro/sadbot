@@ -32,4 +32,8 @@ class InsultBotCommand(CommandInterface):
             "lord, have mercy: they don't know that they're saying.",
             "seethe dilate cope freetards btfo",
         ]
-        return [BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text=random.choice(insult_replies))]
+        return [
+            BotAction(
+                BOT_ACTION_TYPE_REPLY_TEXT, reply_text=random.choice(insult_replies)
+            )
+        ]

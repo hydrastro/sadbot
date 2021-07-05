@@ -1,5 +1,5 @@
 import sqlite3
-from typing import Tuple
+from typing import Optional, Tuple
 import random
 from PIL import Image, ImageFont, ImageDraw
 
@@ -25,11 +25,12 @@ from sadbot.config import (
     CAPTCHA_RANDOMIZE_DOTS_COLORS,
     CAPTCHA_LINES_START_FROM_BORDER,
     CAPTCHA_USE_BORDER_LINEAR_RANDOMNESS,
+    CAPTCHA_LINE_WIDTH,
 )
 
 
 def get_captcha_table_creation_query() -> str:
-    """"Returns the query for creating the captchas table"""
+    """ "Returns the query for creating the captchas table"""
     return """
     CREATE TABLE IF NOT EXISTS captchas (
       CaptchaID text,
@@ -58,7 +59,8 @@ class Captcha:
         query = """
           SELECT
             CaptchaID,
-            CaptchaText
+            CaptchaText,
+            Expiration
           FROM
             captchas
           WHERE CaptchaID = ? AND CaptchaText = ?
@@ -67,6 +69,9 @@ class Captcha:
         cur.execute(query, params)
         data = cur.fetchone()
         return data is not None
+
+    def delete_old_captchas(self) -> None:
+        return
 
     @staticmethod
     def get_random_border_coordinates() -> Tuple[int, int]:
@@ -112,10 +117,38 @@ class Captcha:
         """
         self.con.execute(
             query,
-            (captcha_id, captcha_text),
+            (captcha_text, captcha_id),
         )
         self.con.commit()
         return
+
+    def delete_captcha(self, captcha_id: str):
+        query = """
+          DELETE FROM captchas
+          WHERE CaptchaID = ?
+        """
+        self.con.execute(
+            query,
+            [captcha_id],
+        )
+        self.con.commit()
+        return
+
+    def get_captcha_from_id(self, captcha_id: str) -> Optional[str]:
+        """Retrieves the captcha text given a captcha id"""
+        cur = self.con.cursor()
+        query = """
+        SELECT
+          CaptchaText
+        FROM
+          captchas
+        WHERE CaptchaID = ?
+        """
+        row = cur.execute(query, [captcha_id])
+        captcha_text = row.fetchone()
+        if not captcha_text:
+            return None
+        return captcha_text[0]
 
     def get_captcha_image(self, captcha_text: str) -> Image:
         """Generates a cool captcha and returns it as a image"""
@@ -186,5 +219,5 @@ class Captcha:
             draw = ImageDraw.Draw(image)
             if CAPTCHA_RANDOMIZE_LINES_COLORS:
                 lines_color = self.get_random_color()
-            draw.line((x_0, y_0, x_1, y_1), fill=lines_color, width=1)
+            draw.line((x_0, y_0, x_1, y_1), fill=lines_color, width=CAPTCHA_LINE_WIDTH)
         return image

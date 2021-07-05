@@ -63,6 +63,7 @@ class CringeBotCommand(CommandInterface):
         data = list(set(data))
         return [
             BotAction(
-                BOT_ACTION_TYPE_REPLY_TEXT, reply_text=f"{eceleb.prefix}{random.choice(data)}"
+                BOT_ACTION_TYPE_REPLY_TEXT,
+                reply_text=f"{eceleb.prefix}{random.choice(data)}",
             )
         ]

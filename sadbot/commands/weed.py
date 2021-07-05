@@ -19,7 +19,7 @@ class WeedBotCommand(CommandInterface):
     @property
     def command_regex(self) -> str:
         """Returns the regex for matching lenovo commands"""
-        return r".*([Ww][Aa][Nn][Tt]).*([Ww][Ee]{2}[Dd]).*"
+        return r".*([Ww][Aa][Nn][Tt]|[Ll][Ii][Kk][Ee]).*([Ww][Ee]{2}[Dd]).*"
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
         """Politely refuses weed while staying cool cause my brain already smooth"""
@@ -29,4 +29,6 @@ class WeedBotCommand(CommandInterface):
             "No, thanks, my brain already smooth enough",
             "I shalt decline thine propitious offer of inhaling plantam cannabinacearum in my lungs quod I hitherto feel accomplished about the life of mine person.",
         ]
-        return [BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text=random.choice(replies))]
+        return [
+            BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text=random.choice(replies))
+        ]

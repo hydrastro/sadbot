@@ -23,4 +23,6 @@ class RollBotCommand(CommandInterface):
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
         """Rolls a number"""
-        return [BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text=str(random.randint(0, 9)))]
+        return [
+            BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text=str(random.randint(0, 9)))
+        ]

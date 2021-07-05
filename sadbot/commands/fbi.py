@@ -74,7 +74,7 @@ class FbiBotCommand(CommandInterface):
                 self.con.commit()
 
     def get_fbi_word_id(self, word: str) -> Optional[int]:
-        """Retrive the WordID of the word"""
+        """Retrieves the WordID of the word"""
         cur = self.con.cursor()
         query = """
           SELECT
@@ -89,7 +89,7 @@ class FbiBotCommand(CommandInterface):
         return word_id[0]
 
     def get_fbi_entry(self, message: Message, word: str) -> Optional[str]:
-        """Retrieve an entry from the DB or None if there's no entry with that info"""
+        """Retrieves an entry from the DB or None if there's no entry with that info"""
         word_id = self.get_fbi_word_id(word)
         query = """
           SELECT
@@ -131,7 +131,7 @@ class FbiBotCommand(CommandInterface):
         self.con.commit()
 
     def update_fbi_entry(self, message: Message, word: str) -> None:
-        """Update the count of an entry"""
+        """Updates the count of an entry"""
         query = """
           SELECT
             SenderID,

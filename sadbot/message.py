@@ -15,3 +15,4 @@ class Message:
     text: Optional[str] = None
     reply_id: Optional[int] = None
     sender_username: Optional[str] = None
+    is_bot: Optional[bool] = False
