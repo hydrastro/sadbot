@@ -52,14 +52,14 @@ class CaptchaWelcomeBotCommand(CommandInterface):
         random.shuffle(keyboard_data)
         inline_keyboard = []
         for i in range(
-                0,
-                ceil((CAPTCHA_EXTRA_TEXTS_NUMBER + 1) / CAPTCHA_KEYBOARD_BUTTONS_PER_LINE),
+            0,
+            ceil((CAPTCHA_EXTRA_TEXTS_NUMBER + 1) / CAPTCHA_KEYBOARD_BUTTONS_PER_LINE),
         ):
             temp_list = []
             for j in range(
-                    i * CAPTCHA_KEYBOARD_BUTTONS_PER_LINE,
-                    i * CAPTCHA_KEYBOARD_BUTTONS_PER_LINE
-                    + CAPTCHA_KEYBOARD_BUTTONS_PER_LINE,
+                i * CAPTCHA_KEYBOARD_BUTTONS_PER_LINE,
+                i * CAPTCHA_KEYBOARD_BUTTONS_PER_LINE
+                + CAPTCHA_KEYBOARD_BUTTONS_PER_LINE,
             ):
                 if j > CAPTCHA_EXTRA_TEXTS_NUMBER:
                     continue

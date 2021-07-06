@@ -112,7 +112,9 @@ class FbiBotCommand(CommandInterface):
         cur.execute(query, (message.sender_id, message.chat_id, word_id))
         return cur.fetchone()
 
-    def get_most_wanted(self, list_length: int, chat_id: int, word: Optional[str]) -> List:
+    def get_most_wanted(
+        self, list_length: int, chat_id: int, word: Optional[str]
+    ) -> List:
         """Returns the most wanted list"""
         if word is not None:
             return []
