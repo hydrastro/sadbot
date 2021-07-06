@@ -53,10 +53,10 @@ class CaptchaKickBotCommand(CommandInterface):
             ]
         captcha_text = self.captcha.get_captcha_from_id(captcha_id)
         if captcha_text is None:
-            print(f"Error: captcha not found in the database.")
-            return
+            print("Error: captcha not found in the database.")
+            return None
         if callback_data[1] == captcha_text:
-            correct_captcha_replies = ["Correct." "You got it right"]
+            correct_captcha_replies = ["Correct.", "Yo! You got it right!", "uwu nice"]
             correct_captcha = random.choice(correct_captcha_replies)
             welcome_replies = [
                 f"Welcome @{message.sender_username}",

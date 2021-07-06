@@ -62,6 +62,7 @@ class App:
         self.start_bot()
 
     def load_class(self, import_name: str, class_name: str) -> bool:
+        """Dynamically loads and initializes a class given its name and its path"""
         arguments = []
         command_class = getattr(
             __import__(import_name, fromlist=[class_name]),
@@ -111,9 +112,10 @@ class App:
     def send_message_and_update_db(
         self, message: Message, reply_info: BotAction
     ) -> Optional[List]:
+        """Sends a messages and updates the database if it's successfully sent"""
         sent_message = self.send_message(message.chat_id, reply_info)
         if sent_message is None:
-            return
+            return None
         # this needs to be done better, along with the storage for non-text messages
         if (
             sent_message.get("result")
@@ -204,7 +206,7 @@ class App:
                 {"chat_id": chat_id, "message_id": reply.reply_delete_message_id}
             )
         else:
-            return
+            return None
         # headers={"Content-Type": "application/json"},
         req = requests.post(
             f"{self.base_url}{api_method}",
@@ -224,6 +226,7 @@ class App:
         messages = []
         for command in self.commands:
             if command["class"].handler_type == BOT_HANDLER_TYPE_MESSAGE:
+                print(command)
                 try:
                     if re.fullmatch(re.compile(command["regex"]), text):
                         reply_message = command["class"].get_reply(message)
@@ -240,7 +243,7 @@ class App:
         if replies_info is None:
             return
         for reply_info in replies_info:
-            self.send_message_and_update_db(message, reply_info) or {}
+            self.send_message_and_update_db(message, reply_info)
 
     def handle_new_chat_members(self, message: Message) -> None:
         """Handles new chat members events"""
@@ -250,7 +253,7 @@ class App:
                 if reply_message is None:
                     continue
                 for reply in reply_message:
-                    self.send_message_and_update_db(message, reply) or {}
+                    self.send_message_and_update_db(message, reply)
 
     def handle_photos(self, message: Message) -> None:
         """Handles photo messages"""
@@ -266,9 +269,10 @@ class App:
                         if reply_message is None:
                             continue
                         for reply in reply_message:
-                            self.send_message_and_update_db(message, reply) or {}
+                            self.send_message_and_update_db(message, reply)
                 except re.error:
                     return None
+        return None
 
     def start_bot(self) -> None:
         """Starts the bot"""

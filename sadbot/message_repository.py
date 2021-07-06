@@ -2,7 +2,7 @@
 
 import re
 import sqlite3
-from typing import Optional
+from typing import Optional, List
 
 from sadbot.message import Message
 
@@ -12,7 +12,7 @@ def _create_func(x_val: str, y_val: str) -> int:
     return 1 if re.search(x_val, y_val) else 0
 
 
-def get_table_creation_query() -> str:
+def get_messages_table_creation_query() -> str:
     """Returns the table creation query"""
     return """
     CREATE TABLE IF NOT EXISTS messages (
@@ -26,6 +26,16 @@ def get_table_creation_query() -> str:
     """
 
 
+def get_usernames_table_creation_query() -> str:
+    """Returns the usernames table creation query"""
+    return """
+    CREATE TABLE IF NOT EXISTS usernames (
+      UserID int,
+      Username text
+    )
+    """
+
+
 class MessageRepository:
     """This class handles the messages database"""
 
@@ -33,10 +43,40 @@ class MessageRepository:
         """Initializes the message repository class"""
         self.con = con
         self.con.create_function("regexp", 2, _create_func)
-        self.con.execute(get_table_creation_query())
+        self.con.execute(get_messages_table_creation_query())
+        self.con.execute(get_usernames_table_creation_query())
+
+    def get_username_from_id(self, user_id: int) -> Optional[List]:
+        """Checks if a userid is in the usernames table"""
+        cur = self.con.cursor()
+        query = """
+              SELECT
+                UserID,
+                Username
+              FROM usernames
+              WHERE UserID = ?
+            """
+        cur.execute(query, [user_id])
+        data = cur.fetchone()
+        return data
+
+    def insert_username(self, user_id: int, username: str) -> bool:
+        """Inserts a username into the usernames table"""
+        if self.get_username_from_id(user_id) is None:
+            return False
+        query = """
+          INSERT INTO usernames (
+            UserID,
+            Username
+          ) VALUES (?, ?)
+        """
+        self.con.execute(query, [user_id, username])
+        self.con.commit()
+        return True
 
     def insert_message(self, message: Message) -> None:
         """Inserts a message into the database"""
+        self.insert_username(message.sender_id, message.sender_username)
         query = """
           INSERT INTO messages (
             MessageID,

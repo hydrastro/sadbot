@@ -134,15 +134,15 @@ class SampleCommandBotCommand(CommandsInterface):
 - [X] Captcha command
 - [X] Translate command
 - [ ] Outgoing messages queue
-- [ ] Asynchronous processing
+- [ ] Asynchronous processing <- HIGH PRIORITY
 - [X] Welcome messages
 - [X] Big chan url pictures
 - [ ] Beaver command
 - [ ] Reminder tag/bookmark command
 - [ ] VC Radio
-- [ ] Stay cool on weed questions
+- [X] Stay cool on weed questions
 - [ ] Group admin settings: enabled modules etc.
-- [ ] Multiple messages per command (return a list)
-- [ ] Chat events handlers
+- [X] Multiple messages per command (return a list)
+- [X] Chat events handlers
 - [ ] Add new tables: for images, for edits and for usernames
 - [ ] Mute command

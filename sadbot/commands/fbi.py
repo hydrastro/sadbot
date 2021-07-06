@@ -3,10 +3,10 @@
 import sqlite3
 from typing import Optional, List
 
-from sadbot.config import FBI_WORDS
+from sadbot.config import FBI_WORDS, FBI_MOST_WANTED_NUMBER
 from sadbot.command_interface import CommandInterface, BOT_HANDLER_TYPE_MESSAGE
 from sadbot.message import Message
-from sadbot.bot_reply import BotAction
+from sadbot.bot_reply import BotAction, BOT_ACTION_TYPE_REPLY_TEXT
 
 
 def fbi_words_table_creation_query() -> str:
@@ -62,7 +62,14 @@ class FbiBotCommand(CommandInterface):
                 return None
             self.update_fbi_entry(message, word)
         if "fbi watchlist" in message.text.lower():
-            reply_text = ""
+            reply_text = f"Top {FBI_MOST_WANTED_NUMBER} most wanted:"
+            word = None
+            if len(message.text) > 14:
+                word = message.text[14:]
+            count = FBI_MOST_WANTED_NUMBER
+            for criminal in self.get_most_wanted(count, message.chat_id, word):
+                reply_text += f"\n@{criminal[0]} - {criminal[1]}"
+            return [BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text=reply_text)]
         return None
 
     def initialize_forbidden_words(self):
@@ -91,6 +98,7 @@ class FbiBotCommand(CommandInterface):
     def get_fbi_entry(self, message: Message, word: str) -> Optional[str]:
         """Retrieves an entry from the DB or None if there's no entry with that info"""
         word_id = self.get_fbi_word_id(word)
+        # to be done: join usernames table
         query = """
           SELECT
             SenderID,
@@ -104,16 +112,24 @@ class FbiBotCommand(CommandInterface):
         cur.execute(query, (message.sender_id, message.chat_id, word_id))
         return cur.fetchone()
 
-    def get_most_wanted(self, list_length: int) -> List:
-        """TO BE DONE"""
+    def get_most_wanted(self, list_length: int, chat_id: int, word: Optional[str]) -> List:
+        """Returns the most wanted list"""
+        if word is not None:
+            return []
         query = """
           SELECT
-            SenderID
-          JOIN
-          ON
-          WHERE
+            SenderID,
+            Count
+          FROM
+            fbi_entries
+          WHERE ChatID = ?
+          GROUP BY SenderID
+          ORDER BY Count
           LIMIT ?
         """
+        cur = self.con.cursor()
+        cur.execute(query, [chat_id, list_length])
+        return cur.fetchall()
 
     def insert_fbi_entry(self, message: Message, word: str) -> None:
         """Insert an entry into the database"""

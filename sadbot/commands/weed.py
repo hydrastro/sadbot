@@ -27,7 +27,8 @@ class WeedBotCommand(CommandInterface):
             "Thank you for the offer, but I'm good",
             "No, thank you, I'm fine",
             "No, thanks, my brain already smooth enough",
-            "I shalt decline thine propitious offer of inhaling plantam cannabinacearum in my lungs quod I hitherto feel accomplished about the life of mine person.",
+            """I shalt decline thine propitious offer of inhaling plantam cannabinacearum in my
+            lungs quod I hitherto feel accomplished about the life of mine person.""",
         ]
         return [
             BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text=random.choice(replies))
