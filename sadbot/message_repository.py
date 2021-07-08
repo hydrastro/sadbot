@@ -1,5 +1,6 @@
 """Here is the MessageRepository class"""
 
+import datetime
 import re
 import sqlite3
 from typing import Optional, List
@@ -30,8 +31,19 @@ def get_usernames_table_creation_query() -> str:
     """Returns the usernames table creation query"""
     return """
     CREATE TABLE IF NOT EXISTS usernames (
-      UserID int,
+      UserID   int,
       Username text
+    )
+    """
+
+
+def get_bot_triggers_table_creation_query() -> str:
+    """Returns the bot triggers table creation query"""
+    return """
+    CREATE TABLE IF NOT EXISTS bot_triggers (
+      ChatID      int,
+      UserID      int,
+      MessageTime int
     )
     """
 
@@ -45,6 +57,71 @@ class MessageRepository:
         self.con.create_function("regexp", 2, _create_func)
         self.con.execute(get_messages_table_creation_query())
         self.con.execute(get_usernames_table_creation_query())
+        self.con.execute(get_bot_triggers_table_creation_query())
+
+    def delete_old_bot_triggers_logs(self, time: int) -> None:
+        """Deletes old bot triggers"""
+        # To be done
+        return None
+
+    def get_n_timestamp_chat(self, chat_id: int, message_number: int) -> int:
+        """Returns the timestamp of the last n message sent in a specific chat"""
+        if message_number == 0:
+            return 0
+        cur = self.con.cursor()
+        query = """
+        SELECT
+          ChatID,
+          UserID,
+          MessageTime
+        FROM bot_triggers
+        WHERE ChatID = ?
+        ORDER BY MessageTime DESC
+        LIMIT ?
+        """
+        cur.execute(query, [chat_id, message_number])
+        data = cur.fetchall()
+        if not data:
+            return 0
+        if len(data) < message_number:
+            return 0
+        return data[-1][2]
+
+    def get_n_timestamp_user(self, user_id: int, message_number: int) -> int:
+        """Returns the timestamp of the last n message sent by a specific user"""
+        if message_number == 0:
+            return 0
+        cur = self.con.cursor()
+        query = """
+        SELECT
+          ChatID,
+          UserID,
+          MessageTime
+        FROM bot_triggers
+        WHERE UserID = ?
+        ORDER BY MessageTime DESC
+        LIMIT ?
+        """
+        cur.execute(query, [user_id, message_number])
+        data = cur.fetchall()
+        if not data:
+            return 0
+        if len(data) < message_number:
+            return 0
+        return data[-1][2]
+
+    def log_bot_trigger(self, chat_id: int, user_id: int) -> None:
+        """logs a bot trigger"""
+        query = """
+        INSERT INTO bot_triggers (
+          ChatID,
+          UserID,
+          MessageTime
+        ) VALUES (?, ?, ?)
+        """
+        message_time = datetime.datetime.utcnow().timestamp()
+        self.con.execute(query, [chat_id, user_id, message_time])
+        self.con.commit()
 
     def get_username_from_id(self, user_id: int) -> Optional[List]:
         """Checks if a userid is in the usernames table"""

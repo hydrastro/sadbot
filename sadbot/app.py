@@ -1,5 +1,6 @@
 """ This module contains the main app class and friends """
 
+import datetime
 import glob
 import json
 import re
@@ -12,7 +13,15 @@ import requests
 
 from sadbot.message import Message
 from sadbot.message_repository import MessageRepository
-from sadbot.config import MAX_REPLY_LENGTH, UPDATES_TIMEOUT
+from sadbot.config import (
+    MAX_REPLY_LENGTH,
+    UPDATES_TIMEOUT,
+    OUTGOING_REQUESTS_TIMEOUT,
+    MESSAGES_CHAT_RATE_NUMBER,
+    MESSAGES_CHAT_RATE_PERIOD,
+    MESSAGES_USER_RATE_NUMBER,
+    MESSAGES_USER_RATE_PERIOD,
+)
 from sadbot.bot_reply import (
     BotAction,
     BOT_ACTION_TYPE_REPLY_TEXT,
@@ -113,6 +122,26 @@ class App:
         self, message: Message, reply_info: BotAction
     ) -> Optional[List]:
         """Sends a messages and updates the database if it's successfully sent"""
+        user_trigger_time = self.message_repository.get_n_timestamp_user(
+            message.sender_id, MESSAGES_USER_RATE_NUMBER
+        )
+        chat_trigger_time = self.message_repository.get_n_timestamp_chat(
+            message.chat_id, MESSAGES_CHAT_RATE_NUMBER
+        )
+        self.message_repository.log_bot_trigger(message.chat_id, message.sender_id)
+        now = datetime.datetime.utcnow().timestamp()
+        if user_trigger_time > now - MESSAGES_USER_RATE_PERIOD:
+            print(
+                f"Message not sent: user trigger limit exceeded - details:"
+                f"user id={message.sender_id} user last trigger time={user_trigger_time}"
+            )
+            return None
+        if chat_trigger_time > now - MESSAGES_CHAT_RATE_PERIOD:
+            print(
+                f"Message not sent: chat trigger limit exceeded - details:"
+                f" chat id={message.chat_id} chat last trigger time={chat_trigger_time}"
+            )
+            return None
         sent_message = self.send_message(message.chat_id, reply_info)
         if sent_message is None:
             return None
@@ -212,6 +241,7 @@ class App:
             f"{self.base_url}{api_method}",
             data=data,
             files=files,
+            timeout=OUTGOING_REQUESTS_TIMEOUT,
         )
         if not req.ok:
             print(f"Failed sending message - details: {req.json()}")
@@ -226,7 +256,6 @@ class App:
         messages = []
         for command in self.commands:
             if command["class"].handler_type == BOT_HANDLER_TYPE_MESSAGE:
-                print(command)
                 try:
                     if re.fullmatch(re.compile(command["regex"]), text):
                         reply_message = command["class"].get_reply(message)
