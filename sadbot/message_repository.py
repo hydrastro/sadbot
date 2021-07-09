@@ -48,6 +48,17 @@ def get_bot_triggers_table_creation_query() -> str:
     """
 
 
+def get_bot_replies_table_creation_query() -> str:
+    """Returns the bot triggers table creation query"""
+    return """
+    CREATE TABLE IF NOT EXISTS bot_replies (
+      MessageID int,
+      ReplyInfoID str,
+      ReplyInfoData
+    )
+    """
+
+
 class MessageRepository:
     """This class handles the messages database"""
 
@@ -58,6 +69,7 @@ class MessageRepository:
         self.con.execute(get_messages_table_creation_query())
         self.con.execute(get_usernames_table_creation_query())
         self.con.execute(get_bot_triggers_table_creation_query())
+        self.con.execute(get_bot_replies_table_creation_query())
 
     def delete_old_bot_triggers_logs(self, time: int) -> None:
         """Deletes old bot triggers"""
@@ -144,7 +156,7 @@ class MessageRepository:
 
     def insert_username(self, user_id: int, username: str) -> bool:
         """Inserts a username into the usernames table"""
-        if self.get_username_from_id(user_id) is None:
+        if self.get_username_from_id(user_id) is not None:
             return False
         query = """
           INSERT INTO usernames (
@@ -156,9 +168,38 @@ class MessageRepository:
         self.con.commit()
         return True
 
+    def insert_reply_info(self, message_id: int, reply_info_id: str, reply_info_data: str) -> None:
+        """Inserts a new entry for outgoing bot messages"""
+        query = """
+          INSERT INTO bot_replies (
+            MessageID,
+            ReplyInfoID,
+            ReplyInfoData
+          ) VALUES (?, ?, ?)
+        """
+        self.con.execute(query, [message_id, reply_info_id, reply_info_data])
+        self.con.commit()
+
+    def get_message_from_reply_info_id(self, reply_info_id: str) -> Optional[Message]:
+        """Retrieves a message sent by the bot, with a certain reply_info"""
+        cur = self.con.cursor()
+        query = """
+              SELECT
+                MessageID
+              FROM bot_replies
+              WHERE ReplyInfoID = ?
+            """
+        cur.execute(query, [reply_info_id])
+        data = cur.fetchone()
+        if data is not None:
+            return self.get_message_form_id(data[0])
+        return None
+
     def insert_message(self, message: Message) -> None:
         """Inserts a message into the database"""
         self.insert_username(message.sender_id, message.sender_username)
+        if message.reply_info_id is not None:
+            self.insert_reply_info(message.message_id, message.reply_info_id, message.reply_info_data)
         query = """
           INSERT INTO messages (
             MessageID,
@@ -239,4 +280,38 @@ class MessageRepository:
         data = cur.fetchone()
         if data is not None:
             return Message(*data)
+        return None
+
+    def get_message_form_id(self, message_id: int) -> Optional[Message]:
+        """Retrieve a message from DB"""
+        cur = self.con.cursor()
+        query = """
+          SELECT
+            MessageID,
+            SenderName,
+            SenderID,
+            ChatID,
+            Message,
+            ReplyToMessageID
+          FROM messages
+          WHERE MessageID = ?
+        """
+        cur.execute(query, [message_id])
+        data = cur.fetchone()
+        if data is not None:
+            return Message(*data)
+        return None
+
+    def get_reply_info_data(self, reply_info_id: str) -> Optional[str]:
+        cur = self.con.cursor()
+        query = """
+              SELECT
+                ReplyInfoData
+              FROM bot_replies
+              WHERE ReplyInfoID = ?
+            """
+        cur.execute(query, [reply_info_id])
+        data = cur.fetchone()
+        if data is not None:
+            return data[0]
         return None

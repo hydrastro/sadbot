@@ -100,6 +100,12 @@ class CaptchaKickBotCommand(CommandInterface):
                     reply_priority=BOT_ACTION_PRIORITY_HIGH,
                 ),
             ]
+        return self.kick_user(message, captcha_id)
+
+    def kick_user(self, message: Message, captcha_id: str, answer_callback_query: Optional[bool] = True) -> List[
+        BotAction]:
+        print("KICKING")
+        print(message)
         new_user = message.sender_username
         kick_text = [
             "Begone bot",
@@ -111,13 +117,17 @@ class CaptchaKickBotCommand(CommandInterface):
         kick_text = random.choice(kick_text)
         kick_text += f"\n(I kicked @{new_user} (id {message.sender_id})"
         self.captcha.delete_captcha(captcha_id)
-        return [
-            BotAction(
-                BOT_ACTION_TYPE_ANSWER_CALLBACK_QUERY,
-                reply_callback_query_id=message.message_id,
-                reply_text=kick_text,
-                reply_priority=BOT_ACTION_PRIORITY_HIGH,
-            ),
+        replies = []
+        if answer_callback_query:
+            replies.append(
+                BotAction(
+                    BOT_ACTION_TYPE_ANSWER_CALLBACK_QUERY,
+                    reply_callback_query_id=message.message_id,
+                    reply_text=kick_text,
+                    reply_priority=BOT_ACTION_PRIORITY_HIGH,
+                ),
+            )
+        replies += [
             BotAction(
                 BOT_ACTION_TYPE_BAN_USER,
                 reply_ban_user_id=message.sender_id,
@@ -134,3 +144,4 @@ class CaptchaKickBotCommand(CommandInterface):
                 reply_priority=BOT_ACTION_PRIORITY_HIGH,
             ),
         ]
+        return replies

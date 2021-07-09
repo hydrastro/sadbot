@@ -37,3 +37,5 @@ class BotAction:
     reply_permissions: Optional[List] = None
     reply_restrict_until_date: int = 0
     reply_priority: int = BOT_ACTION_PRIORITY_LOW
+    reply_info_id: Optional[str] = None
+    reply_info_data: Optional[str] = None

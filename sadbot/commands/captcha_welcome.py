@@ -8,6 +8,7 @@ import random
 from sadbot.command_interface import (
     CommandInterface,
     BOT_HANDLER_TYPE_NEW_USER,
+    BOT_HANDLER_TYPE_MESSAGE,
 )
 from sadbot.message import Message
 from sadbot.bot_action import (
@@ -17,18 +18,24 @@ from sadbot.bot_action import (
     BOT_ACTION_PRIORITY_HIGH,
 )
 from sadbot.classes.captcha import Captcha
-from sadbot.config import CAPTCHA_KEYBOARD_BUTTONS_PER_LINE, CAPTCHA_EXTRA_TEXTS_NUMBER
+from sadbot.config import CAPTCHA_KEYBOARD_BUTTONS_PER_LINE, CAPTCHA_EXTRA_TEXTS_NUMBER, CAPTCHA_EXPIRATION
+from sadbot.managers.captcha_timeout import CaptchaTimeoutManager
+from sadbot.managers_container import ActionManagerContainer
+from sadbot.message_repository import MessageRepository
 
 
 class CaptchaWelcomeBotCommand(CommandInterface):
     """This is the captcha welcome bot command class, it 'welcomes' new users lol"""
 
-    def __init__(self, captcha: Captcha):
+    def __init__(self, captcha: Captcha, message_repository: MessageRepository, managers_container: ActionManagerContainer):
         """Initializes the captcha command"""
         self.captcha = captcha
+        self.message_repository = message_repository
+        self.managers_container = managers_container
 
     @property
     def handler_type(self) -> str:
+        return BOT_HANDLER_TYPE_MESSAGE
         return BOT_HANDLER_TYPE_NEW_USER
 
     @property
@@ -104,6 +111,10 @@ class CaptchaWelcomeBotCommand(CommandInterface):
                 "can_pin_messages": False,
             }
         ]
+        captcha_handler = CaptchaTimeoutManager(self.message_repository, self.captcha, captcha_id, CAPTCHA_EXPIRATION)
+        self.managers_container.dispatch_manager(captcha_id, captcha_handler)
+        reply_info_id = captcha_id
+        reply_info_data = message.sender_id
         return [
             BotAction(
                 BOT_ACTION_TYPE_INLINE_KEYBOARD,
@@ -111,6 +122,8 @@ class CaptchaWelcomeBotCommand(CommandInterface):
                 reply_image=bytes_io,
                 reply_inline_keyboard=inline_keyboard,
                 reply_priority=BOT_ACTION_PRIORITY_HIGH,
+                reply_info_identifier=reply_info_id,
+                reply_info_data=reply_info_data,
             ),
             BotAction(
                 BOT_ACTION_TYPE_RESTRICT_CHAT_MEMBER,

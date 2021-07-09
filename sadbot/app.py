@@ -8,11 +8,11 @@ import sqlite3
 import time
 from os.path import dirname, basename, isfile, join
 from typing import Optional, Dict, List
-
 import requests
 
 from sadbot.message import Message
 from sadbot.message_repository import MessageRepository
+from sadbot.managers_container import ActionManagerContainer
 from sadbot.config import (
     MAX_REPLY_LENGTH,
     UPDATES_TIMEOUT,
@@ -69,6 +69,8 @@ class App:
         self.classes.update({"Connection": con})
         self.message_repository = MessageRepository(con)
         self.classes.update({"MessageRepository": self.message_repository})
+        self.managers_container = ActionManagerContainer()
+        self.classes.update({"ActionManagerContainer": self.managers_container})
         self.commands = []
         self.load_commands()
         self.start_bot()
@@ -152,7 +154,7 @@ class App:
         # this needs to be done better, along with the storage for non-text messages
         if (
             sent_message.get("result")
-            and reply_info.reply_type == BOT_ACTION_TYPE_REPLY_TEXT
+            # and reply_info.reply_type == BOT_ACTION_TYPE_REPLY_TEXT
         ):
             result = sent_message.get("result")
             username = (
@@ -166,6 +168,8 @@ class App:
                 reply_info.reply_text,
                 None,
                 username,
+                True,
+                reply_info.reply_info,
             )
             self.message_repository.insert_message(message)
         return sent_message
@@ -310,6 +314,25 @@ class App:
                     return None
         return None
 
+    def handle_managers(self) -> None:
+        """Handles the bot managers"""
+        print("\nHERE ARE THE CONTAINERS")
+        print(self.managers_container.managers)
+        actions = self.managers_container.get_managers_actions()
+        if actions is None:
+            return None
+        for manager_message in actions:
+            print("\nMANAGER MESSAGE:")
+            #print(manager_message)
+            for x in manager_message:
+                print(x)
+            print("\n")
+            for bot_action in manager_message[1]:
+                print("\n\nHERE IS IT")
+                print(manager_message[0])
+                print("\n")
+                self.send_message_and_update_db(manager_message[0], bot_action)
+
     def start_bot(self) -> None:
         """Starts the bot"""
         update_id = None
@@ -374,4 +397,5 @@ class App:
                         username,
                     )
                     self.handle_callback_query(message)
+            self.handle_managers()
             time.sleep(1)
