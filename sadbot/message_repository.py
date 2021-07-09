@@ -61,8 +61,13 @@ class MessageRepository:
 
     def delete_old_bot_triggers_logs(self, time: int) -> None:
         """Deletes old bot triggers"""
-        # To be done
-        return None
+        query = """
+        DELETE FROM bot_triggers
+        WHERE MessageTime < ?
+        """
+        message_time = datetime.datetime.utcnow().timestamp() - time
+        self.con.execute(query, [message_time])
+        self.con.commit()
 
     def get_n_timestamp_chat(self, chat_id: int, message_number: int) -> int:
         """Returns the timestamp of the last n message sent in a specific chat"""
