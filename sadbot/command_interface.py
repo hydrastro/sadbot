@@ -3,7 +3,7 @@
 from typing import Optional, List
 
 from sadbot.message import Message
-from sadbot.bot_reply import BotAction
+from sadbot.bot_action import BotAction
 
 BOT_HANDLER_TYPE_NEW_USER = 0
 BOT_HANDLER_TYPE_CALLBACK_QUERY = 1

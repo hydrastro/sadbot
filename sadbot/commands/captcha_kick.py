@@ -5,13 +5,14 @@ import random
 
 from sadbot.command_interface import CommandInterface, BOT_HANDLER_TYPE_CALLBACK_QUERY
 from sadbot.message import Message
-from sadbot.bot_reply import (
+from sadbot.bot_action import (
     BotAction,
     BOT_ACTION_TYPE_BAN_USER,
     BOT_ACTION_TYPE_ANSWER_CALLBACK_QUERY,
     BOT_ACTION_TYPE_REPLY_TEXT,
     BOT_ACTION_TYPE_DELETE_MESSAGE,
     BOT_ACTION_TYPE_RESTRICT_CHAT_MEMBER,
+    BOT_ACTION_PRIORITY_HIGH,
 )
 from sadbot.classes.captcha import Captcha
 
@@ -49,6 +50,7 @@ class CaptchaKickBotCommand(CommandInterface):
                     BOT_ACTION_TYPE_ANSWER_CALLBACK_QUERY,
                     reply_callback_query_id=message.message_id,
                     reply_text=not_yours,
+                    reply_priority=BOT_ACTION_PRIORITY_HIGH,
                 )
             ]
         captcha_text = self.captcha.get_captcha_from_id(captcha_id)
@@ -82,17 +84,20 @@ class CaptchaKickBotCommand(CommandInterface):
                     BOT_ACTION_TYPE_ANSWER_CALLBACK_QUERY,
                     reply_callback_query_id=message.message_id,
                     reply_text=correct_captcha,
+                    reply_priority=BOT_ACTION_PRIORITY_HIGH,
                 ),
                 BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text=welcome_reply),
                 BotAction(
                     BOT_ACTION_TYPE_DELETE_MESSAGE,
                     reply_ban_user_id=message.sender_id,
                     reply_delete_message_id=message.reply_id,
+                    reply_priority=BOT_ACTION_PRIORITY_HIGH,
                 ),
                 BotAction(
                     BOT_ACTION_TYPE_RESTRICT_CHAT_MEMBER,
                     reply_permissions=permissions,
                     reply_ban_user_id=message.sender_id,
+                    reply_priority=BOT_ACTION_PRIORITY_HIGH,
                 ),
             ]
         new_user = message.sender_username
@@ -111,10 +116,21 @@ class CaptchaKickBotCommand(CommandInterface):
                 BOT_ACTION_TYPE_ANSWER_CALLBACK_QUERY,
                 reply_callback_query_id=message.message_id,
                 reply_text=kick_text,
+                reply_priority=BOT_ACTION_PRIORITY_HIGH,
             ),
-            BotAction(BOT_ACTION_TYPE_BAN_USER, reply_ban_user_id=message.sender_id),
-            BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text=kick_text),
             BotAction(
-                BOT_ACTION_TYPE_DELETE_MESSAGE, reply_delete_message_id=message.reply_id
+                BOT_ACTION_TYPE_BAN_USER,
+                reply_ban_user_id=message.sender_id,
+                reply_priority=BOT_ACTION_PRIORITY_HIGH,
+            ),
+            BotAction(
+                BOT_ACTION_TYPE_REPLY_TEXT,
+                reply_text=kick_text,
+                reply_priority=BOT_ACTION_PRIORITY_HIGH,
+            ),
+            BotAction(
+                BOT_ACTION_TYPE_DELETE_MESSAGE,
+                reply_delete_message_id=message.reply_id,
+                reply_priority=BOT_ACTION_PRIORITY_HIGH,
             ),
         ]

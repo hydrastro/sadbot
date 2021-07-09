@@ -6,7 +6,7 @@ from typing import Optional, List
 from sadbot.command_interface import CommandInterface, BOT_HANDLER_TYPE_MESSAGE
 from sadbot.message import Message
 from sadbot.functions import safe_cast
-from sadbot.bot_reply import BotAction, BOT_ACTION_TYPE_REPLY_TEXT
+from sadbot.bot_action import BotAction, BOT_ACTION_TYPE_REPLY_TEXT
 
 
 class RandBotCommand(CommandInterface):

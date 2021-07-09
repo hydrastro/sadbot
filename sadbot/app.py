@@ -22,7 +22,7 @@ from sadbot.config import (
     MESSAGES_USER_RATE_NUMBER,
     MESSAGES_USER_RATE_PERIOD,
 )
-from sadbot.bot_reply import (
+from sadbot.bot_action import (
     BotAction,
     BOT_ACTION_TYPE_REPLY_TEXT,
     BOT_ACTION_TYPE_REPLY_IMAGE,
@@ -34,6 +34,9 @@ from sadbot.bot_reply import (
     BOT_ACTION_TYPE_ANSWER_CALLBACK_QUERY,
     BOT_ACTION_TYPE_DELETE_MESSAGE,
     BOT_ACTION_TYPE_RESTRICT_CHAT_MEMBER,
+    BOT_ACTION_PRIORITY_LOW,
+    BOT_ACTION_PRIORITY_MEDIUM,
+    BOT_ACTION_PRIORITY_HIGH,
 )
 from sadbot.command_interface import (
     BOT_HANDLER_TYPE_NEW_USER,
@@ -130,18 +133,19 @@ class App:
         )
         self.message_repository.log_bot_trigger(message.chat_id, message.sender_id)
         now = datetime.datetime.utcnow().timestamp()
-        if user_trigger_time > now - MESSAGES_USER_RATE_PERIOD:
-            print(
-                f"Message not sent: user trigger limit exceeded - details:"
-                f"user id={message.sender_id} user last trigger time={user_trigger_time}"
-            )
-            return None
-        if chat_trigger_time > now - MESSAGES_CHAT_RATE_PERIOD:
-            print(
-                f"Message not sent: chat trigger limit exceeded - details:"
-                f" chat id={message.chat_id} chat last trigger time={chat_trigger_time}"
-            )
-            return None
+        if reply_info.reply_priority != BOT_ACTION_PRIORITY_HIGH:
+            if user_trigger_time > now - MESSAGES_USER_RATE_PERIOD:
+                print(
+                    f"Message not sent: user trigger limit exceeded - details:"
+                    f"user id={message.sender_id} user last trigger time={user_trigger_time}"
+                )
+                return None
+            if chat_trigger_time > now - MESSAGES_CHAT_RATE_PERIOD:
+                print(
+                    f"Message not sent: chat trigger limit exceeded - details:"
+                    f" chat id={message.chat_id} chat last trigger time={chat_trigger_time}"
+                )
+                return None
         sent_message = self.send_message(message.chat_id, reply_info)
         if sent_message is None:
             return None
@@ -151,6 +155,9 @@ class App:
             and reply_info.reply_type == BOT_ACTION_TYPE_REPLY_TEXT
         ):
             result = sent_message.get("result")
+            username = (
+                None if "username" not in result["from"] else result["from"]["username"]
+            )
             message = Message(
                 result["message_id"],
                 result["from"]["first_name"],
@@ -158,7 +165,7 @@ class App:
                 message.chat_id,
                 reply_info.reply_text,
                 None,
-                result["from"]["username"],
+                username,
             )
             self.message_repository.insert_message(message)
         return sent_message
@@ -312,6 +319,11 @@ class App:
                 update_id = item["update_id"]
                 # catching the text messages
                 if "message" in item:
+                    username = (
+                        None
+                        if "username" not in item["message"]["from"]
+                        else item["message"]["from"]["username"]
+                    )
                     message = Message(
                         item["message"]["message_id"],
                         item["message"]["from"]["first_name"],
@@ -319,7 +331,7 @@ class App:
                         item["message"]["chat"]["id"],
                         None,
                         item["message"].get("reply_to_message", {}).get("message_id"),
-                        item["message"]["from"]["username"],
+                        username,
                     )
                     if "text" in item["message"]:
                         message.text = str(item["message"]["text"])
@@ -330,9 +342,11 @@ class App:
                         self.handle_photos(message)
                     if "new_chat_member" in item["message"]:
                         message.sender_id = item["message"]["new_chat_member"]["id"]
-                        message.sender_username = item["message"]["new_chat_member"][
-                            "username"
-                        ]
+                        message.sender_username = (
+                            None
+                            if "username" not in item["message"]["new_chat_member"]
+                            else item["message"]["new_chat_member"]["username"]
+                        )
                         message.sender_name = item["message"]["new_chat_member"][
                             "first_name"
                         ]
@@ -345,6 +359,11 @@ class App:
                         message_id = item["edited_message"]["message_id"]
                         self.message_repository.edit_message(message_id, text)
                 if "callback_query" in item:
+                    username = (
+                        None
+                        if "username" not in item["callback_query"]["from"]
+                        else item["callback_query"]["from"]["username"]
+                    )
                     message = Message(
                         item["callback_query"]["id"],
                         item["callback_query"]["from"]["first_name"],
@@ -352,7 +371,7 @@ class App:
                         item["callback_query"]["message"]["chat"]["id"],
                         item["callback_query"]["data"],
                         item["callback_query"]["message"]["message_id"],
-                        item["callback_query"]["from"]["username"],
+                        username,
                     )
                     self.handle_callback_query(message)
             time.sleep(1)

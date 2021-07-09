@@ -14,6 +14,9 @@ BOT_ACTION_TYPE_INLINE_KEYBOARD = 7
 BOT_ACTION_TYPE_ANSWER_CALLBACK_QUERY = 8
 BOT_ACTION_TYPE_DELETE_MESSAGE = 9
 BOT_ACTION_TYPE_RESTRICT_CHAT_MEMBER = 10
+BOT_ACTION_PRIORITY_LOW = 0
+BOT_ACTION_PRIORITY_MEDIUM = 1
+BOT_ACTION_PRIORITY_HIGH = 2
 
 
 @dataclass
@@ -33,3 +36,4 @@ class BotAction:
     reply_delete_message_id: Optional[int] = None
     reply_permissions: Optional[List] = None
     reply_restrict_until_date: int = 0
+    reply_priority: int = BOT_ACTION_PRIORITY_LOW
