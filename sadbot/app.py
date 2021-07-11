@@ -58,6 +58,18 @@ def pascal_to_snake_case(pascal_str: str):
     return re.sub("([a-z0-9])([A-Z])", r"\1_\2", pascal_str).lower()
 
 
+def is_bot_action_message(action_type: int) -> bool:
+    """Checks if a bot outgoing action will result in/is a message"""
+    return action_type in [
+        BOT_ACTION_TYPE_REPLY_IMAGE,
+        BOT_ACTION_TYPE_REPLY_AUDIO,
+        BOT_ACTION_TYPE_REPLY_FILE,
+        BOT_ACTION_TYPE_REPLY_TEXT,
+        BOT_ACTION_TYPE_REPLY_VOICE,
+        BOT_ACTION_TYPE_INLINE_KEYBOARD,
+    ]
+
+
 class App:
     """Main app class, starts the bot when it's called"""
 
@@ -190,9 +202,7 @@ class App:
         if sent_message is None:
             return None
         # this needs to be done better, along with the storage for non-text messages
-        if sent_message.get("result") and self.is_bot_action_message(
-            reply_info.reply_type
-        ):
+        if sent_message.get("result") and is_bot_action_message(reply_info.reply_type):
             result = sent_message.get("result")
             username = (
                 None if "username" not in result["from"] else result["from"]["username"]
@@ -216,16 +226,6 @@ class App:
                     reply_info.reply_callback_manager_info,
                 )
         return sent_message
-
-    def is_bot_action_message(self, action_type: int) -> bool:
-        return action_type in [
-            BOT_ACTION_TYPE_REPLY_IMAGE,
-            BOT_ACTION_TYPE_REPLY_AUDIO,
-            BOT_ACTION_TYPE_REPLY_FILE,
-            BOT_ACTION_TYPE_REPLY_TEXT,
-            BOT_ACTION_TYPE_REPLY_VOICE,
-            BOT_ACTION_TYPE_INLINE_KEYBOARD,
-        ]
 
     def send_message(self, chat_id: int, reply: BotAction) -> Optional[List]:
         """Sends a message"""
@@ -371,7 +371,7 @@ class App:
         """Handles the bot managers"""
         actions = self.get_managers_actions()
         if actions is None:
-            return None
+            return
         for manager_message in actions:
             for bot_action in manager_message[1]:
                 self.send_message_and_update_db(manager_message[0], bot_action)
