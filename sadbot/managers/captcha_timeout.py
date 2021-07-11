@@ -1,6 +1,6 @@
 """Here is the captcha timeout manager"""
 import datetime
-from typing import Optional, List
+from typing import Optional, List, Dict
 
 from sadbot.message import Message
 from sadbot.bot_action import BotAction
@@ -13,37 +13,46 @@ from sadbot.commands.captcha_kick import CaptchaKickBotCommand
 class CaptchaTimeoutManager(ActionManagerInterface):
     """Handles the captcha timeout"""
 
-    def __init__(self, message_repository: MessageRepository, captcha: Captcha, captcha_id: str, timeout: int):
+    def __init__(self, message_repository: MessageRepository, captcha: Captcha):
         """Initializes the event handler"""
-        self.message_repository = MessageRepository
+        self.message_repository = message_repository
         self.captcha = captcha
-        self.captcha_id = captcha_id
-        self.timeout = timeout
         self.start = datetime.datetime.utcnow().timestamp()
         self.captcha_kick = CaptchaKickBotCommand(self.captcha)
-        message = message_repository.get_message_from_reply_info_id(captcha_id)
-        print(message)
-        self.kick_id = message_repository.get_reply_info_data(captcha_id)
-        message.sender_id = self.kick_id
-        self.message = message
+
+    def set_trigger_message(self, trigger_message: Message) -> None:
+        """Sets the trigger message"""
+        self.trigger_message = trigger_message
+
+    def set_sent_message(self, sent_message: Message) -> None:
+        """Sets the sent message"""
+        self.sent_message = sent_message
+
+    def set_callback_manager_info(self, callback_manager_info: Dict) -> None:
+        """Sets the callback manager info"""
+        if "captcha_id" in callback_manager_info:
+            self.captcha_id = callback_manager_info["captcha_id"]
+        if "captcha_expiration" in callback_manager_info:
+            self.captcha_expiration = callback_manager_info["captcha_expiration"]
 
     @property
     def is_active(self) -> bool:
-        """Returns the handler status"""
-        print("CHECKING IF ACTIVE")
+        """Returns the manager status"""
+        print("CHECKING MANAGER STATUS")
         print(self.captcha.get_captcha_from_id(self.captcha_id))
         return self.captcha.get_captcha_from_id(self.captcha_id) is not None
 
     def get_message(self) -> Message:
         print("message")
-        print(self.message)
-        return self.message
+        print(self.trigger_message)
+        return self.trigger_message
 
     def get_reply(self) -> Optional[List[BotAction]]:
         """Kicks the user who didn't complete the captcha"""
+        self.trigger_message.reply_id = self.sent_message.message_id
         if self.captcha.get_captcha_from_id(self.captcha_id) is None:
             return None
         now = datetime.datetime.utcnow().timestamp()
-        if self.timeout + self.start > now:
+        if self.captcha_expiration + self.start > now:
             return None
-        return self.captcha_kick.kick_user(self.message, self.captcha_id, False)
+        return self.captcha_kick.kick_user(self.trigger_message, self.captcha_id, False)

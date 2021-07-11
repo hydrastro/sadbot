@@ -1,6 +1,6 @@
 """This module contains the BotAction class"""
 
-from typing import Optional, List
+from typing import Optional, List, Dict
 from dataclasses import dataclass
 from io import BytesIO
 
@@ -37,5 +37,5 @@ class BotAction:
     reply_permissions: Optional[List] = None
     reply_restrict_until_date: int = 0
     reply_priority: int = BOT_ACTION_PRIORITY_LOW
-    reply_info_id: Optional[str] = None
-    reply_info_data: Optional[str] = None
+    reply_callback_manager_name: Optional[str] = None
+    reply_callback_manager_info: Optional[Dict] = None

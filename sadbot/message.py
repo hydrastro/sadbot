@@ -16,5 +16,3 @@ class Message:
     reply_id: Optional[int] = None
     sender_username: Optional[str] = None
     is_bot: Optional[bool] = False
-    reply_info_id: Optional[str] = None
-    reply_info_data: Optional[str] = None

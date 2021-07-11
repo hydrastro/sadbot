@@ -102,10 +102,12 @@ class CaptchaKickBotCommand(CommandInterface):
             ]
         return self.kick_user(message, captcha_id)
 
-    def kick_user(self, message: Message, captcha_id: str, answer_callback_query: Optional[bool] = True) -> List[
-        BotAction]:
-        print("KICKING")
-        print(message)
+    def kick_user(
+        self,
+        message: Message,
+        captcha_id: str,
+        answer_callback_query: Optional[bool] = True,
+    ) -> List[BotAction]:
         new_user = message.sender_username
         kick_text = [
             "Begone bot",
