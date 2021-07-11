@@ -38,13 +38,9 @@ class CaptchaTimeoutManager(ActionManagerInterface):
     @property
     def is_active(self) -> bool:
         """Returns the manager status"""
-        print("CHECKING MANAGER STATUS")
-        print(self.captcha.get_captcha_from_id(self.captcha_id))
         return self.captcha.get_captcha_from_id(self.captcha_id) is not None
 
     def get_message(self) -> Message:
-        print("message")
-        print(self.trigger_message)
         return self.trigger_message
 
     def get_reply(self) -> Optional[List[BotAction]]:
