@@ -144,7 +144,7 @@ class MessageRepository:
 
     def insert_username(self, user_id: int, username: str) -> bool:
         """Inserts a username into the usernames table"""
-        if self.get_username_from_id(user_id) is None:
+        if self.get_username_from_id(user_id) is not None:
             return False
         query = """
           INSERT INTO usernames (
@@ -236,6 +236,26 @@ class MessageRepository:
         """
         params = [message.reply_id, message.chat_id]
         cur.execute(query, params)
+        data = cur.fetchone()
+        if data is not None:
+            return Message(*data)
+        return None
+
+    def get_message_form_id(self, message_id: int) -> Optional[Message]:
+        """Retrieve a message from DB"""
+        cur = self.con.cursor()
+        query = """
+          SELECT
+            MessageID,
+            SenderName,
+            SenderID,
+            ChatID,
+            Message,
+            ReplyToMessageID
+          FROM messages
+          WHERE MessageID = ?
+        """
+        cur.execute(query, [message_id])
         data = cur.fetchone()
         if data is not None:
             return Message(*data)

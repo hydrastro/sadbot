@@ -1,3 +1,6 @@
+from random import shuffle
+
+
 class Revolver:
     """This is the revolver class"""
 
@@ -13,12 +16,12 @@ class Revolver:
         return "Changed revolver capacity. "
 
     def reload(self, bullets: int) -> str:
-        """Reoloads the revolver bullets"""
+        """Reloads the revolver bullets"""
         if bullets >= self.capacity:
             return "There are too many bullets, y'all would be dead lmao"
         for i in range(0, bullets):
             self.drum[i] = 1
-        random.shuffle(self.drum)
+        shuffle(self.drum)
         self.fired = 0
         return "Reloaded!"
 

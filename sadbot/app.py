@@ -8,7 +8,6 @@ import sqlite3
 import time
 from os.path import dirname, basename, isfile, join
 from typing import Optional, Dict, List
-
 import requests
 
 from sadbot.message import Message
@@ -59,6 +58,18 @@ def pascal_to_snake_case(pascal_str: str):
     return re.sub("([a-z0-9])([A-Z])", r"\1_\2", pascal_str).lower()
 
 
+def is_bot_action_message(action_type: int) -> bool:
+    """Checks if a bot outgoing action will result in/is a message"""
+    return action_type in [
+        BOT_ACTION_TYPE_REPLY_IMAGE,
+        BOT_ACTION_TYPE_REPLY_AUDIO,
+        BOT_ACTION_TYPE_REPLY_FILE,
+        BOT_ACTION_TYPE_REPLY_TEXT,
+        BOT_ACTION_TYPE_REPLY_VOICE,
+        BOT_ACTION_TYPE_INLINE_KEYBOARD,
+    ]
+
+
 class App:
     """Main app class, starts the bot when it's called"""
 
@@ -69,17 +80,21 @@ class App:
         self.classes.update({"Connection": con})
         self.message_repository = MessageRepository(con)
         self.classes.update({"MessageRepository": self.message_repository})
+        self.managers = {}
         self.commands = []
         self.load_commands()
         self.start_bot()
 
-    def load_class(self, import_name: str, class_name: str) -> bool:
+    def load_class(
+        self, import_name: str, class_name: str, register_class: Optional[bool] = True
+    ):
         """Dynamically loads and initializes a class given its name and its path"""
         arguments = []
         command_class = getattr(
             __import__(import_name, fromlist=[class_name]),
             class_name,
         )
+        # todo: catch exceptions and return None
         if command_class.__init__.__class__.__name__ == "function":
             arguments_list = command_class.__init__.__annotations__
             for argument_name in arguments_list:
@@ -92,8 +107,9 @@ class App:
                 else:
                     continue
         command_class = command_class(*arguments)
-        self.classes.update({class_name: command_class})
-        return True
+        if register_class:
+            self.classes.update({class_name: command_class})
+        return command_class
 
     def load_commands(self):
         """Loads the bot commands"""
@@ -108,6 +124,42 @@ class App:
             self.commands.append(
                 {"regex": command_class.command_regex, "class": command_class}
             )
+
+    def dispatch_manager(
+        self,
+        class_name: str,
+        trigger_message: Message,
+        sent_message: Message,
+        callback_manager_info: Optional[Dict],
+    ) -> None:
+        """Dispatches a new manager"""
+        manager_filename = pascal_to_snake_case(class_name[:-7])
+        manager = self.load_class(
+            f"sadbot.managers.{manager_filename}", class_name, False
+        )
+        manager.set_trigger_message(trigger_message)
+        manager.set_sent_message(sent_message)
+        if callback_manager_info is not None:
+            manager.set_callback_manager_info(callback_manager_info)
+        class_id = len(self.managers)
+        self.managers.update({class_id: manager})
+
+    def get_managers_actions(self) -> Optional[List[List]]:
+        """Returns the managers actions or kills them"""
+        actions = []
+        inactive_managers = []
+        for manager in self.managers:
+            if not self.managers[manager].is_active:
+                inactive_managers.append(manager)
+                continue
+            temp = self.managers[manager].get_reply()
+            if temp:
+                actions.append([self.managers[manager].get_message(), temp])
+        for manager in inactive_managers:
+            del self.managers[manager]
+        if not actions:
+            return None
+        return actions
 
     def get_updates(self, offset: Optional[int] = None) -> Optional[Dict]:
         """Retrieves updates from the Telegram API"""
@@ -150,15 +202,12 @@ class App:
         if sent_message is None:
             return None
         # this needs to be done better, along with the storage for non-text messages
-        if (
-            sent_message.get("result")
-            and reply_info.reply_type == BOT_ACTION_TYPE_REPLY_TEXT
-        ):
+        if sent_message.get("result") and is_bot_action_message(reply_info.reply_type):
             result = sent_message.get("result")
             username = (
                 None if "username" not in result["from"] else result["from"]["username"]
             )
-            message = Message(
+            sent_message_dataclass = Message(
                 result["message_id"],
                 result["from"]["first_name"],
                 result["from"]["id"],
@@ -166,8 +215,16 @@ class App:
                 reply_info.reply_text,
                 None,
                 username,
+                True,
             )
-            self.message_repository.insert_message(message)
+            self.message_repository.insert_message(sent_message_dataclass)
+            if reply_info.reply_callback_manager_name is not None:
+                self.dispatch_manager(
+                    reply_info.reply_callback_manager_name,
+                    message,
+                    sent_message_dataclass,
+                    reply_info.reply_callback_manager_info,
+                )
         return sent_message
 
     def send_message(self, chat_id: int, reply: BotAction) -> Optional[List]:
@@ -310,10 +367,20 @@ class App:
                     return None
         return None
 
+    def handle_managers(self) -> None:
+        """Handles the bot managers"""
+        actions = self.get_managers_actions()
+        if actions is None:
+            return
+        for manager_message in actions:
+            for bot_action in manager_message[1]:
+                self.send_message_and_update_db(manager_message[0], bot_action)
+
     def start_bot(self) -> None:
         """Starts the bot"""
         update_id = None
         while True:
+            self.handle_managers()
             updates = self.get_updates(offset=update_id) or {}
             for item in updates.get("result", []):
                 update_id = item["update_id"]

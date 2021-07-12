@@ -17,15 +17,21 @@ from sadbot.bot_action import (
     BOT_ACTION_PRIORITY_HIGH,
 )
 from sadbot.classes.captcha import Captcha
-from sadbot.config import CAPTCHA_KEYBOARD_BUTTONS_PER_LINE, CAPTCHA_EXTRA_TEXTS_NUMBER
+from sadbot.config import (
+    CAPTCHA_KEYBOARD_BUTTONS_PER_LINE,
+    CAPTCHA_EXTRA_TEXTS_NUMBER,
+    CAPTCHA_EXPIRATION,
+)
+from sadbot.message_repository import MessageRepository
 
 
 class CaptchaWelcomeBotCommand(CommandInterface):
     """This is the captcha welcome bot command class, it 'welcomes' new users lol"""
 
-    def __init__(self, captcha: Captcha):
+    def __init__(self, captcha: Captcha, message_repository: MessageRepository):
         """Initializes the captcha command"""
         self.captcha = captcha
+        self.message_repository = message_repository
 
     @property
     def handler_type(self) -> str:
@@ -104,6 +110,11 @@ class CaptchaWelcomeBotCommand(CommandInterface):
                 "can_pin_messages": False,
             }
         ]
+        callback_manager_name = "CaptchaTimeoutManager"
+        callback_manager_info = {
+            "captcha_id": captcha_id,
+            "captcha_expiration": CAPTCHA_EXPIRATION,
+        }
         return [
             BotAction(
                 BOT_ACTION_TYPE_INLINE_KEYBOARD,
@@ -111,6 +122,8 @@ class CaptchaWelcomeBotCommand(CommandInterface):
                 reply_image=bytes_io,
                 reply_inline_keyboard=inline_keyboard,
                 reply_priority=BOT_ACTION_PRIORITY_HIGH,
+                reply_callback_manager_name=callback_manager_name,
+                reply_callback_manager_info=callback_manager_info,
             ),
             BotAction(
                 BOT_ACTION_TYPE_RESTRICT_CHAT_MEMBER,
