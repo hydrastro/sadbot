@@ -32,7 +32,7 @@ nohup PYTHONPATH=. python3 -m sadbot & disown
 ### Systemd Service
 Alternatively, you can create a new systemd service, which handles the bot
 restart in a way more neat way, with these commands:
-```
+```shell
 sed -i 's/userplaceholder/BOTUSER' sadbot.service
 sed -i 's/pathplaceholder/BOTPATH' sadbot.service
 sudo cp sadbot.service /etc/systemd/system/
@@ -40,21 +40,21 @@ sudo systemctl daemon-reload
 sudo service sadbot start
 ```
 And to check the bot status you can simply type:
-```
+```shell
 sudo service sadbot status
 ```
 or, for reading the full log:
-```
+```shell
 sudo journalctl -u sadbot.service
 ```
 ### Docker/Podman
 If you like docker or podman, you can easily build the container using the
 Dockerfile:
-```
+```shell
 sudo docker build -m sadbot .
 ```
 Then you can easily start the bot with:
-```
+```shell
 sudo docker run -it sadbot
 ```
 
@@ -68,55 +68,71 @@ If you want to add a new command you just have to write a new module file in the
 commands directory.  
 Here is a sample bot command, `sample_command.py`, it's code is pretty
 self-explanatory:
-```
-"""Sample bot command"""
+```python3
+"""Sample/uwuspeak bot command"""
 # these imports are optional:
 import re
-import sqlite3
+from sadbot.message_repository import MessageRepository
 
 # these imports are required in every module:
-from typing import Optional
+from typing import Optional, List
 
-from sadbot.commands import CommandsInterface
+# you need to import the handler type, every command is tied to just one type
+from sadbot.command_interface import CommandInterface, BOT_HANDLER_TYPE_MESSAGE
 from sadbot.message import Message
-from sadbot.bot_reply import BotAction, BOT_ACTION_TYPE_TEXT
+# then you need to import the bot action type
+from sadbot.bot_action import (
+    BotAction,
+    BOT_ACTION_TYPE_REPLY_IMAGE,
+)
 
 # the class name must be the pascal case of the module filename + "BotCommand"
-class SampleCommandBotCommand(CommandsInterface):
+class UwuBotCommand(CommandInterface):
     """This is the sample command bot command class"""
 
     # the constructor is NOT required. Anyway if the bot command need some
     # dependencies, they will be automatically injected through it
-    def __init__(self, con: sqlite3.Connection):
-        self.con = con
+    def __init__(self, message_repository: MessageRepository):
+        """Initializes the command class"""
+        self.message_repository = message_repository
+
+    @property
+    def handler_type(self) -> str:
+        """Here is the type of event handled by the command"""
+        return BOT_HANDLER_TYPE_MESSAGE
 
     @property
     def command_regex(self) -> str:
-        # here is the regex that triggers this bot command
-        regex = r""
+        """Here is the regex that triggers this bot command"""
+        regex = r"uwu(.*)?"
         return regex
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
-        reply = "" # here is the reply that will be sent by the bot
+        """This function can return some bot actions/replies that will  be sent later"""
         # this is an example on how you can process the message that triggered
         # the command to get a custom reply
-        pattern = message.text[4:]
-        cur = self.con.cursor()
-        cur.execute("SELECT Message FROM messages WHERE Message REGEXP ? \
-                          AND ChatID = ?", [pattern, message.chat_id])
-        result = cur.fetchone()
-        if result is None:
+        # here we are  getting the last message sent in the chat with the support of
+        # a very useful module of sadbot we're injecting into this class
+        # we could also have injected the direct database connection and retrieved
+        # the last message directly
+        previous_message = self.message_repository.get_previous_message(message, ".")
+        if previous_message is None:
             return None
-        result = Message(*result)
         try:
-            reply = re.sub(r"(\w{3})", r"\1w", result.text)
+            # uwu-mocking the message found
+            reply_text = re.sub(r"(\w{3})", r"\1w", previous_message.text)
         except re.error:
-            reply = none
-        return BotAction(
-            BOT_ACTION_TYPE_TEXT,
-            reply_text=reply,
-            reply_text_parsemode,
-        )
+            return None
+        # here is how you open/set an image for the bot action
+        reply_image_file = open("./sadbot/data/uwu.jpg", mode="rb")
+        reply_image = reply_image_file.read()
+        return [
+            BotAction(
+                BOT_ACTION_TYPE_REPLY_IMAGE,
+                reply_image=reply_image,
+                reply_text=reply_text,
+            ),
+        ]
 ```
 
 ## Todo list
