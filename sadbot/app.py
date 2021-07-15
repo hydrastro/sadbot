@@ -34,6 +34,7 @@ from sadbot.bot_action import (
     BOT_ACTION_TYPE_ANSWER_CALLBACK_QUERY,
     BOT_ACTION_TYPE_DELETE_MESSAGE,
     BOT_ACTION_TYPE_RESTRICT_CHAT_MEMBER,
+    BOT_ACTION_TYPE_UNBAN_USER,
     # BOT_ACTION_PRIORITY_LOW,
     # BOT_ACTION_PRIORITY_MEDIUM,
     BOT_ACTION_PRIORITY_HIGH,
@@ -265,6 +266,14 @@ class App:
                     "user_id": reply.reply_ban_user_id,
                 }
             )
+        elif reply.reply_type == BOT_ACTION_TYPE_UNBAN_USER:
+            api_method = "unbanChatMember"
+            data.update(
+                {
+                    "chat_id": chat_id,
+                    "user_id": reply.reply_ban_user_id,
+                }
+            )
         elif reply.reply_type == BOT_ACTION_TYPE_RESTRICT_CHAT_MEMBER:
             api_method = "restrictChatMember"
             data.update(
@@ -382,6 +391,7 @@ class App:
                     self.send_message_and_update_db(manager_message[0], bot_action)
 
     def handle_updates(self) -> None:
+        """Handles the bot updates"""
         while True:
             updates = self.get_updates(offset=self.update_id) or {}
             for item in updates.get("result", []):

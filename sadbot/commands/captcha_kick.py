@@ -8,6 +8,7 @@ from sadbot.message import Message
 from sadbot.bot_action import (
     BotAction,
     BOT_ACTION_TYPE_BAN_USER,
+    BOT_ACTION_TYPE_UNBAN_USER,
     BOT_ACTION_TYPE_ANSWER_CALLBACK_QUERY,
     BOT_ACTION_TYPE_REPLY_TEXT,
     BOT_ACTION_TYPE_DELETE_MESSAGE,
@@ -143,6 +144,11 @@ class CaptchaKickBotCommand(CommandInterface):
             BotAction(
                 BOT_ACTION_TYPE_DELETE_MESSAGE,
                 reply_delete_message_id=message.reply_id,
+                reply_priority=BOT_ACTION_PRIORITY_HIGH,
+            ),
+            BotAction(
+                BOT_ACTION_TYPE_UNBAN_USER,
+                reply_ban_user_id=message.sender_id,
                 reply_priority=BOT_ACTION_PRIORITY_HIGH,
             ),
         ]
