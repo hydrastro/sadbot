@@ -5,11 +5,16 @@ Which main feature is its sed command, the famous UNIX command.
 ## Dependencies
 The bot has the following dependencies:
 - `requests`
+- `markdownify`
 
 Which can be installed with:
 ```
 pip3 install -r requirements.txt \
              -r dev-requirements.txt # Add this when developing the bot
+```
+The captcha command depends on `fonts-freefont-ttf`, which can be installed via:
+```shell
+sudo apt install fonts-freefont-ttf
 ```
 
 ## Installation
