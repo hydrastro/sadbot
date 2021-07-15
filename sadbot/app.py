@@ -1,4 +1,4 @@
-""" This module contains the main app class and friends """
+"""This module contains the main app class and friends"""
 
 import datetime
 import glob
