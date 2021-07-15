@@ -127,14 +127,14 @@ class SampleCommandBotCommand(CommandsInterface):
 - [ ] Status command
 - [ ] Seen command
 - [ ] Tay command
-- [ ] User ratelimit
-- [ ] Group ratelimit
+- [X] User ratelimit
+- [X] Group ratelimit
 - [ ] Antiflood, samewords count and newlines count
 - [X] FBI watchlist
 - [X] Captcha command
 - [X] Translate command
 - [ ] Outgoing messages queue
-- [ ] Asynchronous processing <- HIGH PRIORITY
+- [X] Asynchronous processing <- HIGH PRIORITY | Multithreading
 - [X] Welcome messages
 - [X] Big chan url pictures
 - [ ] Beaver command
