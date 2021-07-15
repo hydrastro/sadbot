@@ -3,6 +3,7 @@
 import datetime
 import glob
 import json
+import threading
 import re
 import sqlite3
 import time
@@ -75,8 +76,9 @@ class App:
 
     def __init__(self, token: str) -> None:
         self.base_url = f"https://api.telegram.org/bot{token}/"
+        self.update_id = None
         self.classes = {}
-        con = sqlite3.connect("./messages.db")
+        con = sqlite3.connect("./messages.db", check_same_thread=False)
         self.classes.update({"Connection": con})
         self.message_repository = MessageRepository(con)
         self.classes.update({"MessageRepository": self.message_repository})
@@ -332,6 +334,7 @@ class App:
 
     def handle_messages(self, message: Message) -> None:
         """Handles the messages"""
+        # asyncio.gather
         replies_info = self.get_replies(message)
         if replies_info is None:
             return
@@ -369,21 +372,20 @@ class App:
 
     def handle_managers(self) -> None:
         """Handles the bot managers"""
-        actions = self.get_managers_actions()
-        if actions is None:
-            return
-        for manager_message in actions:
-            for bot_action in manager_message[1]:
-                self.send_message_and_update_db(manager_message[0], bot_action)
-
-    def start_bot(self) -> None:
-        """Starts the bot"""
-        update_id = None
         while True:
-            self.handle_managers()
-            updates = self.get_updates(offset=update_id) or {}
+            time.sleep(1)
+            actions = self.get_managers_actions()
+            if actions is None:
+                continue
+            for manager_message in actions:
+                for bot_action in manager_message[1]:
+                    self.send_message_and_update_db(manager_message[0], bot_action)
+
+    def handle_updates(self) -> None:
+        while True:
+            updates = self.get_updates(offset=self.update_id) or {}
             for item in updates.get("result", []):
-                update_id = item["update_id"]
+                self.update_id = item["update_id"]
                 # catching the text messages
                 if "message" in item:
                     username = (
@@ -442,3 +444,12 @@ class App:
                     )
                     self.handle_callback_query(message)
             time.sleep(1)
+
+    def start_bot(self) -> None:
+        """Starts the bot"""
+        managers_process = threading.Thread(target=self.handle_managers)
+        updates_process = threading.Thread(target=self.handle_updates)
+        managers_process.start()
+        updates_process.start()
+        managers_process.join()
+        updates_process.join()

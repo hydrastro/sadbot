@@ -117,7 +117,7 @@ class CaptchaKickBotCommand(CommandInterface):
             "Oopsie-whooppsie owo s s s-owrry but the cawpthwa yowu enterwed was nwot corrwect ;-;",
         ]
         kick_text = random.choice(kick_text)
-        kick_text += f"\n(I kicked @{new_user} (id {message.sender_id})"
+        kick_text += f"\n(I kicked @{new_user} (id {message.sender_id}))"
         self.captcha.delete_captcha(captcha_id)
         replies = []
         if answer_callback_query:
