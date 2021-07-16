@@ -95,10 +95,10 @@ from sadbot.bot_action import (
 class UwuBotCommand(CommandInterface):
     """This is the sample command bot command class"""
 
-    # the constructor is NOT required. Anyway if the bot command need some
-    # dependencies, they will be automatically injected through it
     def __init__(self, message_repository: MessageRepository):
         """Initializes the command class"""
+        # the constructor is NOT required. Anyway if the bot command need some
+        # dependencies, they will be automatically injected through it
         self.message_repository = message_repository
 
     @property
