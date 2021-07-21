@@ -14,6 +14,7 @@ import requests
 from sadbot.message import Message
 from sadbot.message_repository import MessageRepository
 from sadbot.config import (
+    OFFLINE_ANTIFLOOD_TIMEOUT,
     MAX_REPLY_LENGTH,
     UPDATES_TIMEOUT,
     OUTGOING_REQUESTS_TIMEOUT,
@@ -180,6 +181,9 @@ class App:
         self, message: Message, reply_info: BotAction
     ) -> Optional[List]:
         """Sends a messages and updates the database if it's successfully sent"""
+        if time.time() - message.date > OFFLINE_ANTIFLOOD_TIMEOUT and message.date != 0:
+            print("Dropping message: I am too late")
+            return None
         user_trigger_time = self.message_repository.get_n_timestamp_user(
             message.sender_id, MESSAGES_USER_RATE_NUMBER
         )
@@ -343,7 +347,6 @@ class App:
 
     def handle_messages(self, message: Message) -> None:
         """Handles the messages"""
-        # asyncio.gather
         replies_info = self.get_replies(message)
         if replies_info is None:
             return
@@ -411,6 +414,8 @@ class App:
                         None,
                         item["message"].get("reply_to_message", {}).get("message_id"),
                         username,
+                        False,
+                        item["message"]["date"],
                     )
                     if "text" in item["message"]:
                         message.text = str(item["message"]["text"])
@@ -451,6 +456,7 @@ class App:
                         item["callback_query"]["data"],
                         item["callback_query"]["message"]["message_id"],
                         username,
+                        False,
                     )
                     self.handle_callback_query(message)
             time.sleep(1)

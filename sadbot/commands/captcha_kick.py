@@ -115,7 +115,7 @@ class CaptchaKickBotCommand(CommandInterface):
             "lol i knew it was a bot",
             "There's space for only one bot here, and that's me",
             "Wrong captcha",
-            "Oopsie-whooppsie owo s s s-owrry but the cawpthwa yowu enterwed was nwot corrwect ;-;",
+            "Oopsie-whooppsie *blushes* owo s s s-owrry but the cawpthwa yowu enterwed was nwot corrwect ;-; *starts twerking*",
         ]
         kick_text = random.choice(kick_text)
         kick_text += f"\n(I kicked @{new_user} (id {message.sender_id}))"

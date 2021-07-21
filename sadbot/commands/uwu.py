@@ -44,8 +44,10 @@ class UwuBotCommand(CommandInterface):
         # a very useful module of sadbot we're injecting into this class
         # we could also have injected the direct database connection and retrieved
         # the last message directly
-        previous_message = self.message_repository.get_previous_message(message, ".")
+        previous_message = self.message_repository.get_previous_message(message, "^(?!\s*$).+")
         if previous_message is None:
+            return None
+        if previous_message.text is None:
             return None
         try:
             # uwu-mocking the message found
