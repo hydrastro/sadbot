@@ -1,6 +1,7 @@
 """Config file: here resides the bot token"""
 
 TOKEN = "tokenplaceholder"
+OFFLINE_ANTIFLOOD_TIMEOUT = 300
 UPDATES_TIMEOUT = 50
 OUTGOING_REQUESTS_TIMEOUT = 3
 MAX_REPLY_LENGTH = 150
