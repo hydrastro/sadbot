@@ -5,11 +5,16 @@ Which main feature is its sed command, the famous UNIX command.
 ## Dependencies
 The bot has the following dependencies:
 - `requests`
+- `markdownify`
 
 Which can be installed with:
 ```
 pip3 install -r requirements.txt \
              -r dev-requirements.txt # Add this when developing the bot
+```
+The captcha command depends on `fonts-freefont-ttf`, which can be installed via:
+```shell
+sudo apt install fonts-freefont-ttf
 ```
 
 ## Installation
@@ -90,10 +95,10 @@ from sadbot.bot_action import (
 class UwuBotCommand(CommandInterface):
     """This is the sample command bot command class"""
 
-    # the constructor is NOT required. Anyway if the bot command need some
-    # dependencies, they will be automatically injected through it
     def __init__(self, message_repository: MessageRepository):
         """Initializes the command class"""
+        # the constructor is NOT required. Anyway if the bot command need some
+        # dependencies, they will be automatically injected through it
         self.message_repository = message_repository
 
     @property
