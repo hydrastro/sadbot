@@ -61,14 +61,15 @@ class FbiBotCommand(CommandInterface):
                 self.insert_fbi_entry(message, word)
                 return None
             self.update_fbi_entry(message, word)
-        if "fbi watchlist" in message.text.lower():
+        if message.text.lower() in ["fbi watchlist", "watchlist", "most wanted", "top5"]:
             reply_text = f"Top {FBI_MOST_WANTED_NUMBER} most wanted:"
             word = None
             if len(message.text) > 14:
                 word = message.text[14:]
             count = FBI_MOST_WANTED_NUMBER
+            print(self.get_most_wanted(count, message.chat_id, word))
             for criminal in self.get_most_wanted(count, message.chat_id, word):
-                reply_text += f"\n@{criminal[0]} - {criminal[1]}"
+                reply_text += f"\n{criminal[2]} - {criminal[1]}"
             return [BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text=reply_text)]
         return None
 
@@ -98,7 +99,6 @@ class FbiBotCommand(CommandInterface):
     def get_fbi_entry(self, message: Message, word: str) -> Optional[str]:
         """Retrieves an entry from the DB or None if there's no entry with that info"""
         word_id = self.get_fbi_word_id(word)
-        # to be done: join usernames table
         query = """
           SELECT
             SenderID,
@@ -116,17 +116,18 @@ class FbiBotCommand(CommandInterface):
         self, list_length: int, chat_id: int, word: Optional[str]
     ) -> List:
         """Returns the most wanted list"""
-        if word is not None:
-            return []
         query = """
           SELECT
             SenderID,
-            Count
+            Count,
+            usernames.Username
           FROM
             fbi_entries
+          JOIN usernames
+          ON usernames.UserID=fbi_entries.SenderID
           WHERE ChatID = ?
           GROUP BY SenderID
-          ORDER BY Count
+          ORDER BY Count DESC
           LIMIT ?
         """
         cur = self.con.cursor()

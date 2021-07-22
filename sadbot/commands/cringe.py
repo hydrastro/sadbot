@@ -59,6 +59,7 @@ class CringeBotCommand(CommandInterface):
             return None
         data = re.findall(re.compile(eceleb.regex), req.text)
         if data is None:
+            print(f"Failed to get eceleb data: regex gave no results - defails: eceleb: {eceleb.prefix}, regex: {eceleb.regex}, data: {req.text}")
             return None
         data = list(set(data))
         return [

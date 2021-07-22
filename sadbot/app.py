@@ -181,7 +181,7 @@ class App:
         self, message: Message, reply_info: BotAction
     ) -> Optional[List]:
         """Sends a messages and updates the database if it's successfully sent"""
-        if time.time() - message.date > OFFLINE_ANTIFLOOD_TIMEOUT and message.date != 0:
+        if time.time() - message.message_time > OFFLINE_ANTIFLOOD_TIMEOUT and message.message_time != 0:
             print("Dropping message: I am too late")
             return None
         user_trigger_time = self.message_repository.get_n_timestamp_user(
@@ -223,6 +223,7 @@ class App:
                 None,
                 username,
                 True,
+                result["date"],
             )
             self.message_repository.insert_message(sent_message_dataclass)
             if reply_info.reply_callback_manager_name is not None:

@@ -17,12 +17,15 @@ def get_messages_table_creation_query() -> str:
     """Returns the table creation query"""
     return """
     CREATE TABLE IF NOT EXISTS messages (
-      MessageID        integer,
+      MessageID        int,
       SenderName       text,
       SenderID         int,
-      ChatID           integer,
+      ChatID           int,
       Message          text,
-      ReplyToMessageID int
+      ReplyToMessageID int,
+      SenderUsername   text,
+      IsBot            bool,
+      MessageTime      int
     )
     """
 
@@ -128,6 +131,21 @@ class MessageRepository:
         self.con.execute(query, [chat_id, user_id, message_time])
         self.con.commit()
 
+    def get_user_id_from_username(self, username: str) -> Optional[List]:
+        """Checks if a username is in the usernames table"""
+        cur = self.con.cursor()
+        query = """
+              SELECT
+                UserID
+              FROM usernames
+              WHERE Username = ?
+            """
+        cur.execute(query, [username])
+        data = cur.fetchone()
+        if data is not None:
+            return data[0]
+        return None
+
     def get_username_from_id(self, user_id: int) -> Optional[List]:
         """Checks if a userid is in the usernames table"""
         cur = self.con.cursor()
@@ -166,8 +184,11 @@ class MessageRepository:
             SenderID,
             ChatID,
             Message,
-            ReplyToMessageID
-          ) VALUES (?, ?, ?, ?, ?, ?)
+            ReplyToMessageID,
+            SenderUsername,
+            IsBot,
+            MessageTime
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         """
         self.con.execute(
             query,
@@ -178,6 +199,9 @@ class MessageRepository:
                 message.chat_id,
                 message.text,
                 message.reply_id,
+                message.sender_username,
+                message.is_bot,
+                message.message_time
             ),
         )
         self.con.commit()
@@ -194,7 +218,10 @@ class MessageRepository:
             SenderID,
             ChatID,
             Message,
-            ReplyToMessageID
+            ReplyToMessageID,
+            SenderUsername,
+            IsBot,
+            MessageTime
           FROM messages
           WHERE Message REGEXP ? AND ChatID = ?
         """
@@ -230,7 +257,10 @@ class MessageRepository:
             SenderID,
             ChatID,
             Message,
-            ReplyToMessageID
+            ReplyToMessageID,
+            SenderUsername,
+            IsBot,
+            MessageTime
           FROM messages
           WHERE MessageID = ? AND ChatID = ?
         """
@@ -251,7 +281,10 @@ class MessageRepository:
             SenderID,
             ChatID,
             Message,
-            ReplyToMessageID
+            ReplyToMessageID,
+            SenderUsername,
+            IsBot,
+            MessageTime
           FROM messages
           WHERE MessageID = ?
         """
@@ -259,4 +292,29 @@ class MessageRepository:
         data = cur.fetchone()
         if data is not None:
             return Message(*data)
+        return None
+
+    def get_user_last_message(self, user_id: int, chat_id: int) -> Optional[Message]:
+        """Gets the last message sent by a user in a specific chat"""
+        cur = self.con.cursor()
+        query = """
+          SELECT
+            MessageID,
+            SenderName,
+            SenderID,
+            ChatID,
+            Message,
+            ReplyToMessageID,
+            SenderUsername,
+            IsBot,
+            MessageTime
+          FROM messages
+          WHERE SenderID = ? AND ChatID = ?
+          ORDER BY MessageTime DESC
+          LIMIT 1
+        """
+        cur.execute(query, [user_id, chat_id])
+        data = cur.fetchall()
+        if data is not None:
+            return Message(*data[0])
         return None
