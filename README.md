@@ -146,7 +146,7 @@ class UwuBotCommand(CommandInterface):
 - [ ] Eval command
 - [ ] Weather command
 - [ ] Status command
-- [ ] Seen command
+- [X] Seen command
 - [ ] Tay command
 - [X] User ratelimit
 - [X] Group ratelimit
