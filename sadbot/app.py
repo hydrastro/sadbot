@@ -205,7 +205,8 @@ class App:
                     f" chat id={message.chat_id} chat last trigger time={chat_trigger_time}"
                 )
                 return None
-        sent_message = self.send_message(message.chat_id, reply_info)
+        chat_id = message.chat_id if reply_info.reply_chat_id is None else reply_info.reply_chat_id
+        sent_message = self.send_message(chat_id, reply_info)
         if sent_message is None:
             return None
         # this needs to be done better, along with the storage for non-text messages

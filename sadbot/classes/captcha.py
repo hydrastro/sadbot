@@ -70,6 +70,7 @@ class Captcha:
         return data is not None
 
     def delete_old_captchas(self) -> None:
+        """TODO: Deletes expired captchas"""
         return
 
     @staticmethod

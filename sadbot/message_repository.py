@@ -318,3 +318,29 @@ class MessageRepository:
         if data is not None:
             return Message(*data[0])
         return None
+
+    def get_random_message_from_user(self, user_id: int, chat_id: int) -> Optional[Message]:
+        """Returns a random message sent by a user in a specific chat"""
+        cur = self.con.cursor()
+        query = """
+          SELECT
+            MessageID,
+            SenderName,
+            SenderID,
+            ChatID,
+            Message,
+            ReplyToMessageID,
+            SenderUsername,
+            IsBot,
+            MessageTime
+          FROM messages
+          WHERE SenderID = ? AND ChatID = ?
+          ORDER BY RANDOM()
+          LIMIT 1
+        """
+        cur.execute(query, [user_id, chat_id])
+        data = cur.fetchone()
+        if data is not None:
+            return Message(*data)
+        return None
+

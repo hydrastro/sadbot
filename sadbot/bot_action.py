@@ -40,3 +40,4 @@ class BotAction:
     reply_priority: int = BOT_ACTION_PRIORITY_LOW
     reply_callback_manager_name: Optional[str] = None
     reply_callback_manager_info: Optional[Dict] = None
+    reply_chat_id: Optional[int] = None

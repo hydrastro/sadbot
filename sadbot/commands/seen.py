@@ -33,7 +33,7 @@ class SeenBotCommand(CommandInterface):
         if user_id is None:
             return None
         last_message = self.message_repository.get_user_last_message(user_id, message.chat_id)
-        if last_message is None or last_message.message_time == 0:
+        if last_message is None or last_message.message_time == 0 or last_message.message_time is None:
             return None
         last_seen = datetime.datetime.fromtimestamp(last_message.message_time)
         time_ago = convert_time(last_message.message_time, True)

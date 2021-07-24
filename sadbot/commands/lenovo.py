@@ -19,6 +19,7 @@ class LenovoBotCommand(CommandInterface):
     @property
     def command_regex(self) -> str:
         """Returns the regex for matching lenovo commands"""
+        return r".*[Ww][Hh]([Aa][Tt]|[Ii][Cc][Hh]).*[Ll][Aa][Pp][Tt][Oo][Pp].*"
         return r".*[Ww][Hh](([Aa][Tt])|[Ii][Cc][Hh])([Ll][Aa][Pp][Tt][Oo][Pp]).*"
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:

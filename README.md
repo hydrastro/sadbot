@@ -158,7 +158,7 @@ class UwuBotCommand(CommandInterface):
 - [X] Asynchronous processing <- HIGH PRIORITY | Multithreading
 - [X] Welcome messages
 - [X] Big chan url pictures
-- [ ] Beaver command
+- [X] Beaver command
 - [ ] Reminder tag/bookmark command
 - [ ] VC Radio
 - [X] Stay cool on weed questions
