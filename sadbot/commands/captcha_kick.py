@@ -62,13 +62,21 @@ class CaptchaKickBotCommand(CommandInterface):
         if callback_data[1] == captcha_text:
             correct_captcha_replies = ["Correct.", "Yo! You got it right!", "uwu nice"]
             correct_captcha = random.choice(correct_captcha_replies)
-            new_user = message.sender_name if message.sender_username is None else f"@{message.sender_username}"
+            new_user = (
+                message.sender_name
+                if message.sender_username is None
+                else f"@{message.sender_username}"
+            )
             welcome_replies = [
                 f"Welcome {new_user}",
                 f"!! Yooo welcome {new_user}",
                 f"W-w-welcome {new_user} ~~",
             ]
             welcome_reply = random.choice(welcome_replies)
+            if message.chat_id == -1_001_127_994_403:
+                welcome_reply += (
+                    "\nRules: https://telegra.ph/g-Telegram-group-rules-01-16"
+                )
             self.captcha.delete_captcha(captcha_id)
             permissions = [
                 {
@@ -103,11 +111,15 @@ class CaptchaKickBotCommand(CommandInterface):
                     reply_priority=BOT_ACTION_PRIORITY_HIGH,
                 ),
             ]
-        #return self.kick_user(message, captcha_id)
+        # return self.kick_user(message, captcha_id)
         return self.ask_user_to_join_again(message)
 
     def ask_user_to_join_again(self, message: Message) -> None:
-        user = message.sender_name if message.sender_username is None else f"@{message.sender_username}"
+        user = (
+            message.sender_name
+            if message.sender_username is None
+            else f"@{message.sender_username}"
+        )
         reply_text = f"{user} if you want to talk here you have to rejoin the chat and get a new captcha."
         wrong_captcha = "Wrong captcha"
         return [
@@ -117,7 +129,11 @@ class CaptchaKickBotCommand(CommandInterface):
                 reply_text=wrong_captcha,
                 reply_priority=BOT_ACTION_PRIORITY_HIGH,
             ),
-            BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text=reply_text, reply_priority=BOT_ACTION_PRIORITY_HIGH),
+            BotAction(
+                BOT_ACTION_TYPE_REPLY_TEXT,
+                reply_text=reply_text,
+                reply_priority=BOT_ACTION_PRIORITY_HIGH,
+            ),
             BotAction(
                 BOT_ACTION_TYPE_DELETE_MESSAGE,
                 reply_ban_user_id=message.sender_id,
@@ -125,13 +141,18 @@ class CaptchaKickBotCommand(CommandInterface):
                 reply_priority=BOT_ACTION_PRIORITY_HIGH,
             ),
         ]
+
     def kick_user(
         self,
         message: Message,
         captcha_id: str,
         answer_callback_query: Optional[bool] = True,
     ) -> List[BotAction]:
-        new_user = message.sender_name if message.sender_username is None else f"@{message.sender_username}"
+        new_user = (
+            message.sender_name
+            if message.sender_username is None
+            else f"@{message.sender_username}"
+        )
         kick_text = [
             "Begone bot",
             "lol i knew it was a bot",
@@ -151,7 +172,7 @@ class CaptchaKickBotCommand(CommandInterface):
                     reply_callback_query_id=message.message_id,
                     reply_text=kick_text,
                     reply_priority=BOT_ACTION_PRIORITY_HIGH,
-                ),
+                )
             )
         replies += [
             BotAction(

@@ -27,8 +27,10 @@ class BeaverBotCommand(CommandInterface):
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
         """Speaks the truth"""
-        beaver_user_id = 1749391268;
-        beaver_message = self.message_repository.get_random_message_from_user(beaver_user_id, message.chat_id)
+        beaver_user_id = 1_749_391_268
+        beaver_message = self.message_repository.get_random_message_from_user(
+            beaver_user_id, message.chat_id
+        )
         if beaver_message is None:
             return None
         if beaver_message.text is None:

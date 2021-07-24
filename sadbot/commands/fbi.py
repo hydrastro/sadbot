@@ -61,7 +61,12 @@ class FbiBotCommand(CommandInterface):
                 self.insert_fbi_entry(message, word)
                 return None
             self.update_fbi_entry(message, word)
-        if message.text.lower() in ["fbi watchlist", "watchlist", "most wanted", "top5"]:
+        if message.text.lower() in [
+            "fbi watchlist",
+            "watchlist",
+            "most wanted",
+            "top5",
+        ]:
             reply_text = f"Top {FBI_MOST_WANTED_NUMBER} most wanted:"
             word = None
             if len(message.text) > 14:

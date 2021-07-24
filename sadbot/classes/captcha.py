@@ -115,10 +115,7 @@ class Captcha:
             CaptchaID
           ) VALUES (?, ?)
         """
-        self.con.execute(
-            query,
-            (captcha_text, captcha_id),
-        )
+        self.con.execute(query, (captcha_text, captcha_id))
         self.con.commit()
         return
 
@@ -127,10 +124,7 @@ class Captcha:
           DELETE FROM captchas
           WHERE CaptchaID = ?
         """
-        self.con.execute(
-            query,
-            [captcha_id],
-        )
+        self.con.execute(query, [captcha_id])
         self.con.commit()
         return
 

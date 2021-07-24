@@ -2,6 +2,7 @@
 
 import time
 
+
 def safe_cast(val, to_type, default=None):
     """Safely casts to a type, mostly used for int casting"""
     try:
@@ -9,9 +10,21 @@ def safe_cast(val, to_type, default=None):
     except (ValueError, TypeError):
         return default
 
-def convert_time(conv_time: int, ago: bool=False) -> str:
+
+def convert_time(conv_time: int, ago: bool = False) -> str:
     """Returns time ago/stuff lol"""
-    periods = ["second", "minute", "hour", "day", "week", "month", "year", "decade", "century", "millennium"]
+    periods = [
+        "second",
+        "minute",
+        "hour",
+        "day",
+        "week",
+        "month",
+        "year",
+        "decade",
+        "century",
+        "millennium",
+    ]
     lengths = [60, 60, 24, 7, 4.35, 12, 10, 10, 10]
     if ago:
         now = time.time()

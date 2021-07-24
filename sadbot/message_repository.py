@@ -201,7 +201,7 @@ class MessageRepository:
                 message.reply_id,
                 message.sender_username,
                 message.is_bot,
-                message.message_time
+                message.message_time,
             ),
         )
         self.con.commit()
@@ -319,7 +319,9 @@ class MessageRepository:
             return Message(*data[0])
         return None
 
-    def get_random_message_from_user(self, user_id: int, chat_id: int) -> Optional[Message]:
+    def get_random_message_from_user(
+        self, user_id: int, chat_id: int
+    ) -> Optional[Message]:
         """Returns a random message sent by a user in a specific chat"""
         cur = self.con.cursor()
         query = """
@@ -343,4 +345,3 @@ class MessageRepository:
         if data is not None:
             return Message(*data)
         return None
-

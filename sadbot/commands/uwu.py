@@ -9,11 +9,9 @@ from typing import Optional, List
 # you need to import the handler type, every command is tied to just one type
 from sadbot.command_interface import CommandInterface, BOT_HANDLER_TYPE_MESSAGE
 from sadbot.message import Message
+
 # then you need to import the bot action type
-from sadbot.bot_action import (
-    BotAction,
-    BOT_ACTION_TYPE_REPLY_IMAGE,
-)
+from sadbot.bot_action import BotAction, BOT_ACTION_TYPE_REPLY_IMAGE
 
 # the class name must be the pascal case of the module filename + "BotCommand"
 class UwuBotCommand(CommandInterface):
@@ -44,7 +42,9 @@ class UwuBotCommand(CommandInterface):
         # a very useful module of sadbot we're injecting into this class
         # we could also have injected the direct database connection and retrieved
         # the last message directly
-        previous_message = self.message_repository.get_previous_message(message, "^(?!\s*$).+")
+        previous_message = self.message_repository.get_previous_message(
+            message, "^(?!\s*$).+"
+        )
         if previous_message is None:
             return None
         if previous_message.text is None:
@@ -62,5 +62,5 @@ class UwuBotCommand(CommandInterface):
                 BOT_ACTION_TYPE_REPLY_IMAGE,
                 reply_image=reply_image,
                 reply_text=reply_text,
-            ),
+            )
         ]

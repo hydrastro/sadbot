@@ -43,9 +43,9 @@ from sadbot.bot_action import (
 from sadbot.command_interface import (
     BOT_HANDLER_TYPE_NEW_USER,
     BOT_HANDLER_TYPE_CALLBACK_QUERY,
-    BOT_HANDLER_TYPE_MESSAGE,
     # BOT_HANDLER_TYPE_EDITED_MESSAGE,
     # BOT_HANDLER_TYPE_PICTURE,
+    BOT_HANDLER_TYPE_MESSAGE,
 )
 
 
@@ -95,8 +95,7 @@ class App:
         """Dynamically loads and initializes a class given its name and its path"""
         arguments = []
         command_class = getattr(
-            __import__(import_name, fromlist=[class_name]),
-            class_name,
+            __import__(import_name, fromlist=[class_name]), class_name
         )
         # todo: catch exceptions and return None
         if command_class.__init__.__class__.__name__ == "function":
@@ -181,7 +180,10 @@ class App:
         self, message: Message, reply_info: BotAction
     ) -> Optional[List]:
         """Sends a messages and updates the database if it's successfully sent"""
-        if time.time() - message.message_time > OFFLINE_ANTIFLOOD_TIMEOUT and message.message_time != 0:
+        if (
+            time.time() - message.message_time > OFFLINE_ANTIFLOOD_TIMEOUT
+            and message.message_time != 0
+        ):
             print("Dropping message: I am too late")
             return None
         user_trigger_time = self.message_repository.get_n_timestamp_user(
@@ -205,7 +207,11 @@ class App:
                     f" chat id={message.chat_id} chat last trigger time={chat_trigger_time}"
                 )
                 return None
-        chat_id = message.chat_id if reply_info.reply_chat_id is None else reply_info.reply_chat_id
+        chat_id = (
+            message.chat_id
+            if reply_info.reply_chat_id is None
+            else reply_info.reply_chat_id
+        )
         sent_message = self.send_message(chat_id, reply_info)
         if sent_message is None:
             return None
@@ -266,20 +272,10 @@ class App:
             files = {"voice": reply.reply_voice}
         elif reply.reply_type == BOT_ACTION_TYPE_BAN_USER:
             api_method = "banChatMember"
-            data.update(
-                {
-                    "chat_id": chat_id,
-                    "user_id": reply.reply_ban_user_id,
-                }
-            )
+            data.update({"chat_id": chat_id, "user_id": reply.reply_ban_user_id})
         elif reply.reply_type == BOT_ACTION_TYPE_UNBAN_USER:
             api_method = "unbanChatMember"
-            data.update(
-                {
-                    "chat_id": chat_id,
-                    "user_id": reply.reply_ban_user_id,
-                }
-            )
+            data.update({"chat_id": chat_id, "user_id": reply.reply_ban_user_id})
         elif reply.reply_type == BOT_ACTION_TYPE_RESTRICT_CHAT_MEMBER:
             api_method = "restrictChatMember"
             data.update(
