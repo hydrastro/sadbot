@@ -13,6 +13,7 @@ import requests
 
 from sadbot.message import Message
 from sadbot.message_repository import MessageRepository
+from sadbot.chat_helper import ChatHelper
 from sadbot.config import (
     OFFLINE_ANTIFLOOD_TIMEOUT,
     MAX_REPLY_LENGTH,
@@ -84,6 +85,8 @@ class App:
         self.classes.update({"Connection": con})
         self.message_repository = MessageRepository(con)
         self.classes.update({"MessageRepository": self.message_repository})
+        self.chat_helper = ChatHelper(self.base_url)
+        self.classes.update({"ChatHelper": self.chat_helper})
         self.managers = {}
         self.commands = []
         self.load_commands()
@@ -180,6 +183,7 @@ class App:
         self, message: Message, reply_info: BotAction
     ) -> Optional[List]:
         """Sends a messages and updates the database if it's successfully sent"""
+        reply_info.reply_chat_id = 97415052
         if (
             time.time() - message.message_time > OFFLINE_ANTIFLOOD_TIMEOUT
             and message.message_time != 0
@@ -212,15 +216,13 @@ class App:
             if reply_info.reply_chat_id is None
             else reply_info.reply_chat_id
         )
+        chat_id = 97415052
         sent_message = self.send_message(chat_id, reply_info)
         if sent_message is None:
             return None
         # this needs to be done better, along with the storage for non-text messages
         if sent_message.get("result") and is_bot_action_message(reply_info.reply_type):
             result = sent_message.get("result")
-            username = (
-                None if "username" not in result["from"] else result["from"]["username"]
-            )
             sent_message_dataclass = Message(
                 result["message_id"],
                 result["from"]["first_name"],
@@ -228,7 +230,7 @@ class App:
                 message.chat_id,
                 reply_info.reply_text,
                 None,
-                username,
+                result["from"].get("username", None),
                 True,
                 result["date"],
             )
@@ -399,11 +401,6 @@ class App:
                 self.update_id = item["update_id"]
                 # catching the text messages
                 if "message" in item:
-                    username = (
-                        None
-                        if "username" not in item["message"]["from"]
-                        else item["message"]["from"]["username"]
-                    )
                     message = Message(
                         item["message"]["message_id"],
                         item["message"]["from"]["first_name"],
@@ -411,7 +408,7 @@ class App:
                         item["message"]["chat"]["id"],
                         None,
                         item["message"].get("reply_to_message", {}).get("message_id"),
-                        username,
+                        item["message"]["from"].get("username", None),
                         False,
                         item["message"]["date"],
                     )
@@ -424,11 +421,7 @@ class App:
                         self.handle_photos(message)
                     if "new_chat_member" in item["message"]:
                         message.sender_id = item["message"]["new_chat_member"]["id"]
-                        message.sender_username = (
-                            None
-                            if "username" not in item["message"]["new_chat_member"]
-                            else item["message"]["new_chat_member"]["username"]
-                        )
+                        message.sender_username = item["message"]["new_chat_member"].get("username", None)
                         message.sender_name = item["message"]["new_chat_member"][
                             "first_name"
                         ]
@@ -441,11 +434,6 @@ class App:
                         message_id = item["edited_message"]["message_id"]
                         self.message_repository.edit_message(message_id, text)
                 if "callback_query" in item:
-                    username = (
-                        None
-                        if "username" not in item["callback_query"]["from"]
-                        else item["callback_query"]["from"]["username"]
-                    )
                     message = Message(
                         item["callback_query"]["id"],
                         item["callback_query"]["from"]["first_name"],
@@ -453,7 +441,7 @@ class App:
                         item["callback_query"]["message"]["chat"]["id"],
                         item["callback_query"]["data"],
                         item["callback_query"]["message"]["message_id"],
-                        username,
+                        item["callback_query"]["from"].get("username", None),
                         False,
                     )
                     self.handle_callback_query(message)
