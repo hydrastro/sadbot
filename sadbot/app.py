@@ -285,9 +285,10 @@ class App:
                     "chat_id": chat_id,
                     "user_id": reply.reply_ban_user_id,
                     "permissions": json.dumps(reply.reply_permissions[0]),
-                    "until_date": reply.reply_restrict_until_date,
                 }
             )
+            if reply.reply_restrict_until_date is not None:
+                data.update({"until_date": reply.reply_restrict_until_date})
         elif reply.reply_type == BOT_ACTION_TYPE_INLINE_KEYBOARD:
             # here we need to check reply_type
             api_method = "sendPhoto"
