@@ -36,7 +36,7 @@ class MuteBotCommand(CommandInterface):
         user_type = user_permissions[0]
         if user_type not in [CHAT_HELPER_MEMBER_STATUS_ADMIN, CHAT_HELPER_MEMBER_STATUS_CREATOR]:
             return None
-        if not user_permissions[1].can_restrict_chat_members:
+        if not user_permissions[1].can_restrict_members or user_type == CHAT_HELPER_MEMBER_STATUS_CREATOR:
             return None
         mute_permissions = self.chat_helper.get_list_dict_permissions(Permissions(False, False, False, False, False, False, False, False))
         return [
