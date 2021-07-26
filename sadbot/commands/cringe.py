@@ -32,7 +32,7 @@ class CringeBotCommand(CommandInterface):
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
         """Returns cringy stuff"""
-
+        return None
         @dataclass
         class Eceleb:
             """Defines the dataclass for ecelebs"""
