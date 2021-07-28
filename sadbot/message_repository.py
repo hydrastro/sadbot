@@ -271,7 +271,7 @@ class MessageRepository:
             return Message(*data)
         return None
 
-    def get_message_form_id(self, message_id: int) -> Optional[Message]:
+    def get_message_from_id(self, message_id: int) -> Optional[Message]:
         """Retrieve a message from DB"""
         cur = self.con.cursor()
         query = """
@@ -345,3 +345,9 @@ class MessageRepository:
         if data is not None:
             return Message(*data)
         return None
+
+    def get_user_id_from_message_id(self, message_id: int) -> Optional[int]:
+        message = self.get_message_from_id(message_id)
+        if message is None:
+            return None
+        return message.sender_id

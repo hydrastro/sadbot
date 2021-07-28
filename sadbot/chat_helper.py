@@ -93,7 +93,6 @@ class ChatHelper:
 
     def get_chat_permissions(self, chat_id: int) -> Optional[Permissions]:
         data = self.get_chat_permissions_json(chat_id)
-        print(data)
         if data is None:
             return None
         if "result" not in data or "permissions" not in data["result"]:

@@ -17,3 +17,4 @@ class Message:
     sender_username: Optional[str] = None
     is_bot: Optional[bool] = False
     message_time: Optional[int] = 0
+    is_admin: Optional[bool] = False

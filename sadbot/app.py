@@ -183,7 +183,6 @@ class App:
         self, message: Message, reply_info: BotAction
     ) -> Optional[List]:
         """Sends a messages and updates the database if it's successfully sent"""
-        reply_info.reply_chat_id = 97415052
         if (
             time.time() - message.message_time > OFFLINE_ANTIFLOOD_TIMEOUT
             and message.message_time != 0
@@ -216,7 +215,6 @@ class App:
             if reply_info.reply_chat_id is None
             else reply_info.reply_chat_id
         )
-        chat_id = 97415052
         sent_message = self.send_message(chat_id, reply_info)
         if sent_message is None:
             return None
@@ -456,3 +454,4 @@ class App:
         updates_process.start()
         managers_process.join()
         updates_process.join()
+

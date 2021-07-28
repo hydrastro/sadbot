@@ -42,3 +42,9 @@ def convert_time(conv_time: int, ago: bool = False) -> str:
     if ago:
         output = "now" if (difference == 0) else f"{difference} {periods[j]} ago"
     return output
+
+def convert_to_seconds(s: str) -> int:
+    seconds_per_unit = {"s": 1, "m": 60, "h": 3600, "d": 86400, "w": 604800}
+    if s[-1] not in seconds_per_unit:
+        return safe_cast(s, int, 0)
+    return int(s[:-1]) * seconds_per_unit[s[-1]]

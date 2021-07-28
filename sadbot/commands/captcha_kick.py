@@ -11,6 +11,7 @@ from sadbot.bot_action import (
     BOT_ACTION_TYPE_UNBAN_USER,
     BOT_ACTION_TYPE_ANSWER_CALLBACK_QUERY,
     BOT_ACTION_TYPE_REPLY_TEXT,
+    BOT_ACTION_TYPE_REPLY_IMAGE,
     BOT_ACTION_TYPE_DELETE_MESSAGE,
     BOT_ACTION_TYPE_RESTRICT_CHAT_MEMBER,
     BOT_ACTION_PRIORITY_HIGH,
@@ -72,12 +73,8 @@ class CaptchaKickBotCommand(CommandInterface):
                 f"!! Yooo welcome {new_user}",
                 f"W-w-welcome {new_user} ~~",
             ]
-            welcome_reply = random.choice(welcome_replies)
-            if message.chat_id == -1_001_127_994_403:
-                welcome_reply += (
-                    "\nRules: https://telegra.ph/g-Telegram-group-rules-01-16"
-                )
             self.captcha.delete_captcha(captcha_id)
+            welcome_reply = random.choice(welcome_replies)
             permissions = [
                 {
                     "can_send_messages": True,
@@ -90,6 +87,30 @@ class CaptchaKickBotCommand(CommandInterface):
                     "can_pin_messages": True,
                 }
             ]
+            if message.chat_id == -1_001_127_994_403:
+                reply_image_file = open("./sadbot/data/grules.jpg", mode="rb")
+                reply_image = reply_image_file.read()
+                return [
+                    BotAction(
+                        BOT_ACTION_TYPE_ANSWER_CALLBACK_QUERY,
+                        reply_callback_query_id=message.message_id,
+                        reply_text=correct_captcha,
+                        reply_priority=BOT_ACTION_PRIORITY_HIGH,
+                    ),
+                    BotAction(BOT_ACTION_TYPE_REPLY_IMAGE, reply_text=welcome_reply, reply_image=reply_image),
+                    BotAction(
+                        BOT_ACTION_TYPE_DELETE_MESSAGE,
+                        reply_ban_user_id=message.sender_id,
+                        reply_delete_message_id=message.reply_id,
+                        reply_priority=BOT_ACTION_PRIORITY_HIGH,
+                    ),
+                    BotAction(
+                        BOT_ACTION_TYPE_RESTRICT_CHAT_MEMBER,
+                        reply_permissions=permissions,
+                        reply_ban_user_id=message.sender_id,
+                        reply_priority=BOT_ACTION_PRIORITY_HIGH,
+                    ),
+                ]
             return [
                 BotAction(
                     BOT_ACTION_TYPE_ANSWER_CALLBACK_QUERY,

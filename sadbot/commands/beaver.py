@@ -23,7 +23,7 @@ class BeaverBotCommand(CommandInterface):
     @property
     def command_regex(self) -> str:
         """Returns the regex for matching sed command"""
-        return r"(!|\.)[Bb][Ee][Aa][Vv][Ee][Rr].*"
+        return r"(!|\.)([Ss][Ee]{2}[Tt][Hh][Ee]|[Bb][Ee][Aa][Vv][Ee][Rr]).*"
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
         """Speaks the truth"""
