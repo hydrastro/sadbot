@@ -7,6 +7,7 @@ from typing import Optional
 @dataclass
 class Permissions:
     """Permissions dataclass"""
+
     # ChatPermissions, restricted chat member:
     can_send_messages: Optional[bool] = None
     can_send_media_messages: Optional[bool] = None

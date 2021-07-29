@@ -5,7 +5,11 @@ from io import BytesIO
 from math import ceil
 import random
 
-from sadbot.command_interface import CommandInterface, BOT_HANDLER_TYPE_NEW_USER
+from sadbot.command_interface import (
+    CommandInterface,
+    BOT_HANDLER_TYPE_NEW_USER,
+    BOT_HANDLER_TYPE_MESSAGE,
+)
 from sadbot.message import Message
 from sadbot.bot_action import (
     BotAction,
@@ -20,6 +24,7 @@ from sadbot.config import (
     CAPTCHA_EXPIRATION,
 )
 from sadbot.message_repository import MessageRepository
+from sadbot.permissions import Permissions
 
 
 class CaptchaWelcomeBotCommand(CommandInterface):
@@ -32,6 +37,7 @@ class CaptchaWelcomeBotCommand(CommandInterface):
 
     @property
     def handler_type(self) -> str:
+        # return BOT_HANDLER_TYPE_MESSAGE
         return BOT_HANDLER_TYPE_NEW_USER
 
     @property
@@ -107,6 +113,9 @@ class CaptchaWelcomeBotCommand(CommandInterface):
                 "can_pin_messages": False,
             }
         ]
+        permissions = Permissions(
+            False, False, False, False, False, False, False, False
+        )
         callback_manager_name = "CaptchaTimeoutManager"
         callback_manager_info = {
             "captcha_id": captcha_id,

@@ -3,9 +3,7 @@ import json
 from typing import Optional, Dict, List
 import requests
 
-from sadbot.config import (
-    OUTGOING_REQUESTS_TIMEOUT,
-)
+from sadbot.config import OUTGOING_REQUESTS_TIMEOUT
 from sadbot.permissions import Permissions
 
 CHAT_HELPER_MEMBER_STATUS_CREATOR = 0
@@ -28,16 +26,16 @@ class ChatHelper:
         data = {"chat_id": chat_id}
         api_method = "getChatAdministrators"
         req = requests.post(
-            f"{self.base_url}{api_method}",
-            data=data,
-            timeout=OUTGOING_REQUESTS_TIMEOUT,
+            f"{self.base_url}{api_method}", data=data, timeout=OUTGOING_REQUESTS_TIMEOUT
         )
         if not req.ok:
             print(f"Failed sending message - details: {req.json()}")
             return None
         return json.loads(req.content)
 
-    def get_chat_permissions_json(self, chat_id: int, user_id: int = None) -> Optional[List]:
+    def get_chat_permissions_json(
+        self, chat_id: int, user_id: int = None
+    ) -> Optional[List]:
         """Gets a chat member"""
         data = {"chat_id": chat_id}
         api_method = "getChat"
@@ -45,9 +43,7 @@ class ChatHelper:
             api_method = "getChatMember"
             data.update({"user_id": user_id})
         req = requests.post(
-            f"{self.base_url}{api_method}",
-            data=data,
-            timeout=OUTGOING_REQUESTS_TIMEOUT,
+            f"{self.base_url}{api_method}", data=data, timeout=OUTGOING_REQUESTS_TIMEOUT
         )
         if not req.ok:
             print(f"Failed sending message - details: {req.json()}")
@@ -103,7 +99,9 @@ class ChatHelper:
             can_send_media_messages=permissions.get("can_send_media_messages", False),
             can_send_polls=permissions.get("can_send_polls", False),
             can_send_other_messages=permissions.get("can_send_other_messages", False),
-            can_add_web_page_previews=permissions.get("can_add_web_page_previews", False),
+            can_add_web_page_previews=permissions.get(
+                "can_add_web_page_previews", False
+            ),
             can_change_info=permissions.get("can_change_info", False),
             can_invite_users=permissions.get("can_invite_users", False),
             can_pin_messages=permissions.get("can_pin_messages", False),
@@ -117,9 +115,16 @@ class ChatHelper:
                 "can_send_media_messages": permissions.can_send_media_messages or False,
                 "can_send_polls": permissions.can_send_polls or False,
                 "can_send_other_messages": permissions.can_send_other_messages or False,
-                "can_add_web_page_previews": permissions.can_add_web_page_previews or False,
+                "can_add_web_page_previews": permissions.can_add_web_page_previews
+                or False,
                 "can_change_info": permissions.can_change_info or False,
                 "can_invite_users": permissions.can_invite_users or False,
                 "can_pin_messages": permissions.can_pin_messages or False,
             }
         ]
+
+    def get_json_permissions(self, permissions: Permissions) -> Optional[str]:
+        list_dict = self.get_list_dict_permissions(permissions)
+        if list_dict is None:
+            return None
+        return json.dumps(list_dict[0])

@@ -37,6 +37,7 @@ from sadbot.bot_action import (
     BOT_ACTION_TYPE_DELETE_MESSAGE,
     BOT_ACTION_TYPE_RESTRICT_CHAT_MEMBER,
     BOT_ACTION_TYPE_UNBAN_USER,
+    BOT_ACTION_TYPE_PROMOTE_CHAT_MEMBER,
     # BOT_ACTION_PRIORITY_LOW,
     # BOT_ACTION_PRIORITY_MEDIUM,
     BOT_ACTION_PRIORITY_HIGH,
@@ -278,11 +279,12 @@ class App:
             data.update({"chat_id": chat_id, "user_id": reply.reply_ban_user_id})
         elif reply.reply_type == BOT_ACTION_TYPE_RESTRICT_CHAT_MEMBER:
             api_method = "restrictChatMember"
+            permissions = self.chat_helper.get_json_permissions(reply.reply_permissions)
             data.update(
                 {
                     "chat_id": chat_id,
                     "user_id": reply.reply_ban_user_id,
-                    "permissions": json.dumps(reply.reply_permissions[0]),
+                    "permissions": permissions,
                 }
             )
             if reply.reply_restrict_until_date is not None:
@@ -312,6 +314,30 @@ class App:
             data.update(
                 {"chat_id": chat_id, "message_id": reply.reply_delete_message_id}
             )
+        elif reply.reply_type == BOT_ACTION_TYPE_PROMOTE_CHAT_MEMBER:
+            api_method = "promoteChatMember"
+            permissions = reply.reply_permissions
+            data.update({"chat_id": chat_id, "user_id": reply.reply_ban_user_id})
+            if permissions.can_manage_chat is not None:
+                data.update({"can_manage_chat": True})
+            if permissions.can_post_messages is not None:
+                data.update({"can_post_messages": True})
+            if permissions.can_edit_messages is not None:
+                data.update({"can_edit_messages": True})
+            if permissions.can_delete_messages is not None:
+                data.update({"can_delete_messages": True})
+            if permissions.can_manage_voice_chats is not None:
+                data.update({"can_manage_voice_chats": True})
+            if permissions.can_restrict_members is not None:
+                data.update({"can_restrict_members": True})
+            if permissions.can_promote_members is not None:
+                data.update({"can_promote_members": True})
+            if permissions.can_change_info is not None:
+                data.update({"can_change_info": True})
+            if permissions.can_invite_users is not None:
+                data.update({"can_invite_users": True})
+            if permissions.can_pin_messages is not None:
+                data.update({"can_pin_messages": True})
         else:
             return None
         # headers={"Content-Type": "application/json"},
@@ -420,7 +446,9 @@ class App:
                         self.handle_photos(message)
                     if "new_chat_member" in item["message"]:
                         message.sender_id = item["message"]["new_chat_member"]["id"]
-                        message.sender_username = item["message"]["new_chat_member"].get("username", None)
+                        message.sender_username = item["message"][
+                            "new_chat_member"
+                        ].get("username", None)
                         message.sender_name = item["message"]["new_chat_member"][
                             "first_name"
                         ]
@@ -454,4 +482,3 @@ class App:
         updates_process.start()
         managers_process.join()
         updates_process.join()
-

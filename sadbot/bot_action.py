@@ -4,6 +4,8 @@ from typing import Optional, List, Dict
 from dataclasses import dataclass
 from io import BytesIO
 
+from sadbot.permissions import Permissions
+
 BOT_ACTION_TYPE_REPLY_TEXT = 0
 BOT_ACTION_TYPE_REPLY_IMAGE = 1
 BOT_ACTION_TYPE_REPLY_AUDIO = 2
@@ -15,6 +17,7 @@ BOT_ACTION_TYPE_ANSWER_CALLBACK_QUERY = 8
 BOT_ACTION_TYPE_DELETE_MESSAGE = 9
 BOT_ACTION_TYPE_RESTRICT_CHAT_MEMBER = 10
 BOT_ACTION_TYPE_UNBAN_USER = 11
+BOT_ACTION_TYPE_PROMOTE_CHAT_MEMBER = 12
 BOT_ACTION_PRIORITY_LOW = 0
 BOT_ACTION_PRIORITY_MEDIUM = 1
 BOT_ACTION_PRIORITY_HIGH = 2
@@ -36,6 +39,7 @@ class BotAction:
     reply_callback_query_id: Optional[int] = None
     reply_delete_message_id: Optional[int] = None
     reply_permissions: Optional[List] = None
+    reply_class_permissions: Optional[Permissions] = None
     reply_restrict_until_date: int = 0
     reply_priority: int = BOT_ACTION_PRIORITY_LOW
     reply_callback_manager_name: Optional[str] = None

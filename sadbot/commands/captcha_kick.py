@@ -17,14 +17,16 @@ from sadbot.bot_action import (
     BOT_ACTION_PRIORITY_HIGH,
 )
 from sadbot.classes.captcha import Captcha
+from sadbot.chat_helper import ChatHelper
 
 
 class CaptchaKickBotCommand(CommandInterface):
     """This is the captcha bot command class"""
 
-    def __init__(self, captcha: Captcha):
+    def __init__(self, captcha: Captcha, chat_helper: ChatHelper):
         """Initializes the captcha command"""
         self.captcha = captcha
+        self.chat_helper = chat_helper
 
     @property
     def handler_type(self) -> str:
@@ -87,6 +89,7 @@ class CaptchaKickBotCommand(CommandInterface):
                     "can_pin_messages": True,
                 }
             ]
+            permissions = self.chat_helper.get_chat_permissions(message.chat_id)
             if message.chat_id == -1_001_127_994_403:
                 reply_image_file = open("./sadbot/data/grules.jpg", mode="rb")
                 reply_image = reply_image_file.read()
@@ -97,7 +100,11 @@ class CaptchaKickBotCommand(CommandInterface):
                         reply_text=correct_captcha,
                         reply_priority=BOT_ACTION_PRIORITY_HIGH,
                     ),
-                    BotAction(BOT_ACTION_TYPE_REPLY_IMAGE, reply_text=welcome_reply, reply_image=reply_image),
+                    BotAction(
+                        BOT_ACTION_TYPE_REPLY_IMAGE,
+                        reply_text=welcome_reply,
+                        reply_image=reply_image,
+                    ),
                     BotAction(
                         BOT_ACTION_TYPE_DELETE_MESSAGE,
                         reply_ban_user_id=message.sender_id,

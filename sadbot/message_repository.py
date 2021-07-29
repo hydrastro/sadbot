@@ -160,10 +160,25 @@ class MessageRepository:
         data = cur.fetchone()
         return data
 
+    def update_username(self, user_id: int, username: str) -> bool:
+        """Updates a username"""
+        query = """
+          UPDATE usernames
+          SET Username = ?
+          WHERE UserID = ?
+        """
+        self.con.execute(query, [user_id, username])
+        self.con.commit()
+        return True
+
     def insert_username(self, user_id: int, username: str) -> bool:
         """Inserts a username into the usernames table"""
-        if self.get_username_from_id(user_id) is not None:
-            return False
+        db_username = self.get_username_from_id(user_id)
+        if db_username is not None:
+            if db_username != username:
+                return self.update_username(user_id, username)
+            else:
+                return False
         query = """
           INSERT INTO usernames (
             UserID,

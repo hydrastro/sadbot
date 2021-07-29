@@ -1,7 +1,6 @@
-"""Mute bot command"""
+"""Unmute bot command"""
 
 from typing import Optional, List
-import time
 
 from sadbot.command_interface import CommandInterface, BOT_HANDLER_TYPE_MESSAGE
 from sadbot.message import Message
@@ -17,11 +16,11 @@ from sadbot.chat_helper import (
 )
 from sadbot.permissions import Permissions
 from sadbot.message_repository import MessageRepository
-from sadbot.functions import safe_cast, convert_to_seconds
+from sadbot.chat_helper import ChatHelper
 
 
-class MuteBotCommand(CommandInterface):
-    """This is the leaf bot command class"""
+class UnmuteBotCommand(CommandInterface):
+    """This is the unmute bot command class"""
 
     def __init__(self, chat_helper: ChatHelper, message_repository: MessageRepository):
         self.chat_helper = chat_helper
@@ -35,35 +34,17 @@ class MuteBotCommand(CommandInterface):
     @property
     def command_regex(self) -> str:
         """Returns the regex for matching leaf commands"""
-        return r"((!|\.|/)([Mm][Uu][Tt][Ee])).*"
+        return r"((!|\.|/)([Uu][Nn][Mm][Uu][Tt][Ee]))\s+.*"
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
-        """Mutes a user"""
-        user_id_to_mute = None
-        until_date = None
-        if message.reply_id is not None:
-            user_id_to_mute = self.message_repository.get_user_id_from_message_id(
-                message.reply_id
-            )
-        if len(message.text) > 5:
-            message_text = message.text.split()
-            if len(message_text) == 2:
-                if user_id_to_mute is None:
-                    user_to_mute = message_text[1].replace("@", "")
-                    user_id_to_mute = self.message_repository.get_user_id_from_username(
-                        user_to_mute
-                    )
-                else:
-                    until_date = convert_to_seconds(message_text[1])
-            if len(message_text) == 3:
-                user_to_mute = message_text[1].replace("@", "")
-                user_id_to_mute = self.message_repository.get_user_id_from_username(
-                    user_to_mute
-                )
-                until_date = convert_to_seconds(message_text[2])
-        if until_date is not None:
-            until_date += int(time.time())
-        if user_id_to_mute is None:
+        """Unmutes a user"""
+        user_id_to_unmute = None
+        message_text = message.text.split()
+        user_to_unmute = message_text[1].replace("@", "")
+        user_id_to_unmute = self.message_repository.get_user_id_from_username(
+            user_to_unmute
+        )
+        if user_id_to_unmute is None:
             return None
         user_permissions = self.chat_helper.get_user_permissions(
             message.chat_id, message.sender_id
@@ -81,16 +62,13 @@ class MuteBotCommand(CommandInterface):
             and not user_permissions[1].can_restrict_members
         ):
             return None
-        mute_permissions = Permissions(
-            False, False, False, False, False, False, False, False
-        )
-        reply_text = f"User has successfully been muted."
+        unmute_permissions = self.chat_helper.get_chat_permissions(message.chat_id)
+        reply_text = "User succesfully unmuted."
         return [
             BotAction(
                 BOT_ACTION_TYPE_RESTRICT_CHAT_MEMBER,
-                reply_ban_user_id=user_id_to_mute,
-                reply_permissions=mute_permissions,
-                reply_restrict_until_date=until_date,
+                reply_ban_user_id=user_id_to_unmute,
+                reply_permissions=unmute_permissions,
             ),
             BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text=reply_text),
         ]
