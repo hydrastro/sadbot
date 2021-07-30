@@ -10,6 +10,7 @@ import time
 from os.path import dirname, basename, isfile, join
 from typing import Optional, Dict, List
 import requests
+import logging
 
 from sadbot.message import Message
 from sadbot.message_repository import MessageRepository
@@ -79,6 +80,8 @@ class App:
     """Main app class, starts the bot when it's called"""
 
     def __init__(self, token: str) -> None:
+        logging.basicConfig(filename='sadbot.log', level=logging.INFO)
+        logging.info("Started sadbot")
         self.base_url = f"https://api.telegram.org/bot{token}/"
         self.update_id = None
         self.classes = {}
@@ -175,7 +178,7 @@ class App:
             url = f"{url}&offset={offset + 1}"
         req = requests.get(url)
         if not req.ok:
-            print(f"Failed to retrieve updates from server - details: {req.json()}")
+            logging.error(f"Failed to retrieve updates from server - details: {req.json()}")
             return None
 
         return json.loads(req.content)
@@ -188,7 +191,7 @@ class App:
             time.time() - message.message_time > OFFLINE_ANTIFLOOD_TIMEOUT
             and message.message_time != 0
         ):
-            print("Dropping message: I am too late")
+            logging.warning("Dropping message: I am too late")
             return None
         user_trigger_time = self.message_repository.get_n_timestamp_user(
             message.sender_id, MESSAGES_USER_RATE_NUMBER
@@ -200,13 +203,13 @@ class App:
         now = datetime.datetime.utcnow().timestamp()
         if reply_info.reply_priority != BOT_ACTION_PRIORITY_HIGH:
             if user_trigger_time > now - MESSAGES_USER_RATE_PERIOD:
-                print(
+                logging.error(
                     f"Message not sent: user trigger limit exceeded - details:"
                     f"user id={message.sender_id} user last trigger time={user_trigger_time}"
                 )
                 return None
             if chat_trigger_time > now - MESSAGES_CHAT_RATE_PERIOD:
-                print(
+                logging.warning(
                     f"Message not sent: chat trigger limit exceeded - details:"
                     f" chat id={message.chat_id} chat last trigger time={chat_trigger_time}"
                 )
@@ -348,7 +351,7 @@ class App:
             timeout=OUTGOING_REQUESTS_TIMEOUT,
         )
         if not req.ok:
-            print(f"Failed sending message - details: {req.json()}")
+            logging.error(f"Failed sending message - details: {req.json()}")
             return None
         return json.loads(req.content)
 

@@ -72,7 +72,6 @@ class FbiBotCommand(CommandInterface):
             if len(message.text) > 14:
                 word = message.text[14:]
             count = FBI_MOST_WANTED_NUMBER
-            print(self.get_most_wanted(count, message.chat_id, word))
             for criminal in self.get_most_wanted(count, message.chat_id, word):
                 reply_text += f"\n{criminal[2]} - {criminal[1]}"
             return [BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text=reply_text)]

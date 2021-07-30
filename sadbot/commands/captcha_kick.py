@@ -2,6 +2,7 @@
 
 from typing import Optional, List
 import random
+import logging
 
 from sadbot.command_interface import CommandInterface, BOT_HANDLER_TYPE_CALLBACK_QUERY
 from sadbot.message import Message
@@ -60,7 +61,7 @@ class CaptchaKickBotCommand(CommandInterface):
         captcha_text = self.captcha.get_captcha_from_id(captcha_id)
         self.captcha.delete_captcha(captcha_id)
         if captcha_text is None:
-            print("Error: captcha not found in the database.")
+            logging.warning("Error: captcha not found in the database.")
             return None
         if callback_data[1] == captcha_text:
             correct_captcha_replies = ["Correct.", "Yo! You got it right!", "uwu nice"]
@@ -77,18 +78,8 @@ class CaptchaKickBotCommand(CommandInterface):
             ]
             self.captcha.delete_captcha(captcha_id)
             welcome_reply = random.choice(welcome_replies)
-            permissions = [
-                {
-                    "can_send_messages": True,
-                    "can_send_media_messages": True,
-                    "can_send_polls": True,
-                    "can_send_other_messages": True,
-                    "can_add_web_page_previews": True,
-                    "can_change_info": True,
-                    "can_invite_users": True,
-                    "can_pin_messages": True,
-                }
-            ]
+            #permissions = self.chat_helper.get_user_permissions(message.chat_id, message.sender_id)
+            #if permissions is None:
             permissions = self.chat_helper.get_chat_permissions(message.chat_id)
             if message.chat_id == -1_001_127_994_403:
                 reply_image_file = open("./sadbot/data/grules.jpg", mode="rb")

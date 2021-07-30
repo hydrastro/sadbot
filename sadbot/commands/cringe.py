@@ -5,6 +5,7 @@ import re
 from typing import Optional, List
 from dataclasses import dataclass
 import requests
+import logging
 
 from sadbot.command_interface import CommandInterface, BOT_HANDLER_TYPE_MESSAGE
 from sadbot.message import Message
@@ -54,11 +55,11 @@ class CringeBotCommand(CommandInterface):
         }
         req = requests.get(eceleb.url, headers=headers, cookies={"CONSENT": "YES+42"})
         if not req.ok:
-            print(f"Failed to get eceleb data - details: {req.text}")
+            logging.warning(f"Failed to get eceleb data - details: {req.text}")
             return None
         data = re.findall(re.compile(eceleb.regex), req.text)
         if data is None:
-            print(
+            logging.warning(
                 f"Failed to get eceleb data: regex gave no results - defails: eceleb: {eceleb.prefix}, regex: {eceleb.regex}, data: {req.text}"
             )
             return None

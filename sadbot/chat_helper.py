@@ -2,6 +2,7 @@
 import json
 from typing import Optional, Dict, List
 import requests
+import logging
 
 from sadbot.config import OUTGOING_REQUESTS_TIMEOUT
 from sadbot.permissions import Permissions
@@ -29,7 +30,7 @@ class ChatHelper:
             f"{self.base_url}{api_method}", data=data, timeout=OUTGOING_REQUESTS_TIMEOUT
         )
         if not req.ok:
-            print(f"Failed sending message - details: {req.json()}")
+            logging.error(f"Failed sending message - details: {req.json()}")
             return None
         return json.loads(req.content)
 
@@ -46,7 +47,7 @@ class ChatHelper:
             f"{self.base_url}{api_method}", data=data, timeout=OUTGOING_REQUESTS_TIMEOUT
         )
         if not req.ok:
-            print(f"Failed sending message - details: {req.json()}")
+            logging.error(f"Failed sending message - details: {req.json()}")
             return None
         return json.loads(req.content)
 
