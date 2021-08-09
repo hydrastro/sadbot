@@ -9,22 +9,24 @@ from sadbot.bot_action import (
     BOT_ACTION_TYPE_RESTRICT_CHAT_MEMBER,
     BOT_ACTION_TYPE_REPLY_TEXT,
 )
-from sadbot.chat_helper import (
-    ChatHelper,
-    CHAT_HELPER_MEMBER_STATUS_ADMIN,
-    CHAT_HELPER_MEMBER_STATUS_CREATOR,
+from sadbot.app import (
+    App,
+    CHAT_MEMBER_STATUS_ADMIN,
+    CHAT_MEMBER_STATUS_CREATOR,
 )
-from sadbot.permissions import Permissions
 from sadbot.message_repository import MessageRepository
-from sadbot.chat_helper import ChatHelper
+from sadbot.classes.permissions import Permissions
 
 
 class UnmuteBotCommand(CommandInterface):
     """This is the unmute bot command class"""
 
-    def __init__(self, chat_helper: ChatHelper, message_repository: MessageRepository):
-        self.chat_helper = chat_helper
+    def __init__(
+        self, app: App, message_repository: MessageRepository, permissions: Permissions
+    ):
+        self.app = app
         self.message_repository = message_repository
+        self.permissions = permissions
 
     @property
     def handler_type(self) -> str:
@@ -38,7 +40,6 @@ class UnmuteBotCommand(CommandInterface):
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
         """Unmutes a user"""
-        user_id_to_unmute = None
         message_text = message.text.split()
         user_to_unmute = message_text[1].replace("@", "")
         user_id_to_unmute = self.message_repository.get_user_id_from_username(
@@ -46,24 +47,25 @@ class UnmuteBotCommand(CommandInterface):
         )
         if user_id_to_unmute is None:
             return None
-        user_permissions = self.chat_helper.get_user_permissions(
+        user_permissions = self.app.get_user_status_and_permissions(
             message.chat_id, message.sender_id
         )
         if user_permissions is None:
             return None
         user_type = user_permissions[0]
-        if user_type not in [
-            CHAT_HELPER_MEMBER_STATUS_ADMIN,
-            CHAT_HELPER_MEMBER_STATUS_CREATOR,
-        ]:
-            return None
-        if (
-            user_type != CHAT_HELPER_MEMBER_STATUS_CREATOR
+        if user_type not in [CHAT_MEMBER_STATUS_ADMIN, CHAT_MEMBER_STATUS_CREATOR,] or (
+            user_type != CHAT_MEMBER_STATUS_CREATOR
             and not user_permissions[1].can_restrict_members
         ):
-            return None
-        unmute_permissions = self.chat_helper.get_chat_permissions(message.chat_id)
-        reply_text = "User succesfully unmuted."
+            return [
+                BotAction(
+                    BOT_ACTION_TYPE_REPLY_TEXT,
+                    reply_text="You don't have enough rights to unmute, kiddo.",
+                )
+            ]
+        unmute_permissions = self.app.get_chat_permissions(message.chat_id)
+        self.permissions.delete_user_permissions(message.chat_id, message.sender_id)
+        reply_text = "User successfully unmuted."
         return [
             BotAction(
                 BOT_ACTION_TYPE_RESTRICT_CHAT_MEMBER,

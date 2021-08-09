@@ -75,30 +75,32 @@ Here is a sample bot command, `sample_command.py`, it's code is pretty
 self-explanatory:
 ```python3
 """Sample/uwuspeak bot command"""
-# these imports are optional:
-import re
-from sadbot.message_repository import MessageRepository
-
-# these imports are required in every module:
+# this import is required in every module:
 from typing import Optional, List
+
+# this imports is optional:
+import re
+
+
+# this imports is optional:
+from sadbot.message_repository import MessageRepository
 
 # you need to import the handler type, every command is tied to just one type
 from sadbot.command_interface import CommandInterface, BOT_HANDLER_TYPE_MESSAGE
 from sadbot.message import Message
+
 # then you need to import the bot action type
-from sadbot.bot_action import (
-    BotAction,
-    BOT_ACTION_TYPE_REPLY_IMAGE,
-)
+from sadbot.bot_action import BotAction, BOT_ACTION_TYPE_REPLY_IMAGE
+
 
 # the class name must be the pascal case of the module filename + "BotCommand"
 class UwuBotCommand(CommandInterface):
     """This is the sample command bot command class"""
 
+    # the constructor is NOT required. Anyway if the bot command need some
+    # dependencies, they will be automatically injected through it
     def __init__(self, message_repository: MessageRepository):
         """Initializes the command class"""
-        # the constructor is NOT required. Anyway if the bot command need some
-        # dependencies, they will be automatically injected through it
         self.message_repository = message_repository
 
     @property
@@ -120,8 +122,12 @@ class UwuBotCommand(CommandInterface):
         # a very useful module of sadbot we're injecting into this class
         # we could also have injected the direct database connection and retrieved
         # the last message directly
-        previous_message = self.message_repository.get_previous_message(message, ".")
+        previous_message = self.message_repository.get_previous_message(
+            message, r"^(?!\s*$).+"
+        )
         if previous_message is None:
+            return None
+        if previous_message.text is None:
             return None
         try:
             # uwu-mocking the message found
@@ -136,8 +142,9 @@ class UwuBotCommand(CommandInterface):
                 BOT_ACTION_TYPE_REPLY_IMAGE,
                 reply_image=reply_image,
                 reply_text=reply_text,
-            ),
+            )
         ]
+
 ```
 
 ## Todo list

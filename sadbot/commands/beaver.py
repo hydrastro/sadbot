@@ -1,6 +1,5 @@
 """Beaver bot command"""
 
-import re
 from typing import Optional, List
 
 from sadbot.command_interface import CommandInterface, BOT_HANDLER_TYPE_MESSAGE

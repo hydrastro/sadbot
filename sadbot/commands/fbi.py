@@ -68,11 +68,11 @@ class FbiBotCommand(CommandInterface):
             "top5",
         ]:
             reply_text = f"Top {FBI_MOST_WANTED_NUMBER} most wanted:"
-            word = None
-            if len(message.text) > 14:
-                word = message.text[14:]
+            # word = None
+            # if len(message.text) > 14:
+            #    word = message.text[14:]
             count = FBI_MOST_WANTED_NUMBER
-            for criminal in self.get_most_wanted(count, message.chat_id, word):
+            for criminal in self.get_most_wanted(count, message.chat_id):
                 reply_text += f"\n{criminal[2]} - {criminal[1]}"
             return [BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text=reply_text)]
         return None
@@ -116,9 +116,7 @@ class FbiBotCommand(CommandInterface):
         cur.execute(query, (message.sender_id, message.chat_id, word_id))
         return cur.fetchone()
 
-    def get_most_wanted(
-        self, list_length: int, chat_id: int, word: Optional[str]
-    ) -> List:
+    def get_most_wanted(self, list_length: int, chat_id: int) -> List:
         """Returns the most wanted list"""
         query = """
           SELECT

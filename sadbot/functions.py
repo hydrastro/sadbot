@@ -44,8 +44,9 @@ def convert_time(conv_time: int, ago: bool = False) -> str:
     return output
 
 
-def convert_to_seconds(s: str) -> int:
+def convert_to_seconds(time_string: str) -> int:
+    """Converts a time string format to seconds"""
     seconds_per_unit = {"s": 1, "m": 60, "h": 3600, "d": 86400, "w": 604_800}
-    if s[-1] not in seconds_per_unit:
-        return safe_cast(s, int, 0)
-    return int(s[:-1]) * seconds_per_unit[s[-1]]
+    if time_string[-1] not in seconds_per_unit:
+        return safe_cast(time_string, int, 0)
+    return int(time_string[:-1]) * seconds_per_unit[time_string[-1]]

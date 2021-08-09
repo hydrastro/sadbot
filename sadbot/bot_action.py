@@ -2,9 +2,8 @@
 
 from typing import Optional, List, Dict
 from dataclasses import dataclass
-from io import BytesIO
 
-from sadbot.permissions import Permissions
+from sadbot.chat_permissions import ChatPermissions
 
 BOT_ACTION_TYPE_REPLY_TEXT = 0
 BOT_ACTION_TYPE_REPLY_IMAGE = 1
@@ -30,15 +29,15 @@ class BotAction:
     reply_type: int = BOT_ACTION_TYPE_REPLY_TEXT
     reply_text: Optional[str] = None
     reply_text_parsemode: Optional[str] = None
-    reply_image: Optional[BytesIO] = None
-    reply_audio: Optional[BytesIO] = None
-    reply_file: Optional[BytesIO] = None
-    reply_voice: Optional[BytesIO] = None
+    reply_image: Optional[bytes] = None
+    reply_audio: Optional[bytes] = None
+    reply_file: Optional[bytes] = None
+    reply_voice: Optional[bytes] = None
     reply_ban_user_id: Optional[int] = None
     reply_inline_keyboard: Optional[List] = None
     reply_callback_query_id: Optional[int] = None
     reply_delete_message_id: Optional[int] = None
-    reply_permissions: Optional[Permissions] = None
+    reply_permissions: Optional[ChatPermissions] = None
     reply_restrict_until_date: int = 0
     reply_priority: int = BOT_ACTION_PRIORITY_LOW
     reply_callback_manager_name: Optional[str] = None

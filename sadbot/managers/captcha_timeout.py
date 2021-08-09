@@ -2,13 +2,14 @@
 import datetime
 from typing import Optional, List, Dict
 
+from sadbot.app import App
 from sadbot.message import Message
 from sadbot.bot_action import BotAction
 from sadbot.classes.captcha import Captcha
 from sadbot.action_manager_interface import ActionManagerInterface
 from sadbot.message_repository import MessageRepository
 from sadbot.commands.captcha_kick import CaptchaKickBotCommand
-from sadbot.chat_helper import ChatHelper
+from sadbot.classes.permissions import Permissions
 
 
 class CaptchaTimeoutManager(ActionManagerInterface):
@@ -16,15 +17,16 @@ class CaptchaTimeoutManager(ActionManagerInterface):
 
     def __init__(
         self,
+        app: App,
         message_repository: MessageRepository,
         captcha: Captcha,
-        chat_helper: ChatHelper,
+        permissions: Permissions,
     ):
         """Initializes the event handler"""
         self.message_repository = message_repository
         self.captcha = captcha
         self.start = datetime.datetime.utcnow().timestamp()
-        self.captcha_kick = CaptchaKickBotCommand(self.captcha, chat_helper)
+        self.captcha_kick = CaptchaKickBotCommand(app, captcha, permissions)
 
     def set_trigger_message(self, trigger_message: Message) -> None:
         """Sets the trigger message"""

@@ -9,12 +9,12 @@ import sqlite3
 import time
 from os.path import dirname, basename, isfile, join
 from typing import Optional, Dict, List
-import requests
 import logging
+from dataclasses import asdict
+import requests
 
 from sadbot.message import Message
 from sadbot.message_repository import MessageRepository
-from sadbot.chat_helper import ChatHelper
 from sadbot.config import (
     OFFLINE_ANTIFLOOD_TIMEOUT,
     MAX_REPLY_LENGTH,
@@ -50,6 +50,15 @@ from sadbot.command_interface import (
     # BOT_HANDLER_TYPE_PICTURE,
     BOT_HANDLER_TYPE_MESSAGE,
 )
+from sadbot.chat_permissions import ChatPermissions
+
+
+CHAT_MEMBER_STATUS_CREATOR = 0
+CHAT_MEMBER_STATUS_ADMIN = 1
+CHAT_MEMBER_STATUS_USER = 2  # member
+CHAT_MEMBER_STATUS_LEFT = 3
+CHAT_MEMBER_STATUS_BANNED = 4  # kicked
+CHAT_MEMBER_STATUS_RESTRICTED = 5
 
 
 def snake_to_pascal_case(snake_str: str):
@@ -80,17 +89,16 @@ class App:
     """Main app class, starts the bot when it's called"""
 
     def __init__(self, token: str) -> None:
-        logging.basicConfig(filename='sadbot.log', level=logging.INFO)
+        logging.basicConfig(filename="sadbot.log", level=logging.INFO)
         logging.info("Started sadbot")
         self.base_url = f"https://api.telegram.org/bot{token}/"
         self.update_id = None
         self.classes = {}
+        self.classes.update({"App": self})
         con = sqlite3.connect("./messages.db", check_same_thread=False)
         self.classes.update({"Connection": con})
         self.message_repository = MessageRepository(con)
         self.classes.update({"MessageRepository": self.message_repository})
-        self.chat_helper = ChatHelper(self.base_url)
-        self.classes.update({"ChatHelper": self.chat_helper})
         self.managers = {}
         self.commands = []
         self.load_commands()
@@ -135,6 +143,90 @@ class App:
                 {"regex": command_class.command_regex, "class": command_class}
             )
 
+    def get_chat_permissions_api_json(
+        self, chat_id: int, user_id: int = None
+    ) -> Optional[List]:
+        """Returns the json list of a chat or a user's permissions"""
+        data = {"chat_id": chat_id}
+        api_method = "getChat"
+        if user_id is not None:
+            api_method = "getChatMember"
+            data.update({"user_id": user_id})
+        try:
+            req = requests.post(
+                f"{self.base_url}{api_method}",
+                data=data,
+                timeout=OUTGOING_REQUESTS_TIMEOUT,
+            )
+        except requests.exceptions.RequestException as exception:
+            logging.exception(exception)
+            return None
+        if not req.ok:
+            logging.error("Failed sending message - details: %s", {req.json()})
+            return None
+        return json.loads(req.content)
+
+    def get_user_status_and_permissions(
+        self, chat_id: int, user_id: int
+    ) -> Optional[List]:
+        """Returns a list containing the user status and its permissions if there is any"""
+        data = self.get_chat_permissions_api_json(chat_id, user_id)
+        data = data["result"]
+        if data is None or "status" not in data:
+            return None
+        status = data["status"]
+        if status == "creator":
+            return [CHAT_MEMBER_STATUS_CREATOR]
+        if status == "left":
+            return [CHAT_MEMBER_STATUS_LEFT]
+        if status == "member":
+            return [CHAT_MEMBER_STATUS_USER, self.get_chat_permissions(chat_id)]
+        if status == "kicked":
+            permissions = ChatPermissions(ban_until_date=data.get("until_date", 0))
+            return [CHAT_MEMBER_STATUS_BANNED, permissions]
+        permissions = ChatPermissions(
+            can_change_info=data.get("can_change_info", False),
+            can_invite_users=data.get("can_invite_users", False),
+            can_pin_messages=data.get("can_pin_messages", False),
+            can_be_edited=data.get("can_be_edited", False),
+            can_manage_chat=data.get("can_manage_chat", False),
+            can_delete_messages=data.get("can_delete_messages", False),
+            can_restrict_members=data.get("can_restrict_members", False),
+            can_promote_members=data.get("can_promote_members", False),
+            can_manage_voice_chats=data.get("can_manage_voice_chats", False),
+            can_post_messages=data.get("can_post_messages", False),
+            can_edit_messages=data.get("can_edit_messages", False),
+            can_send_messages=data.get("can_send_messages", False),
+            can_send_media_messages=data.get("can_send_media_messages", False),
+            can_send_polls=data.get("can_send_pools", False),
+            can_send_other_messages=data.get("can_send_other_messages", False),
+            can_add_web_page_previews=data.get("can_add_webpage_previews", False),
+        )
+        if status == "administrator":
+            return [CHAT_MEMBER_STATUS_ADMIN, permissions]
+        return [CHAT_MEMBER_STATUS_RESTRICTED, permissions]
+
+    def get_chat_permissions(self, chat_id: int) -> Optional[ChatPermissions]:
+        """Returns the default chat permissions"""
+        data = self.get_chat_permissions_api_json(chat_id)
+        if data is None:
+            return None
+        if "result" not in data or "permissions" not in data["result"]:
+            return None
+        permissions = data["result"]["permissions"]
+        return ChatPermissions(
+            can_send_messages=permissions.get("can_send_messages", False),
+            can_send_media_messages=permissions.get("can_send_media_messages", False),
+            can_send_polls=permissions.get("can_send_polls", False),
+            can_send_other_messages=permissions.get("can_send_other_messages", False),
+            can_add_web_page_previews=permissions.get(
+                "can_add_web_page_previews", False
+            ),
+            can_change_info=permissions.get("can_change_info", False),
+            can_invite_users=permissions.get("can_invite_users", False),
+            can_pin_messages=permissions.get("can_pin_messages", False),
+        )
+
     def dispatch_manager(
         self,
         class_name: str,
@@ -178,11 +270,13 @@ class App:
             url = f"{url}&offset={offset + 1}"
         try:
             req = requests.get(url, timeout=UPDATES_TIMEOUT)
-        except Exception as e:
-            logging.exception(e)
+        except requests.exceptions.RequestException as exception:
+            logging.exception(exception)
             return None
         if not req.ok:
-            logging.error(f"Failed to retrieve updates from server - details: {req.json()}")
+            logging.error(
+                "Failed to retrieve updates from server - details: %s", {req.json()}
+            )
             return None
 
         return json.loads(req.content)
@@ -208,14 +302,18 @@ class App:
         if reply_info.reply_priority != BOT_ACTION_PRIORITY_HIGH:
             if user_trigger_time > now - MESSAGES_USER_RATE_PERIOD:
                 logging.error(
-                    f"Message not sent: user trigger limit exceeded - details:"
-                    f"user id={message.sender_id} user last trigger time={user_trigger_time}"
+                    "Message not sent: user trigger limit exceeded - details: "
+                    "user id=%s user last trigger time=%s",
+                    {message.sender_id},
+                    {user_trigger_time},
                 )
                 return None
             if chat_trigger_time > now - MESSAGES_CHAT_RATE_PERIOD:
                 logging.warning(
-                    f"Message not sent: chat trigger limit exceeded - details:"
-                    f" chat id={message.chat_id} chat last trigger time={chat_trigger_time}"
+                    "Message not sent: chat trigger limit exceeded - details: "
+                    "chat id=%s chat last trigger time=%s",
+                    {message.chat_id},
+                    {chat_trigger_time},
                 )
                 return None
         chat_id = (
@@ -287,7 +385,7 @@ class App:
             data.update({"chat_id": chat_id, "user_id": reply.reply_ban_user_id})
         elif reply.reply_type == BOT_ACTION_TYPE_RESTRICT_CHAT_MEMBER:
             api_method = "restrictChatMember"
-            permissions = self.chat_helper.get_json_permissions(reply.reply_permissions)
+            permissions = json.dumps(asdict(reply.reply_permissions))
             data.update(
                 {
                     "chat_id": chat_id,
@@ -349,15 +447,19 @@ class App:
         else:
             return None
         # headers={"Content-Type": "application/json"},
-        req = requests.post(
-            f"{self.base_url}{api_method}",
-            data=data,
-            files=files,
-            timeout=OUTGOING_REQUESTS_TIMEOUT,
-        )
+        try:
+            req = requests.post(
+                f"{self.base_url}{api_method}",
+                data=data,
+                files=files,
+                timeout=OUTGOING_REQUESTS_TIMEOUT,
+            )
+        except requests.exceptions.RequestException as exception:
+            logging.exception(exception)
+            return None
         logging.info("Sent message")
         if not req.ok:
-            logging.error(f"Failed sending message - details: {req.json()}")
+            logging.error("Failed sending message - details: %s", {req.json()})
             return None
         return json.loads(req.content)
 

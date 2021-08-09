@@ -131,7 +131,7 @@ class MessageRepository:
         self.con.execute(query, [chat_id, user_id, message_time])
         self.con.commit()
 
-    def get_user_id_from_username(self, username: str) -> Optional[List]:
+    def get_user_id_from_username(self, username: str) -> Optional[int]:
         """Checks if a username is in the usernames table"""
         cur = self.con.cursor()
         query = """
@@ -177,8 +177,7 @@ class MessageRepository:
         if db_username is not None:
             if db_username != username:
                 return self.update_username(user_id, username)
-            else:
-                return False
+            return False
         query = """
           INSERT INTO usernames (
             UserID,
@@ -362,6 +361,7 @@ class MessageRepository:
         return None
 
     def get_user_id_from_message_id(self, message_id: int) -> Optional[int]:
+        """Returns the user id from a given message id"""
         message = self.get_message_from_id(message_id)
         if message is None:
             return None

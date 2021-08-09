@@ -17,17 +17,19 @@ from sadbot.bot_action import (
     BOT_ACTION_TYPE_RESTRICT_CHAT_MEMBER,
     BOT_ACTION_PRIORITY_HIGH,
 )
+from sadbot.app import App
 from sadbot.classes.captcha import Captcha
-from sadbot.chat_helper import ChatHelper
+from sadbot.classes.permissions import Permissions
 
 
 class CaptchaKickBotCommand(CommandInterface):
     """This is the captcha bot command class"""
 
-    def __init__(self, captcha: Captcha, chat_helper: ChatHelper):
+    def __init__(self, app: App, captcha: Captcha, permissions: Permissions):
         """Initializes the captcha command"""
+        self.app = app
         self.captcha = captcha
-        self.chat_helper = chat_helper
+        self.permissions = permissions
 
     @property
     def handler_type(self) -> str:
@@ -78,12 +80,14 @@ class CaptchaKickBotCommand(CommandInterface):
             ]
             self.captcha.delete_captcha(captcha_id)
             welcome_reply = random.choice(welcome_replies)
-            #permissions = self.chat_helper.get_user_permissions(message.chat_id, message.sender_id)
-            #if permissions is None:
-            permissions = self.chat_helper.get_chat_permissions(message.chat_id)
+            permissions = self.permissions.get_user_permissions(
+                message.sender_id, message.chat_id
+            )
+            if permissions is None:
+                permissions = self.app.get_chat_permissions(message.chat_id)
             if message.chat_id == -1_001_127_994_403:
-                reply_image_file = open("./sadbot/data/grules.jpg", mode="rb")
-                reply_image = reply_image_file.read()
+                with open("./sadbot/data/grules.jpg", mode="rb") as reply_image_file:
+                    reply_image = reply_image_file.read()
                 return [
                     BotAction(
                         BOT_ACTION_TYPE_ANSWER_CALLBACK_QUERY,
@@ -133,13 +137,18 @@ class CaptchaKickBotCommand(CommandInterface):
         # return self.kick_user(message, captcha_id)
         return self.ask_user_to_join_again(message)
 
-    def ask_user_to_join_again(self, message: Message) -> None:
+    @staticmethod
+    def ask_user_to_join_again(message: Message) -> None:
+        """Instead of kicking the user, this function asks to rejoin"""
         user = (
             message.sender_name
             if message.sender_username is None
             else f"@{message.sender_username}"
         )
-        reply_text = f"{user} if you want to talk here you have to rejoin the chat and get a new captcha."
+        reply_text = (
+            f"{user} if you want to talk here you have to rejoin the chat and get a new "
+            f"captcha."
+        )
         wrong_captcha = "Wrong captcha"
         return [
             BotAction(
@@ -167,6 +176,7 @@ class CaptchaKickBotCommand(CommandInterface):
         captcha_id: str,
         answer_callback_query: Optional[bool] = True,
     ) -> List[BotAction]:
+        """Kicks a user from a chat"""
         new_user = (
             message.sender_name
             if message.sender_username is None
@@ -177,7 +187,8 @@ class CaptchaKickBotCommand(CommandInterface):
             "lol i knew it was a bot",
             "There's space for only one bot here, and that's me",
             "Wrong captcha",
-            "Oopsie-whooppsie *blushes* owo s s s-owrry but the cawpthwa yowu enterwed was nwot corrwect ;-; *starts twerking*",
+            "Oopsie-whooppsie *blushes* owo s s s-owrry but the cawpthwa yowu enterwed was nwot "
+            "corrwect ;-; *starts twerking*",
             "Get rekt",
         ]
         kick_text = random.choice(kick_text)

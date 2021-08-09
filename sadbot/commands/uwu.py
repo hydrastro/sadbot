@@ -1,10 +1,13 @@
 """Sample/uwuspeak bot command"""
-# these imports are optional:
-import re
-from sadbot.message_repository import MessageRepository
-
-# these imports are required in every module:
+# this import is required in every module:
 from typing import Optional, List
+
+# this imports is optional:
+import re
+
+
+# this imports is optional:
+from sadbot.message_repository import MessageRepository
 
 # you need to import the handler type, every command is tied to just one type
 from sadbot.command_interface import CommandInterface, BOT_HANDLER_TYPE_MESSAGE
@@ -12,6 +15,7 @@ from sadbot.message import Message
 
 # then you need to import the bot action type
 from sadbot.bot_action import BotAction, BOT_ACTION_TYPE_REPLY_IMAGE
+
 
 # the class name must be the pascal case of the module filename + "BotCommand"
 class UwuBotCommand(CommandInterface):
@@ -43,7 +47,7 @@ class UwuBotCommand(CommandInterface):
         # we could also have injected the direct database connection and retrieved
         # the last message directly
         previous_message = self.message_repository.get_previous_message(
-            message, "^(?!\s*$).+"
+            message, r"^(?!\s*$).+"
         )
         if previous_message is None:
             return None
@@ -55,8 +59,8 @@ class UwuBotCommand(CommandInterface):
         except re.error:
             return None
         # here is how you open/set an image for the bot action
-        reply_image_file = open("./sadbot/data/uwu.jpg", mode="rb")
-        reply_image = reply_image_file.read()
+        with open("./sadbot/data/uwu.jpg", mode="rb") as reply_image_file:
+            reply_image = reply_image_file.read()
         return [
             BotAction(
                 BOT_ACTION_TYPE_REPLY_IMAGE,

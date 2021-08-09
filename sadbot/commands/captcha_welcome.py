@@ -8,7 +8,6 @@ import random
 from sadbot.command_interface import (
     CommandInterface,
     BOT_HANDLER_TYPE_NEW_USER,
-    BOT_HANDLER_TYPE_MESSAGE,
 )
 from sadbot.message import Message
 from sadbot.bot_action import (
@@ -24,7 +23,7 @@ from sadbot.config import (
     CAPTCHA_EXPIRATION,
 )
 from sadbot.message_repository import MessageRepository
-from sadbot.permissions import Permissions
+from sadbot.chat_permissions import ChatPermissions
 
 
 class CaptchaWelcomeBotCommand(CommandInterface):
@@ -87,6 +86,7 @@ class CaptchaWelcomeBotCommand(CommandInterface):
         bytes_io.name = "captcha.jpeg"
         captcha_image.save(bytes_io, "JPEG")
         bytes_io.seek(0)
+        image_bytes = bytes_io.read()
         new_user = message.sender_name
         if message.sender_username is not None:
             new_user = "@" + message.sender_username
@@ -101,19 +101,7 @@ class CaptchaWelcomeBotCommand(CommandInterface):
         ]
         welcome_message = random.choice(welcome_message)
         inline_keyboard = self.get_keyboard(captcha_id, captcha_text)
-        permissions = [
-            {
-                "can_send_messages": False,
-                "can_send_media_messages": False,
-                "can_send_polls": False,
-                "can_send_other_messages": False,
-                "can_add_web_page_previews": False,
-                "can_change_info": False,
-                "can_invite_users": False,
-                "can_pin_messages": False,
-            }
-        ]
-        permissions = Permissions(
+        permissions = ChatPermissions(
             False, False, False, False, False, False, False, False
         )
         callback_manager_name = "CaptchaTimeoutManager"
@@ -125,7 +113,7 @@ class CaptchaWelcomeBotCommand(CommandInterface):
             BotAction(
                 BOT_ACTION_TYPE_INLINE_KEYBOARD,
                 reply_text=welcome_message,
-                reply_image=bytes_io,
+                reply_image=image_bytes,
                 reply_inline_keyboard=inline_keyboard,
                 reply_priority=BOT_ACTION_PRIORITY_HIGH,
                 reply_callback_manager_name=callback_manager_name,
