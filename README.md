@@ -173,4 +173,6 @@ class UwuBotCommand(CommandInterface):
 - [X] Multiple messages per command (return a list)
 - [X] Chat events handlers
 - [ ] Add new tables: for images, for edits and for usernames
-- [ ] Mute command
+- [X] Mute command
+- [ ] Ban command
+- [ ] Kick command
