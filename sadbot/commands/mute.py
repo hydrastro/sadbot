@@ -85,7 +85,7 @@ class MuteBotCommand(CommandInterface):
             False, False, False, False, False, False, False, False
         )
         self.permissions.set_user_permissions(
-            message.sender_id, message.chat_id, mute_permissions, until_date
+            user_id_to_mute, message.chat_id, mute_permissions, until_date
         )
         user_string = message.sender_name
         if message.sender_username is not None:

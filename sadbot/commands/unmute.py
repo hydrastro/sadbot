@@ -64,7 +64,7 @@ class UnmuteBotCommand(CommandInterface):
                 )
             ]
         unmute_permissions = self.app.get_chat_permissions(message.chat_id)
-        self.permissions.delete_user_permissions(message.chat_id, message.sender_id)
+        self.permissions.delete_user_permissions(user_id_to_unmute, message.sender_id)
         reply_text = "User successfully unmuted."
         return [
             BotAction(
