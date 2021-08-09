@@ -238,7 +238,7 @@ class MessageRepository:
             IsBot,
             MessageTime
           FROM messages
-          WHERE Message REGEXP ? AND ChatID = ?
+          WHERE Message REGEXP ? AND Message IS NOT NULL AND ChatID = ?
         """
         params = [reg, message.chat_id]
         if message.reply_id:

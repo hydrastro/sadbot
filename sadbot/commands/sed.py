@@ -46,7 +46,7 @@ class SedBotCommand(CommandInterface):
         except re.error:
             return None
         reply_message = self.message_repository.get_previous_message(message, old)
-        if reply_message is None:
+        if reply_message is None or reply_message.text is None:
             return None
         max_replace = 1
         if replace_all:

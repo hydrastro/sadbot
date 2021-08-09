@@ -176,7 +176,11 @@ class App:
         url = f"{self.base_url}getUpdates?timeout={UPDATES_TIMEOUT}"
         if offset:
             url = f"{url}&offset={offset + 1}"
-        req = requests.get(url)
+        try:
+            req = requests.get(url, timeout=UPDATES_TIMEOUT)
+        except Exception as e:
+            logging.exception(e)
+            return None
         if not req.ok:
             logging.error(f"Failed to retrieve updates from server - details: {req.json()}")
             return None
@@ -248,6 +252,7 @@ class App:
 
     def send_message(self, chat_id: int, reply: BotAction) -> Optional[List]:
         """Sends a message"""
+        logging.info("Sending message")
         data = {"chat_id": chat_id}
         files = None
         reply_text = reply.reply_text
@@ -350,6 +355,7 @@ class App:
             files=files,
             timeout=OUTGOING_REQUESTS_TIMEOUT,
         )
+        logging.info("Sent message")
         if not req.ok:
             logging.error(f"Failed sending message - details: {req.json()}")
             return None
@@ -426,6 +432,7 @@ class App:
         while True:
             updates = self.get_updates(offset=self.update_id) or {}
             for item in updates.get("result", []):
+                logging.info("Processing updates")
                 self.update_id = item["update_id"]
                 # catching the text messages
                 if "message" in item:

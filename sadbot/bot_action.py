@@ -38,8 +38,7 @@ class BotAction:
     reply_inline_keyboard: Optional[List] = None
     reply_callback_query_id: Optional[int] = None
     reply_delete_message_id: Optional[int] = None
-    reply_permissions: Optional[List] = None
-    reply_class_permissions: Optional[Permissions] = None
+    reply_permissions: Optional[Permissions] = None
     reply_restrict_until_date: int = 0
     reply_priority: int = BOT_ACTION_PRIORITY_LOW
     reply_callback_manager_name: Optional[str] = None
