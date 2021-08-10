@@ -162,7 +162,7 @@ class App:
             logging.exception(exception)
             return None
         if not req.ok:
-            logging.error("Failed sending message - details: %s", {req.json()})
+            logging.error("Failed sending message - details: %s", req.json())
             return None
         return json.loads(req.content)
 
@@ -277,7 +277,7 @@ class App:
             return None
         if not req.ok:
             logging.error(
-                "Failed to retrieve updates from server - details: %s", {req.json()}
+                "Failed to retrieve updates from server - details: %s", req.json()
             )
             return None
 
@@ -306,16 +306,16 @@ class App:
                 logging.error(
                     "Message not sent: user trigger limit exceeded - details: "
                     "user id=%s user last trigger time=%s",
-                    {message.sender_id},
-                    {user_trigger_time},
+                    message.sender_id,
+                    user_trigger_time,
                 )
                 return None
             if chat_trigger_time > now - MESSAGES_CHAT_RATE_PERIOD:
                 logging.warning(
                     "Message not sent: chat trigger limit exceeded - details: "
                     "chat id=%s chat last trigger time=%s",
-                    {message.chat_id},
-                    {chat_trigger_time},
+                    message.chat_id,
+                    chat_trigger_time,
                 )
                 return None
         chat_id = (
@@ -467,7 +467,7 @@ class App:
             return None
         logging.info("Sent message")
         if not req.ok:
-            logging.error("Failed sending message - details: %s", {req.json()})
+            logging.error("Failed sending message - details: %s", req.json())
             return None
         return json.loads(req.content)
 
