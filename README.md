@@ -176,5 +176,5 @@ class UwuBotCommand(CommandInterface):
 - [X] Mute command
 - [ ] Ban command
 - [ ] Kick command
-- [ ] MyPy cleanup
+- [X] MyPy cleanup
 - [ ] Rewrite managers
