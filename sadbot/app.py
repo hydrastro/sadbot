@@ -8,7 +8,7 @@ import re
 import sqlite3
 import time
 from os.path import dirname, basename, isfile, join
-from typing import Optional, Dict, List
+from typing import Optional, Dict, List, Any
 import logging
 from dataclasses import asdict
 import requests
@@ -93,14 +93,14 @@ class App:
         logging.info("Started sadbot")
         self.base_url = f"https://api.telegram.org/bot{token}/"
         self.update_id = None
-        self.classes = {}
-        self.classes.update({"App": self})
+        self.classes: Dict[str, object] = {}
+        self.classes["App"] = self
         con = sqlite3.connect("./messages.db", check_same_thread=False)
-        self.classes.update({"Connection": con})
+        self.classes["Connection"] = con
         self.message_repository = MessageRepository(con)
-        self.classes.update({"MessageRepository": self.message_repository})
-        self.managers = {}
-        self.commands = []
+        self.classes["MessageRepository"] = self.message_repository
+        self.managers: Dict[int, object] = {}
+        self.commands: List[object] = []
         self.load_commands()
         self.start_bot()
 
@@ -112,7 +112,7 @@ class App:
         command_class = getattr(
             __import__(import_name, fromlist=[class_name]), class_name
         )
-        # todo: catch exceptions and return None
+        # to be done: catch exceptions and return None
         if command_class.__init__.__class__.__name__ == "function":
             arguments_list = command_class.__init__.__annotations__
             for argument_name in arguments_list:
@@ -145,7 +145,7 @@ class App:
 
     def get_chat_permissions_api_json(
         self, chat_id: int, user_id: int = None
-    ) -> Optional[List]:
+    ) -> Optional[Dict]:
         """Returns the json list of a chat or a user's permissions"""
         data = {"chat_id": chat_id}
         api_method = "getChat"
@@ -166,11 +166,13 @@ class App:
             return None
         return json.loads(req.content)
 
-    def get_user_status_and_permissions(
+    def get_user_status_and_permissions(  # pylint: disable=too-many-return-statements
         self, chat_id: int, user_id: int
     ) -> Optional[List]:
         """Returns a list containing the user status and its permissions if there is any"""
         data = self.get_chat_permissions_api_json(chat_id, user_id)
+        if data is None or "result" not in data:
+            return None
         data = data["result"]
         if data is None or "status" not in data:
             return None
@@ -244,7 +246,7 @@ class App:
         if callback_manager_info is not None:
             manager.set_callback_manager_info(callback_manager_info)
         class_id = len(self.managers)
-        self.managers.update({class_id: manager})
+        self.managers[class_id] = manager
 
     def get_managers_actions(self) -> Optional[List[List]]:
         """Returns the managers actions or kills them"""
@@ -283,11 +285,11 @@ class App:
 
     def send_message_and_update_db(
         self, message: Message, reply_info: BotAction
-    ) -> Optional[List]:
+    ) -> Optional[Dict]:
         """Sends a messages and updates the database if it's successfully sent"""
         if (
-            time.time() - message.message_time > OFFLINE_ANTIFLOOD_TIMEOUT
-            and message.message_time != 0
+            message.message_time is not None
+            and time.time() - message.message_time > OFFLINE_ANTIFLOOD_TIMEOUT
         ):
             logging.warning("Dropping message: I am too late")
             return None
@@ -326,7 +328,7 @@ class App:
             return None
         # this needs to be done better, along with the storage for non-text messages
         if sent_message.get("result") and is_bot_action_message(reply_info.reply_type):
-            result = sent_message.get("result")
+            result = sent_message.get("result", {})
             sent_message_dataclass = Message(
                 result["message_id"],
                 result["from"]["first_name"],
@@ -348,15 +350,17 @@ class App:
                 )
         return sent_message
 
-    def send_message(self, chat_id: int, reply: BotAction) -> Optional[List]:
+    def send_message(  # pylint: disable=too-many-branches, too-many-statements
+        self, chat_id: int, reply: BotAction
+    ) -> Optional[Dict]:
         """Sends a message"""
         logging.info("Sending message")
-        data = {"chat_id": chat_id}
+        data: Dict[str, Any] = {"chat_id": chat_id}
         files = None
         reply_text = reply.reply_text
         if reply.reply_type == BOT_ACTION_TYPE_REPLY_TEXT:
             api_method = "sendMessage"
-            if not reply.reply_text:
+            if reply_text is None:
                 return None
             if len(reply_text) > MAX_REPLY_LENGTH:
                 reply_text = reply_text[:MAX_REPLY_LENGTH] + "..."
@@ -422,27 +426,31 @@ class App:
             )
         elif reply.reply_type == BOT_ACTION_TYPE_PROMOTE_CHAT_MEMBER:
             api_method = "promoteChatMember"
-            permissions = reply.reply_permissions
+            permissions_class = reply.reply_permissions
+            if permissions_class is None:
+                permissions_class = self.get_chat_permissions(chat_id)
+            if permissions_class is None:
+                return None
             data.update({"chat_id": chat_id, "user_id": reply.reply_ban_user_id})
-            if permissions.can_manage_chat is not None:
+            if permissions_class.can_manage_chat is not None:
                 data.update({"can_manage_chat": True})
-            if permissions.can_post_messages is not None:
+            if permissions_class.can_post_messages is not None:
                 data.update({"can_post_messages": True})
-            if permissions.can_edit_messages is not None:
+            if permissions_class.can_edit_messages is not None:
                 data.update({"can_edit_messages": True})
-            if permissions.can_delete_messages is not None:
+            if permissions_class.can_delete_messages is not None:
                 data.update({"can_delete_messages": True})
-            if permissions.can_manage_voice_chats is not None:
+            if permissions_class.can_manage_voice_chats is not None:
                 data.update({"can_manage_voice_chats": True})
-            if permissions.can_restrict_members is not None:
+            if permissions_class.can_restrict_members is not None:
                 data.update({"can_restrict_members": True})
-            if permissions.can_promote_members is not None:
+            if permissions_class.can_promote_members is not None:
                 data.update({"can_promote_members": True})
-            if permissions.can_change_info is not None:
+            if permissions_class.can_change_info is not None:
                 data.update({"can_change_info": True})
-            if permissions.can_invite_users is not None:
+            if permissions_class.can_invite_users is not None:
                 data.update({"can_invite_users": True})
-            if permissions.can_pin_messages is not None:
+            if permissions_class.can_pin_messages is not None:
                 data.update({"can_pin_messages": True})
         else:
             return None
