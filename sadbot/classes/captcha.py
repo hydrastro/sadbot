@@ -1,3 +1,4 @@
+"""Here is the captcha class"""
 import sqlite3
 from typing import Optional, Tuple
 import random
@@ -69,40 +70,42 @@ class Captcha:
         data = cur.fetchone()
         return data is not None
 
-    def delete_old_captchas(self) -> None:
+    @staticmethod
+    def delete_old_captchas() -> None:
         """TODO: Deletes expired captchas"""
         return
 
     @staticmethod
     def get_random_border_coordinates() -> Tuple[int, int]:
         """Returns some random coordinates in the border of the image"""
-        x = CAPTCHA_WIDTH
-        y = CAPTCHA_HEIGHT
+        x_coordinates = CAPTCHA_WIDTH
+        y_coordinates = CAPTCHA_HEIGHT
         random_boolean = bool(random.getrandbits(1))
         if CAPTCHA_USE_BORDER_LINEAR_RANDOMNESS:
-            rand = random.randint(x + y)
-            if rand <= x:
-                x = rand
-                y = CAPTCHA_HEIGHT if random_boolean else 0
+            rand = random.randint(0, x_coordinates + y_coordinates)
+            if rand <= x_coordinates:
+                x_coordinates = rand
+                y_coordinates = CAPTCHA_HEIGHT if random_boolean else 0
             else:
-                x = CAPTCHA_WIDTH if random_boolean else 0
-                y = rand - CAPTCHA_WIDTH
+                x_coordinates = CAPTCHA_WIDTH if random_boolean else 0
+                y_coordinates = rand - CAPTCHA_WIDTH
         else:
             another_random_boolean = bool(random.getrandbits(1))
             if random_boolean:
-                x = CAPTCHA_WIDTH if another_random_boolean else 0
-                y = random.randint(0, CAPTCHA_HEIGHT)
+                x_coordinates = CAPTCHA_WIDTH if another_random_boolean else 0
+                y_coordinates = random.randint(0, CAPTCHA_HEIGHT)
             else:
-                x = random.randint(0, CAPTCHA_WIDTH)
-                y = CAPTCHA_HEIGHT if another_random_boolean else 0
-        return x, y
+                x_coordinates = random.randint(0, CAPTCHA_WIDTH)
+                y_coordinates = CAPTCHA_HEIGHT if another_random_boolean else 0
+        return x_coordinates, y_coordinates
 
     @staticmethod
     def get_captcha_string() -> str:
         """Returns the text used for the captcha"""
         return "".join(random.choice(CAPTCHA_CHARACTERS) for _ in range(CAPTCHA_LENGTH))
 
-    def get_captcha(self, captcha_id: str):
+    def get_captcha(self, captcha_id: str) -> Tuple[str, Image]:
+        """Returns a tuble containing the captcha text and its image"""
         captcha_text = self.get_captcha_string()
         self.insert_captcha_into_db(captcha_id, captcha_text)
         return captcha_text, self.get_captcha_image(captcha_text)
@@ -117,16 +120,15 @@ class Captcha:
         """
         self.con.execute(query, (captcha_text, captcha_id))
         self.con.commit()
-        return
 
-    def delete_captcha(self, captcha_id: str):
+    def delete_captcha(self, captcha_id: str) -> None:
+        """Deletes a captcha from the database"""
         query = """
           DELETE FROM captchas
           WHERE CaptchaID = ?
         """
         self.con.execute(query, [captcha_id])
         self.con.commit()
-        return
 
     def get_captcha_from_id(self, captcha_id: str) -> Optional[str]:
         """Retrieves the captcha text given a captcha id"""
@@ -144,7 +146,9 @@ class Captcha:
             return None
         return captcha_text[0]
 
-    def get_captcha_image(self, captcha_text: str) -> Image:
+    def get_captcha_image( # pylint: disable=too-many-locals
+        self, captcha_text: str
+    ) -> Image:
         """Generates a cool captcha and returns it as a image"""
         background_color = (
             self.get_random_color()
@@ -189,7 +193,7 @@ class Captcha:
             )
             image.paste(character_image, (offset, 0))
             offset += character_image.size[0]
-        for i in range(0, CAPTCHA_DOTS_NUMBER):
+        for _ in range(0, CAPTCHA_DOTS_NUMBER):
             draw = ImageDraw.Draw(image)
             if CAPTCHA_RANDOMIZE_DOTS_COLORS:
                 dots_color = self.get_random_color()
@@ -197,14 +201,14 @@ class Captcha:
                 (random.randint(0, image.width), random.randint(0, image.height)),
                 dots_color,
             )
-        for i in range(0, CAPTCHA_LINES_NUMBER):
+        for _ in range(0, CAPTCHA_LINES_NUMBER):
             if CAPTCHA_LINES_START_FROM_BORDER:
-                foo = self.get_random_border_coordinates()
-                x_0 = foo[0]
-                y_0 = foo[1]
-                foo = self.get_random_border_coordinates()
-                x_1 = foo[0]
-                y_1 = foo[1]
+                coordinates = self.get_random_border_coordinates()
+                x_0 = coordinates[0]
+                y_0 = coordinates[1]
+                coordinates = self.get_random_border_coordinates()
+                x_1 = coordinates[0]
+                y_1 = coordinates[1]
             else:
                 x_0 = random.randint(0, CAPTCHA_WIDTH)
                 y_0 = random.randint(0, CAPTCHA_HEIGHT)

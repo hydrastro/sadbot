@@ -16,7 +16,7 @@ class SedBotCommand(CommandInterface):
         self.message_repository = message_repository
 
     @property
-    def handler_type(self) -> str:
+    def handler_type(self) -> int:
         """Returns the type of event handled by the command"""
         return BOT_HANDLER_TYPE_MESSAGE
 
@@ -27,6 +27,8 @@ class SedBotCommand(CommandInterface):
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
         """Performs the sed command on a given message"""
+        if message is None or message.text is None:
+            return None
         replace_all = False
         text = message.text
         if text.endswith("/"):
@@ -43,19 +45,16 @@ class SedBotCommand(CommandInterface):
         new = second_split[2]
         try:
             re.compile(old)
-        except re.error:
-            return None
-        reply_message = self.message_repository.get_previous_message(message, old)
-        if reply_message is None or reply_message.text is None:
-            return None
-        max_replace = 1
-        if replace_all:
-            max_replace = len(reply_message.text)
-        if reply_message is not None:
-            try:
+            reply_message = self.message_repository.get_previous_message(message, old)
+            if reply_message is None or reply_message.text is None:
+                return None
+            max_replace = 1
+            if replace_all:
+                max_replace = len(reply_message.text)
+            if reply_message is not None:
                 reply = re.sub(old, new, reply_message.text, max_replace)
                 reply = "<" + reply_message.sender_name + ">: " + reply
                 return [BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text=reply)]
-            except re.error:
-                return None
+        except re.error:
+            return None
         return None

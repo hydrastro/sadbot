@@ -40,7 +40,7 @@ class FbiBotCommand(CommandInterface):
         self.initialize_forbidden_words()
 
     @property
-    def handler_type(self) -> str:
+    def handler_type(self) -> int:
         """Returns the type of event handled by the command"""
         return BOT_HANDLER_TYPE_MESSAGE
 
@@ -51,6 +51,8 @@ class FbiBotCommand(CommandInterface):
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
         """Doesn't really return a reply, just monitors words"""
+        if message is None or message.text is None:
+            return None
         forbidden_words = []
         for word in FBI_WORDS:
             if word in message.text.lower():

@@ -1,3 +1,4 @@
+"""Here is the revolver class"""
 from random import shuffle
 
 
@@ -7,12 +8,18 @@ class Revolver:
     def __init__(self, capacity: int) -> None:
         """Initializes a revolver"""
         self.capacity = capacity
+        self.drum = [0] * capacity
+        self.fired = 0
+
+    def init(self, capacity: int) -> None:
+        """Initializes a revolver"""
+        self.capacity = capacity
         self.drum = [0] * self.capacity
         self.fired = 0
 
     def set_capacity(self, capacity: int) -> str:
         """Changes the revolver's capacity"""
-        self.__init__(capacity)
+        self.init(capacity)
         return "Changed revolver capacity. "
 
     def reload(self, bullets: int) -> str:

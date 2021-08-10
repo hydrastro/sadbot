@@ -100,7 +100,7 @@ class App:
         self.message_repository = MessageRepository(con)
         self.classes["MessageRepository"] = self.message_repository
         self.managers: Dict[int, object] = {}
-        self.commands: List[object] = []
+        self.commands: List[Dict] = []
         self.load_commands()
         self.start_bot()
 
@@ -253,12 +253,12 @@ class App:
         actions = []
         inactive_managers = []
         for manager in self.managers:
-            if not self.managers[manager].is_active:
+            if not getattr(self.managers[manager], "is_active")():
                 inactive_managers.append(manager)
                 continue
-            temp = self.managers[manager].get_reply()
+            temp = getattr(self.managers[manager], "get_reply")()
             if temp:
-                actions.append([self.managers[manager].get_message(), temp])
+                actions.append([getattr(self.managers[manager], "get_message")(), temp])
         for manager in inactive_managers:
             del self.managers[manager]
         if not actions:

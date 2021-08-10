@@ -17,7 +17,7 @@ class CommandInterface:
     these functions"""
 
     @property
-    def handler_type(self) -> str:
+    def handler_type(self) -> int:
         """Returns the type of event handled by the command"""
 
     @property

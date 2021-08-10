@@ -15,7 +15,7 @@ class BeaverBotCommand(CommandInterface):
         self.message_repository = message_repository
 
     @property
-    def handler_type(self) -> str:
+    def handler_type(self) -> int:
         """Returns the type of event handled by the command"""
         return BOT_HANDLER_TYPE_MESSAGE
 
@@ -26,13 +26,13 @@ class BeaverBotCommand(CommandInterface):
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
         """Speaks the truth"""
+        if message is None:
+            return None
         beaver_user_id = 1_749_391_268
         beaver_message = self.message_repository.get_random_message_from_user(
             beaver_user_id, message.chat_id
         )
-        if beaver_message is None:
-            return None
-        if beaver_message.text is None:
+        if beaver_message is None or beaver_message.text is None:
             return None
         reply_text = f"Here's a quote from beaver:\n{beaver_message.text}"
         return [BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text=reply_text)]

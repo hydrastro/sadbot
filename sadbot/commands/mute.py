@@ -28,19 +28,21 @@ class MuteBotCommand(CommandInterface):
         self.permissions = permissions
 
     @property
-    def handler_type(self) -> str:
-        """Returns the type of event handled by the command"""
+    def handler_type(self) -> int:
+        """Returns the type of event handled by the mute command"""
         return BOT_HANDLER_TYPE_MESSAGE
 
     @property
     def command_regex(self) -> str:
-        """Returns the regex for matching leaf commands"""
+        """Returns the regex for matching mute commands"""
         return r"((!|\.|/)([Mm][Uu][Tt][Ee])).*"
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
         """Mutes a user"""
+        if message is None or message.text is None:
+            return None
         user_id_to_mute = None
-        until_date = None
+        until_date = 0
         if message.reply_id is not None:
             user_id_to_mute = self.message_repository.get_user_id_from_message_id(
                 message.reply_id

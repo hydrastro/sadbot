@@ -11,7 +11,7 @@ class LetsdoBotCommand(CommandInterface):
     """This is the letsdo bot command class"""
 
     @property
-    def handler_type(self) -> str:
+    def handler_type(self) -> int:
         """Returns the type of event handled by the command"""
         return BOT_HANDLER_TYPE_MESSAGE
 
@@ -22,6 +22,8 @@ class LetsdoBotCommand(CommandInterface):
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
         """Returns letsdo"""
+        if message is None or message.text is None:
+            return None
         this = message.text[8:]
         this = (
             f"let's do {this}! {this} {this} toe "

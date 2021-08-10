@@ -13,7 +13,7 @@ class PastaBotCommand(CommandInterface):
     """This is the pasta bot command class"""
 
     @property
-    def handler_type(self) -> str:
+    def handler_type(self) -> int:
         """Returns the type of event handled by the command"""
         return BOT_HANDLER_TYPE_MESSAGE
 
@@ -24,6 +24,8 @@ class PastaBotCommand(CommandInterface):
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
         """Returns a pasta"""
+        if message is None or message.text is None:
+            return None
         key = None
         if len(message.text) > 7:
             key = message.text[7:]

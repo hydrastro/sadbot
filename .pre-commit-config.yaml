@@ -1,0 +1,25 @@
+repos:
+-   repo: local
+    hooks:
+    -   id: pylint
+        name: Check for pylint passing
+        entry: pylint
+        language: system
+        types:
+        - python
+    -   id: black
+        name: Check for black passing
+        entry: black --check
+        language: system
+        types:
+        - python
+    -   id: mypy
+        name: Static type checks
+        entry: mypy
+        language: system
+        types:
+        - python
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v3.2.0
+    hooks:
+    -   id: check-merge-conflict

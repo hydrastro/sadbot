@@ -104,7 +104,7 @@ class UwuBotCommand(CommandInterface):
         self.message_repository = message_repository
 
     @property
-    def handler_type(self) -> str:
+    def handler_type(self) -> int:
         """Here is the type of event handled by the command"""
         return BOT_HANDLER_TYPE_MESSAGE
 

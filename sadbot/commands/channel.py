@@ -15,7 +15,7 @@ class ChannelBotCommand(CommandInterface):
     """This is the channel bot command class"""
 
     @property
-    def handler_type(self) -> str:
+    def handler_type(self) -> int:
         """Returns the type of event handled by the command"""
         return BOT_HANDLER_TYPE_MESSAGE
 
@@ -31,12 +31,14 @@ class ChannelBotCommand(CommandInterface):
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
         """Retrieve the description of a 4channel thread"""
+        if message is None or message.text is None:
+            return None
         try:
             url = re.findall(
                 r"https://boards.4chan(?:nel)?.org/.*?/thread/[0-9]*", message.text
             )
-            url = url[0]
-            req = requests.get(url)
+            req_url = url[0]
+            req = requests.get(req_url)
             post = re.findall(
                 r'post op".*?fileThu.*?href=\"[/][/](.*?)\".*?bloc.*?>(.*?)<[/]blo',
                 req.text,

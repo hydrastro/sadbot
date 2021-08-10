@@ -29,17 +29,19 @@ class UnmuteBotCommand(CommandInterface):
         self.permissions = permissions
 
     @property
-    def handler_type(self) -> str:
-        """Returns the type of event handled by the command"""
+    def handler_type(self) -> int:
+        """Returns the type of event handled by the unmute command"""
         return BOT_HANDLER_TYPE_MESSAGE
 
     @property
     def command_regex(self) -> str:
-        """Returns the regex for matching leaf commands"""
+        """Returns the regex for matching unmute commands"""
         return r"((!|\.|/)([Uu][Nn][Mm][Uu][Tt][Ee]))\s+.*"
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
         """Unmutes a user"""
+        if message is None or message.text is None:
+            return None
         message_text = message.text.split()
         user_to_unmute = message_text[1].replace("@", "")
         user_id_to_unmute = self.message_repository.get_user_id_from_username(

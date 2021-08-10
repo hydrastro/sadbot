@@ -28,7 +28,7 @@ class UwuBotCommand(CommandInterface):
         self.message_repository = message_repository
 
     @property
-    def handler_type(self) -> str:
+    def handler_type(self) -> int:
         """Here is the type of event handled by the command"""
         return BOT_HANDLER_TYPE_MESSAGE
 
@@ -46,6 +46,8 @@ class UwuBotCommand(CommandInterface):
         # a very useful module of sadbot we're injecting into this class
         # we could also have injected the direct database connection and retrieved
         # the last message directly
+        if message is None:
+            return None
         previous_message = self.message_repository.get_previous_message(
             message, r"^(?!\s*$).+"
         )

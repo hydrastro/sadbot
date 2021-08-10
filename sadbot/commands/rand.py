@@ -13,7 +13,7 @@ class RandBotCommand(CommandInterface):
     """This is the rand bot command class"""
 
     @property
-    def handler_type(self) -> str:
+    def handler_type(self) -> int:
         """Returns the type of event handled by the command"""
         return BOT_HANDLER_TYPE_MESSAGE
 
@@ -24,6 +24,8 @@ class RandBotCommand(CommandInterface):
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
         """Gets a random number in a user-defined range"""
+        if message is None or message.text is None:
+            return None
         text = message.text[4:]
         if text.startswith("(") and text.endswith(")"):
             text = text[1:-1]

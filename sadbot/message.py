@@ -4,7 +4,7 @@ from typing import Optional
 from dataclasses import dataclass
 
 
-@dataclass
+@dataclass  # pylint: disable=too-many-instance-attributes
 class Message:
     """Message class"""
 

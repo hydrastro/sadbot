@@ -35,7 +35,7 @@ class CaptchaWelcomeBotCommand(CommandInterface):
         self.message_repository = message_repository
 
     @property
-    def handler_type(self) -> str:
+    def handler_type(self) -> int:
         # return BOT_HANDLER_TYPE_MESSAGE
         return BOT_HANDLER_TYPE_NEW_USER
 
@@ -78,7 +78,7 @@ class CaptchaWelcomeBotCommand(CommandInterface):
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
         """Returns a reply that 'welcomes' a new user"""
-        if message.is_bot:
+        if message is None or message.is_bot:
             return None
         captcha_id = str(message.chat_id) + "." + str(message.sender_id)
         captcha_text, captcha_image = self.captcha.get_captcha(captcha_id)
@@ -90,7 +90,7 @@ class CaptchaWelcomeBotCommand(CommandInterface):
         new_user = message.sender_name
         if message.sender_username is not None:
             new_user = "@" + message.sender_username
-        welcome_message = [
+        welcome_message_replies = [
             f"Welcome {new_user}\nPlease solve the captcha.",
             f"""W-w.. welcomee {new_user} ~~ uwu~\nP-p pweaswe c-c.. *blushing* c- c-an ywou
             slwolve t-the capthwa for me {new_user} -senpai ~~""",
@@ -99,7 +99,7 @@ class CaptchaWelcomeBotCommand(CommandInterface):
             f"Yoo {new_user} wassup\nCan ya solve da captcha?",
             f"{new_user} looking kinda sus, ngl.\nProve us ur not the impostor.",
         ]
-        welcome_message = random.choice(welcome_message)
+        welcome_message = random.choice(welcome_message_replies)
         inline_keyboard = self.get_keyboard(captcha_id, captcha_text)
         permissions = ChatPermissions(
             False, False, False, False, False, False, False, False

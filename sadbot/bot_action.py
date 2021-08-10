@@ -22,7 +22,7 @@ BOT_ACTION_PRIORITY_MEDIUM = 1
 BOT_ACTION_PRIORITY_HIGH = 2
 
 
-@dataclass
+@dataclass  # pylint: disable=too-many-instance-attributes
 class BotAction:
     """BotAction class"""
 

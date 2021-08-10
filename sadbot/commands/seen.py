@@ -17,7 +17,7 @@ class SeenBotCommand(CommandInterface):
         self.message_repository = message_repository
 
     @property
-    def handler_type(self) -> str:
+    def handler_type(self) -> int:
         """Returns the type of event handled by the command"""
         return BOT_HANDLER_TYPE_MESSAGE
 
@@ -28,6 +28,8 @@ class SeenBotCommand(CommandInterface):
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
         """Gets the reply"""
+        if message is None or message.text is None:
+            return None
         username = message.text[6:]
         user_id = self.message_repository.get_user_id_from_username(username)
         if user_id is None:

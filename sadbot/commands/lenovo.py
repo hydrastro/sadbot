@@ -12,7 +12,7 @@ class LenovoBotCommand(CommandInterface):
     """This is the lenovo bot command class"""
 
     @property
-    def handler_type(self) -> str:
+    def handler_type(self) -> int:
         """Returns the type of event handled by the command"""
         return BOT_HANDLER_TYPE_MESSAGE
 

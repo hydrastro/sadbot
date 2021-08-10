@@ -12,7 +12,7 @@ class AmogusBotCommand(CommandInterface):
     """This is the amogus bot command class"""
 
     @property
-    def handler_type(self) -> str:
+    def handler_type(self) -> int:
         """Returns the type of event handled by the command"""
         return BOT_HANDLER_TYPE_MESSAGE
 
@@ -23,10 +23,17 @@ class AmogusBotCommand(CommandInterface):
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
         """Amogus"""
+        if message is None:
+            return None
+        reply_user = (
+            message.sender_username
+            if message.sender_username is not None
+            else message.sender_name
+        )
         amogus_replies = [
             "amogus",
             "sus",
-            f"i saw the sus impostor {message.sender_username} vent in elec",
+            f"i saw the sus impostor {reply_user} vent in elec",
         ]
         return [
             BotAction(

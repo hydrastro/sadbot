@@ -18,7 +18,7 @@ class TranslateBotCommand(CommandInterface):
         self.message_repository = message_repository
 
     @property
-    def handler_type(self) -> str:
+    def handler_type(self) -> int:
         """Returns the type of event handled by the command"""
         return BOT_HANDLER_TYPE_MESSAGE
 
@@ -29,6 +29,8 @@ class TranslateBotCommand(CommandInterface):
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
         """Get the translation"""
+        if message is None or message.text is None:
+            return None
         try:
             reply_message = self.message_repository.get_reply_message(message)
             if reply_message is None:

@@ -20,7 +20,7 @@ class RouletteBotCommand(CommandInterface):
         self.revolvers = {}
 
     @property
-    def handler_type(self) -> str:
+    def handler_type(self) -> int:
         """Returns the type of event handled by the command"""
         return BOT_HANDLER_TYPE_MESSAGE
 
@@ -32,30 +32,32 @@ class RouletteBotCommand(CommandInterface):
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
         """Plays the Russian roulette"""
+        if message is None or message.text is None:
+            return None
         if message.chat_id not in self.revolvers:
             revolver = Revolver(REVOLVER_CHAMBERS)
             revolver.reload(self.bullets)
             self.revolvers.update({message.chat_id: revolver})
         revolver = self.revolvers[message.chat_id]
-        if re.fullmatch(re.compile(r"(\.[Rr][Ee][Ll][Oo][Aa][Dd]).*"), message.text):
+        reload_regex = re.compile(r"(\.[Rr][Ee][Ll][Oo][Aa][Dd]).*")
+        if re.fullmatch(reload_regex, message.text):
             bullets = message.text[7:]
             bullets = bullets.replace(" ", "")
-            bullets = safe_cast(bullets, int, self.bullets)
+            int_bullets = safe_cast(bullets, int, self.bullets)
             return [
                 BotAction(
-                    BOT_ACTION_TYPE_REPLY_TEXT, reply_text=revolver.reload(bullets)
+                    BOT_ACTION_TYPE_REPLY_TEXT, reply_text=revolver.reload(int_bullets)
                 )
             ]
-        if re.fullmatch(
-            re.compile(r"(\.[Rr][Ee][Vv][Oo][Ll][Vv][Ee][Rr]\s[0-9]+)"), message.text
-        ):
+        revolver_regex = re.compile(r"(\.[Rr][Ee][Vv][Oo][Ll][Vv][Ee][Rr]\s[0-9]+)")
+        if re.fullmatch(revolver_regex, message.text):
             capacity = message.text[9:]
             capacity = capacity.replace(" ", "")
-            capacity = safe_cast(capacity, int, REVOLVER_CHAMBERS)
+            int_capacity = safe_cast(capacity, int, REVOLVER_CHAMBERS)
             return [
                 BotAction(
                     BOT_ACTION_TYPE_REPLY_TEXT,
-                    reply_text=revolver.set_capacity(capacity)
+                    reply_text=revolver.set_capacity(int_capacity)
                     + revolver.reload(self.bullets),
                 )
             ]
