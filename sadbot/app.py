@@ -112,7 +112,6 @@ class App:
         command_class = getattr(
             __import__(import_name, fromlist=[class_name]), class_name
         )
-        # to be done: catch exceptions and return None
         if command_class.__init__.__class__.__name__ == "function":
             arguments_list = command_class.__init__.__annotations__
             for argument_name in arguments_list:

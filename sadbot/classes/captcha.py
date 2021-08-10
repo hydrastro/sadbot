@@ -104,7 +104,7 @@ class Captcha:
         """Returns the text used for the captcha"""
         return "".join(random.choice(CAPTCHA_CHARACTERS) for _ in range(CAPTCHA_LENGTH))
 
-    def get_captcha(self, captcha_id: str) -> Tuple[str, Image]:
+    def get_captcha(self, captcha_id: str) -> Tuple[str, Image.Image]:
         """Returns a tuble containing the captcha text and its image"""
         captcha_text = self.get_captcha_string()
         self.insert_captcha_into_db(captcha_id, captcha_text)
@@ -146,9 +146,9 @@ class Captcha:
             return None
         return captcha_text[0]
 
-    def get_captcha_image( # pylint: disable=too-many-locals
+    def get_captcha_image(  # pylint: disable=too-many-locals
         self, captcha_text: str
-    ) -> Image:
+    ) -> Image.Image:
         """Generates a cool captcha and returns it as a image"""
         background_color = (
             self.get_random_color()
