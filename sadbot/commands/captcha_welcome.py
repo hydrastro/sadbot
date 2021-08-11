@@ -5,10 +5,7 @@ from io import BytesIO
 from math import ceil
 import random
 
-from sadbot.command_interface import (
-    CommandInterface,
-    BOT_HANDLER_TYPE_NEW_USER,
-)
+from sadbot.command_interface import CommandInterface, BOT_HANDLER_TYPE_NEW_USER
 from sadbot.message import Message
 from sadbot.bot_action import (
     BotAction,

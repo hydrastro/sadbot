@@ -9,11 +9,7 @@ from sadbot.bot_action import (
     BOT_ACTION_TYPE_RESTRICT_CHAT_MEMBER,
     BOT_ACTION_TYPE_REPLY_TEXT,
 )
-from sadbot.app import (
-    App,
-    CHAT_MEMBER_STATUS_ADMIN,
-    CHAT_MEMBER_STATUS_CREATOR,
-)
+from sadbot.app import App, CHAT_MEMBER_STATUS_ADMIN, CHAT_MEMBER_STATUS_CREATOR
 from sadbot.message_repository import MessageRepository
 from sadbot.classes.permissions import Permissions
 
@@ -55,7 +51,7 @@ class UnmuteBotCommand(CommandInterface):
         if user_permissions is None:
             return None
         user_type = user_permissions[0]
-        if user_type not in [CHAT_MEMBER_STATUS_ADMIN, CHAT_MEMBER_STATUS_CREATOR,] or (
+        if user_type not in [CHAT_MEMBER_STATUS_ADMIN, CHAT_MEMBER_STATUS_CREATOR] or (
             user_type != CHAT_MEMBER_STATUS_CREATOR
             and not user_permissions[1].can_restrict_members
         ):

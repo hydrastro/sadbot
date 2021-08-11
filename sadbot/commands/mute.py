@@ -20,7 +20,8 @@ from sadbot.classes.permissions import Permissions
 class MuteBotCommand(CommandInterface):
     """This is the leaf bot command class"""
 
-    def __init__(
+    # pylint: disable=duplicate-code
+    def __init__(  # pylint: disable=duplicate-code
         self, app: App, message_repository: MessageRepository, permissions: Permissions
     ):
         self.app = app
@@ -73,7 +74,7 @@ class MuteBotCommand(CommandInterface):
         if user_permissions is None:
             return None
         user_type = user_permissions[0]
-        if user_type not in [CHAT_MEMBER_STATUS_ADMIN, CHAT_MEMBER_STATUS_CREATOR,] or (
+        if user_type not in [CHAT_MEMBER_STATUS_ADMIN, CHAT_MEMBER_STATUS_CREATOR] or (
             user_type != CHAT_MEMBER_STATUS_CREATOR
             and not user_permissions[1].can_restrict_members
         ):
