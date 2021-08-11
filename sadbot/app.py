@@ -157,8 +157,8 @@ class App:
                 data=data,
                 timeout=OUTGOING_REQUESTS_TIMEOUT,
             )
-        except requests.exceptions.RequestException as exception:
-            logging.exception(exception)
+        except requests.exceptions.RequestException:
+            logging.error("An error occured sending the getChatMember request")
             return None
         if not req.ok:
             logging.error("Failed sending message - details: %s", req.json())
@@ -271,8 +271,8 @@ class App:
             url = f"{url}&offset={offset + 1}"
         try:
             req = requests.get(url, timeout=UPDATES_TIMEOUT)
-        except requests.exceptions.RequestException as exception:
-            logging.exception(exception)
+        except requests.exceptions.RequestException:
+            logging.error("An error occured sending the getUpdates request")
             return None
         if not req.ok:
             logging.error(
@@ -461,8 +461,8 @@ class App:
                 files=files,
                 timeout=OUTGOING_REQUESTS_TIMEOUT,
             )
-        except requests.exceptions.RequestException as exception:
-            logging.exception(exception)
+        except requests.exceptions.RequestException:
+            logging.error("An error occured sending the message request")
             return None
         logging.info("Sent message")
         if not req.ok:
@@ -475,7 +475,7 @@ class App:
         text = message.text
         if not text:
             return None
-        messages = []
+        messages: List[BotAction] = []
         for command in self.commands:
             if command["class"].handler_type == BOT_HANDLER_TYPE_MESSAGE:
                 try:

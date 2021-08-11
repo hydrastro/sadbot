@@ -35,21 +35,16 @@ class CringeBotCommand(CommandInterface):
         """Returns cringy stuff"""
 
         @dataclass
-        class Eceleb:
+        class EcelebClass:
             """Defines the dataclass for ecelebs"""
 
-            def __init__(self, url, regex, prefix):
-                self.url = url
-                self.regex = regex
-                self.prefix = prefix
+            url: str = ""
+            regex: str = ""
+            prefix: str = ""
 
         ecelebs = []
         for eceleb in ECELEBS:
-            ecelebs.append(
-                Eceleb(
-                    url=eceleb["url"], regex=eceleb["regex"], prefix=eceleb["prefix"]
-                )
-            )
+            ecelebs.append(EcelebClass(**eceleb))
         lucky_eceleb = ecelebs[random.randint(0, len(ecelebs)) - 1]
         headers = {
             "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:88.0) Gecko/20100101 Firefox/88.0"
@@ -59,7 +54,8 @@ class CringeBotCommand(CommandInterface):
                 lucky_eceleb.url, headers=headers, cookies={"CONSENT": "YES+42"}
             )
         except requests.exceptions.RequestException as exception:
-            logging.exception(exception)
+            logging.error("An error occured while sending the eceleb request")
+            logging.error(str(exception))
             return None
         if not req.ok:
             logging.warning("Failed to get eceleb data - details: %s", req.text)
