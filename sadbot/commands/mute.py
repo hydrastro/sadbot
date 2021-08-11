@@ -20,8 +20,7 @@ from sadbot.classes.permissions import Permissions
 class MuteBotCommand(CommandInterface):
     """This is the leaf bot command class"""
 
-    # pylint: disable=duplicate-code
-    def __init__(  # pylint: disable=duplicate-code
+    def __init__(
         self, app: App, message_repository: MessageRepository, permissions: Permissions
     ):
         self.app = app
