@@ -252,7 +252,7 @@ class App:
         actions = []
         inactive_managers = []
         for manager in self.managers:
-            if not getattr(self.managers[manager], "is_active")():
+            if not getattr(self.managers[manager], "is_active"):
                 inactive_managers.append(manager)
                 continue
             temp = getattr(self.managers[manager], "get_reply")()
@@ -288,6 +288,7 @@ class App:
         """Sends a messages and updates the database if it's successfully sent"""
         if (
             message.message_time is not None
+            and message.message_time != 0
             and time.time() - message.message_time > OFFLINE_ANTIFLOOD_TIMEOUT
         ):
             logging.warning("Dropping message: I am too late")
@@ -453,7 +454,6 @@ class App:
                 data.update({"can_pin_messages": True})
         else:
             return None
-        # headers={"Content-Type": "application/json"},
         try:
             req = requests.post(
                 f"{self.base_url}{api_method}",
@@ -470,7 +470,7 @@ class App:
             return None
         return json.loads(req.content)
 
-    def get_replies(self, message: Message) -> Optional[list]:
+    def get_replies(self, message: Message) -> Optional[List]:
         """Checks if a bot command is triggered and gets its reply"""
         text = message.text
         if not text:

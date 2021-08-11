@@ -33,7 +33,6 @@ class CaptchaWelcomeBotCommand(CommandInterface):
 
     @property
     def handler_type(self) -> int:
-        # return BOT_HANDLER_TYPE_MESSAGE
         return BOT_HANDLER_TYPE_NEW_USER
 
     @property
