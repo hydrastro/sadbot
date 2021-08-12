@@ -6,13 +6,15 @@ Which main feature is its sed command, the famous UNIX command.
 The bot has the following dependencies:
 - `requests`
 - `markdownify`
+- `pillow`
 
 Which can be installed with:
 ```
 pip3 install -r requirements.txt \
              -r dev-requirements.txt # Add this when developing the bot
 ```
-The captcha command depends on `fonts-freefont-ttf`, which can be installed via:
+The captcha command may depends on `fonts-freefont-ttf`, which can be installed
+via:
 ```shell
 sudo apt install fonts-freefont-ttf
 ```
@@ -122,6 +124,8 @@ class UwuBotCommand(CommandInterface):
         # a very useful module of sadbot we're injecting into this class
         # we could also have injected the direct database connection and retrieved
         # the last message directly
+        if message is None:
+            return None
         previous_message = self.message_repository.get_previous_message(
             message, r"^(?!\s*$).+"
         )
@@ -135,8 +139,8 @@ class UwuBotCommand(CommandInterface):
         except re.error:
             return None
         # here is how you open/set an image for the bot action
-        reply_image_file = open("./sadbot/data/uwu.jpg", mode="rb")
-        reply_image = reply_image_file.read()
+        with open("./sadbot/data/uwu.jpg", mode="rb") as reply_image_file:
+            reply_image = reply_image_file.read()
         return [
             BotAction(
                 BOT_ACTION_TYPE_REPLY_IMAGE,
@@ -144,7 +148,6 @@ class UwuBotCommand(CommandInterface):
                 reply_text=reply_text,
             )
         ]
-
 ```
 
 ## Todo list
