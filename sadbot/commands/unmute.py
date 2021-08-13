@@ -55,15 +55,17 @@ class UnmuteBotCommand(CommandInterface):
             user_type != CHAT_MEMBER_STATUS_CREATOR
             and not user_permissions[1].can_restrict_members
         ):
-            return [
-                BotAction(
-                    BOT_ACTION_TYPE_REPLY_TEXT,
-                    reply_text="You don't have enough rights to unmute, kiddo.",
-                )
-            ]
+            print(
+                [
+                    BotAction(
+                        BOT_ACTION_TYPE_REPLY_TEXT,
+                        reply_text="You don't have enough rights to unmute, kiddo.",
+                    )
+                ]
+            )
         unmute_permissions = self.app.get_chat_permissions(message.chat_id)
         self.permissions.delete_user_permissions(user_id_to_unmute, message.sender_id)
-        reply_text = "User successfully unmuted."
+        reply_text = f"{user_to_unmute} successfully unmuted."
         return [
             BotAction(
                 BOT_ACTION_TYPE_RESTRICT_CHAT_MEMBER,

@@ -47,6 +47,7 @@ class MuteBotCommand(CommandInterface):
             user_id_to_mute = self.message_repository.get_user_id_from_message_id(
                 message.reply_id
             )
+        user_to_mute = None
         if len(message.text) > 5:
             message_text = message.text.split()
             if len(message_text) == 2:
@@ -77,22 +78,24 @@ class MuteBotCommand(CommandInterface):
             user_type != CHAT_MEMBER_STATUS_CREATOR
             and not user_permissions[1].can_restrict_members
         ):
-            return [
-                BotAction(
-                    BOT_ACTION_TYPE_REPLY_TEXT,
-                    reply_text="You don't have enough rights to mute, kiddo.",
-                )
-            ]
+            print(
+                [
+                    BotAction(
+                        BOT_ACTION_TYPE_REPLY_TEXT,
+                        reply_text="You don't have enough rights to mute, kiddo.",
+                    )
+                ]
+            )
         mute_permissions = ChatPermissions(
             False, False, False, False, False, False, False, False
         )
+        mute_permissions.ban_until_date = until_date
         self.permissions.set_user_permissions(
-            user_id_to_mute, message.chat_id, mute_permissions, until_date
+            user_id_to_mute, message.chat_id, mute_permissions
         )
-        user_string = message.sender_name
-        if message.sender_username is not None:
-            user_string = "@" + message.sender_username
-        reply_text = f"{user_string} has successfully been muted."
+        reply_text = "User successfully muted."
+        if user_to_mute is not None:
+            reply_text = f"{user_to_mute} has successfully been muted."
         return [
             BotAction(
                 BOT_ACTION_TYPE_RESTRICT_CHAT_MEMBER,
