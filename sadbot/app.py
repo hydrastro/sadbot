@@ -275,14 +275,13 @@ class App:
         try:
             req = requests.get(url, timeout=UPDATES_TIMEOUT)
         except requests.exceptions.RequestException:
-            logging.error("An error occured sending the getUpdates request")
+            logging.error("An error occurred sending the getUpdates request")
             return None
         if not req.ok:
             logging.error(
                 "Failed to retrieve updates from server - details: %s", req.json()
             )
             return None
-
         return json.loads(req.content)
 
     def send_message_and_update_db(

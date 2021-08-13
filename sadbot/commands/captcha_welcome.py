@@ -6,11 +6,9 @@ from math import ceil
 import random
 import datetime
 
-from sadbot.command_interface import (
-    CommandInterface,
-    BOT_HANDLER_TYPE_NEW_USER,
-    BOT_HANDLER_TYPE_MESSAGE,
-)
+from sadbot.app import App, CHAT_MEMBER_STATUS_RESTRICTED
+from sadbot.classes.permissions import Permissions
+from sadbot.command_interface import CommandInterface, BOT_HANDLER_TYPE_NEW_USER
 from sadbot.message import Message
 from sadbot.bot_action import (
     BotAction,
@@ -33,18 +31,19 @@ class CaptchaWelcomeBotCommand(CommandInterface):
 
     def __init__(
         self,
+        app: App,
+        permissions: Permissions,
         captcha: Captcha,
         message_repository: MessageRepository,
     ):
         """Initializes the captcha command"""
+        self.app = app
+        self.permissions = permissions
         self.captcha = captcha
         self.message_repository = message_repository
 
     @property
     def handler_type(self) -> int:
-        debug = True
-        if debug:
-            return BOT_HANDLER_TYPE_MESSAGE
         return BOT_HANDLER_TYPE_NEW_USER
 
     @property
@@ -84,9 +83,23 @@ class CaptchaWelcomeBotCommand(CommandInterface):
             inline_keyboard.append(temp_list)
         return inline_keyboard
 
+    @staticmethod
+    def get_welcome_message(new_user: str) -> str:
+        """Returns a 'welcome' message lol"""
+        welcome_message_replies = [
+            f"Welcome {new_user}\nPlease solve the captcha.",
+            f"""W-w.. welcomee {new_user} ~~ uwu~\nP-p pweaswe c-c.. *blushing* c- c-an ywou
+            slwolve t-the capthwa for me {new_user} -senpai ~~""",
+            f"""Hmmmmm. I bet {new_user} is a bot lol\nAnd you know..\nThere's space for only
+            one bot here, and that's me.\nHere's your test.""",
+            f"Yoo {new_user} wassup\nCan ya solve da captcha?",
+            f"{new_user} looking kinda sus, ngl.\nProve us ur not the impostor.",
+        ]
+        return random.choice(welcome_message_replies)
+
     def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
         """Returns a reply that 'welcomes' a new user"""
-        if message is None or message.is_bot:
+        if message is None:
             return None
         expiration = CAPTCHA_EXPIRATION
         captcha_id = (
@@ -109,21 +122,21 @@ class CaptchaWelcomeBotCommand(CommandInterface):
         new_user = message.sender_name
         if message.sender_username is not None:
             new_user = "@" + message.sender_username
-        welcome_message_replies = [
-            f"Welcome {new_user}\nPlease solve the captcha.",
-            f"""W-w.. welcomee {new_user} ~~ uwu~\nP-p pweaswe c-c.. *blushing* c- c-an ywou
-            slwolve t-the capthwa for me {new_user} -senpai ~~""",
-            f"""Hmmmmm. I bet {new_user} is a bot lol\nAnd you know..\nThere's space for only
-            one bot here, and that's me.\nHere's your test.""",
-            f"Yoo {new_user} wassup\nCan ya solve da captcha?",
-            f"{new_user} looking kinda sus, ngl.\nProve us ur not the impostor.",
-        ]
-        welcome_message = random.choice(welcome_message_replies)
+        welcome_message = self.get_welcome_message(new_user)
         inline_keyboard = self.get_keyboard(captcha_id, captcha_text)
         permissions = ChatPermissions(
             False, False, False, False, False, False, False, False
         )
-        # TODO: check if user has set permissions. pylint: disable=fixme
+        user_status_and_permissions = self.app.get_user_status_and_permissions(
+            message.chat_id, message.sender_id
+        )
+        if (
+            user_status_and_permissions is not None
+            and user_status_and_permissions[0] == CHAT_MEMBER_STATUS_RESTRICTED
+        ):
+            self.permissions.set_user_permissions(
+                message.sender_id, message.chat_id, user_status_and_permissions[1]
+            )
         callback_manager_name = "CaptchaTimeoutManager"
         callback_manager_info = {
             "captcha_id": captcha_id,

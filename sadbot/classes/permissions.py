@@ -66,9 +66,11 @@ class Permissions:
         user_id: int,
         chat_id: int,
         permissions: ChatPermissions,
-        expiration: Optional[int] = 0,
     ) -> None:
         """Inserts new user permissions in the database"""
+        expiration = 0
+        if permissions.ban_until_date is not None:
+            expiration = permissions.ban_until_date
         query = """
           INSERT INTO user_permissions (
             UserID,
@@ -88,9 +90,11 @@ class Permissions:
         user_id: int,
         chat_id: int,
         permissions: ChatPermissions,
-        expiration: Optional[int] = 0,
     ):
         """Updates existing user permissions in the database"""
+        expiration = 0
+        if permissions.ban_until_date is not None:
+            expiration = permissions.ban_until_date
         query = """
           UPDATE user_permissions
           SET Permissions = ?, Expiration = ?
@@ -107,14 +111,11 @@ class Permissions:
         user_id: int,
         chat_id: int,
         permissions: ChatPermissions,
-        expiration: Optional[int] = 0,
     ):
         """Inserts or, if there already are, updates, user permissions in the database"""
         if self.get_user_permissions(user_id, chat_id) is None:
-            return self.insert_user_permissions(
-                user_id, chat_id, permissions, expiration
-            )
-        return self.update_user_permissions(user_id, chat_id, permissions, expiration)
+            return self.insert_user_permissions(user_id, chat_id, permissions)
+        return self.update_user_permissions(user_id, chat_id, permissions)
 
     def delete_user_permissions(self, user_id: int, chat_id: int) -> None:
         """Deletes user permissions form the database"""

@@ -69,7 +69,6 @@ class CaptchaTimeoutManager(ActionManagerInterface):
         actions = []
         inactive_instance_ids = []
         now = datetime.datetime.utcnow().timestamp()
-        print(self.instances)
         for captcha_id in self.instances:
             if self.captcha.get_captcha_from_id(captcha_id) is None:
                 inactive_instance_ids.append(captcha_id)
