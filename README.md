@@ -197,8 +197,8 @@ Managers may behave like containers for multiple sub-managers.
 - [X] Chat events handlers
 - [ ] Add new tables: for images, for edits and for usernames
 - [X] Mute command
-- [ ] Ban command
-- [ ] Kick command
+- [X] Ban command
+- [X] Kick command
 - [X] MyPy cleanup
 - [X] Rewrite managers
 - [X] BOT_ACTION_NONE

@@ -78,14 +78,12 @@ class MuteBotCommand(CommandInterface):
             user_type != CHAT_MEMBER_STATUS_CREATOR
             and not user_permissions[1].can_restrict_members
         ):
-            print(
-                [
-                    BotAction(
-                        BOT_ACTION_TYPE_REPLY_TEXT,
-                        reply_text="You don't have enough rights to mute, kiddo.",
-                    )
-                ]
-            )
+            return [
+                BotAction(
+                    BOT_ACTION_TYPE_REPLY_TEXT,
+                    reply_text="You don't have enough rights to mute, kiddo.",
+                )
+            ]
         mute_permissions = ChatPermissions(
             False, False, False, False, False, False, False, False
         )
