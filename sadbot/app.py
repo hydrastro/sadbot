@@ -39,6 +39,7 @@ from sadbot.bot_action import (
     BOT_ACTION_TYPE_RESTRICT_CHAT_MEMBER,
     BOT_ACTION_TYPE_UNBAN_USER,
     BOT_ACTION_TYPE_PROMOTE_CHAT_MEMBER,
+    BOT_ACTION_TYPE_NONE,
     # BOT_ACTION_PRIORITY_LOW,
     # BOT_ACTION_PRIORITY_MEDIUM,
     BOT_ACTION_PRIORITY_HIGH,
@@ -93,20 +94,20 @@ class App:
         logging.info("Started sadbot")
         self.base_url = f"https://api.telegram.org/bot{token}/"
         self.update_id = None
-        self.classes: Dict[str, object] = {}
-        self.classes["App"] = self
+        self.classes: Dict[str, object] = {"App": self}
         con = sqlite3.connect("./messages.db", check_same_thread=False)
         self.classes["Connection"] = con
         self.message_repository = MessageRepository(con)
         self.classes["MessageRepository"] = self.message_repository
-        self.managers: Dict[int, object] = {}
+        self.managers: Dict[str, object] = {}
         self.commands: List[Dict] = []
         self.load_commands()
+        self.load_managers()
         self.start_bot()
 
     def load_class(
         self, import_name: str, class_name: str, register_class: Optional[bool] = True
-    ):
+    ) -> object:
         """Dynamically loads and initializes a class given its name and its path"""
         arguments = []
         command_class = getattr(
@@ -128,7 +129,7 @@ class App:
             self.classes.update({class_name: command_class})
         return command_class
 
-    def load_commands(self):
+    def load_commands(self) -> None:
         """Loads the bot commands"""
         commands = glob.glob(join(dirname(__file__), "commands", "*.py"))
         for command_name in [basename(f)[:-3] for f in commands if isfile(f)]:
@@ -139,8 +140,23 @@ class App:
                 continue
             command_class = self.classes[class_name]
             self.commands.append(
-                {"regex": command_class.command_regex, "class": command_class}
+                {
+                    "regex": getattr(command_class, "command_regex"),
+                    "class": command_class,
+                }
             )
+
+    def load_managers(self) -> None:
+        """Loads the bot managers"""
+        managers = glob.glob(join(dirname(__file__), "managers", "*.py"))
+        for manager_name in [basename(f)[:-3] for f in managers if isfile(f)]:
+            if manager_name == "__init__":
+                continue
+            class_name = snake_to_pascal_case(manager_name) + "Manager"
+            if not self.load_class(f"sadbot.managers.{manager_name}", class_name):
+                continue
+            manager_class = self.classes[class_name]
+            self.managers[class_name] = manager_class
 
     def get_chat_permissions_api_json(
         self, chat_id: int, user_id: int = None
@@ -236,30 +252,17 @@ class App:
         callback_manager_info: Optional[Dict],
     ) -> None:
         """Dispatches a new manager"""
-        manager_filename = pascal_to_snake_case(class_name[:-7])
-        manager = self.load_class(
-            f"sadbot.managers.{manager_filename}", class_name, False
+        getattr(self.managers[class_name], "handle_callback")(
+            trigger_message, sent_message, callback_manager_info
         )
-        manager.set_trigger_message(trigger_message)
-        manager.set_sent_message(sent_message)
-        if callback_manager_info is not None:
-            manager.set_callback_manager_info(callback_manager_info)
-        class_id = len(self.managers)
-        self.managers[class_id] = manager
 
     def get_managers_actions(self) -> Optional[List[List]]:
-        """Returns the managers actions or kills them"""
+        """Returns the managers actions"""
         actions = []
-        inactive_managers = []
         for manager in self.managers:
-            if not getattr(self.managers[manager], "is_active"):
-                inactive_managers.append(manager)
-                continue
-            temp = getattr(self.managers[manager], "get_reply")()
+            temp = getattr(self.managers[manager], "get_actions")()
             if temp:
-                actions.append([getattr(self.managers[manager], "get_message")(), temp])
-        for manager in inactive_managers:
-            del self.managers[manager]
+                actions.append(temp)
         if not actions:
             return None
         return actions
@@ -350,7 +353,7 @@ class App:
                 )
         return sent_message
 
-    def send_message(  # pylint: disable=too-many-branches, too-many-statements
+    def send_message(  # pylint: disable=too-many-branches, too-many-statements too-many-return-statements
         self, chat_id: int, reply: BotAction
     ) -> Optional[Dict]:
         """Sends a message"""
@@ -358,6 +361,8 @@ class App:
         data: Dict[str, Any] = {"chat_id": chat_id}
         files = None
         reply_text = reply.reply_text
+        if reply.reply_type == BOT_ACTION_TYPE_NONE:
+            return None
         if reply.reply_type == BOT_ACTION_TYPE_REPLY_TEXT:
             api_method = "sendMessage"
             if reply_text is None:
@@ -529,12 +534,15 @@ class App:
         """Handles the bot managers"""
         while True:
             time.sleep(1)
-            actions = self.get_managers_actions()
-            if actions is None:
+            managers_actions = self.get_managers_actions()
+            if managers_actions is None:
                 continue
-            for manager_message in actions:
-                for bot_action in manager_message[1]:
-                    self.send_message_and_update_db(manager_message[0], bot_action)
+            for manager in managers_actions:
+                for manager_trigger_messages_and_actions in manager:
+                    for bot_action in manager_trigger_messages_and_actions[1]:
+                        self.send_message_and_update_db(
+                            manager_trigger_messages_and_actions[0], bot_action
+                        )
 
     def handle_updates(self) -> None:
         """Handles the bot updates"""

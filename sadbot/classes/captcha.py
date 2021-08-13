@@ -1,6 +1,6 @@
 """Here is the captcha class"""
 import sqlite3
-from typing import Optional, Tuple
+from typing import Optional, Tuple, List
 import random
 from PIL import Image, ImageFont, ImageDraw
 
@@ -69,6 +69,21 @@ class Captcha:
         cur.execute(query, params)
         data = cur.fetchone()
         return data is not None
+
+    def get_unsolved_captchas(self) -> Optional[List]:
+        """Retrieves unsolved captchas from the database"""
+        cur = self.con.cursor()
+        query = """
+          SELECT
+            CaptchaID,
+            CaptchaText,
+            Expiration
+          FROM
+            captchas
+        """
+        cur.execute(query)
+        data = cur.fetchall()
+        return data
 
     @staticmethod
     def delete_old_captchas() -> None:

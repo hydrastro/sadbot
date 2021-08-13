@@ -187,6 +187,7 @@ class CaptchaKickBotCommand(CommandInterface):
         message: Message,
         captcha_id: str,
         answer_callback_query: Optional[bool] = True,
+        sent_message_to_delete_id: Optional[int] = None,
     ) -> List[BotAction]:
         """Kicks a user from a chat"""
         new_user = (
@@ -228,14 +229,17 @@ class CaptchaKickBotCommand(CommandInterface):
                 reply_priority=BOT_ACTION_PRIORITY_HIGH,
             ),
             BotAction(
-                BOT_ACTION_TYPE_DELETE_MESSAGE,
-                reply_delete_message_id=message.reply_id,
-                reply_priority=BOT_ACTION_PRIORITY_HIGH,
-            ),
-            BotAction(
                 BOT_ACTION_TYPE_UNBAN_USER,
                 reply_ban_user_id=message.sender_id,
                 reply_priority=BOT_ACTION_PRIORITY_HIGH,
             ),
         ]
+        if sent_message_to_delete_id is not None:
+            replies += [
+                BotAction(
+                    BOT_ACTION_TYPE_DELETE_MESSAGE,
+                    reply_delete_message_id=sent_message_to_delete_id,
+                    reply_priority=BOT_ACTION_PRIORITY_HIGH,
+                )
+            ]
         return replies

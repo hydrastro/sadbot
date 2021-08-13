@@ -67,8 +67,12 @@ sudo docker run -it sadbot
 
 ## Contributing
 Pull requests are welcome.  
-It's recommended to use `pylint` and `black` to cleanup and review the
-code before submitting.
+It's recommended to use `pylint`, `black` and `mypy` to check and review the
+code before submitting it. You can set up all these three by enabling
+`pre-commit`:
+```shell
+pre-commit install
+```
 
 ### Writing a new bot command
 If you want to add a new command you just have to write a new module file in the
@@ -150,6 +154,22 @@ class UwuBotCommand(CommandInterface):
         ]
 ```
 
+### Managers
+Managers are used for handling sent messages/actions and to perform actions
+at specific moments.
+Managers are called indirectly by the commands, through the `BotAction`
+attribute `reply_callback_manager_name`.
+Additional info may be passed by the commands to the managers by through the
+`BotAction` attribute `reply_callback_manager_info`
+So when a manager triggered, it's `handle_callback` function will be called and
+it will be given as parameters:
+- the message that triggered the command
+- the optional outgoing message/reply that triggered the manager
+- the optional callback info
+
+During the bot startup, every manager is initialized.
+Managers may behave like containers for multiple sub-managers.
+
 ## Todo list
 - [X] Add media support for outgoing messages
 - [X] Fix the roulette code
@@ -180,4 +200,5 @@ class UwuBotCommand(CommandInterface):
 - [ ] Ban command
 - [ ] Kick command
 - [X] MyPy cleanup
-- [ ] Rewrite managers
+- [X] Rewrite managers
+- [X] BOT_ACTION_NONE

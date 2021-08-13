@@ -4,8 +4,13 @@ from typing import Optional, List
 from io import BytesIO
 from math import ceil
 import random
+import datetime
 
-from sadbot.command_interface import CommandInterface, BOT_HANDLER_TYPE_NEW_USER
+from sadbot.command_interface import (
+    CommandInterface,
+    BOT_HANDLER_TYPE_NEW_USER,
+    BOT_HANDLER_TYPE_MESSAGE,
+)
 from sadbot.message import Message
 from sadbot.bot_action import (
     BotAction,
@@ -26,13 +31,20 @@ from sadbot.chat_permissions import ChatPermissions
 class CaptchaWelcomeBotCommand(CommandInterface):
     """This is the captcha welcome bot command class, it 'welcomes' new users lol"""
 
-    def __init__(self, captcha: Captcha, message_repository: MessageRepository):
+    def __init__(
+        self,
+        captcha: Captcha,
+        message_repository: MessageRepository,
+    ):
         """Initializes the captcha command"""
         self.captcha = captcha
         self.message_repository = message_repository
 
     @property
     def handler_type(self) -> int:
+        debug = True
+        if debug:
+            return BOT_HANDLER_TYPE_MESSAGE
         return BOT_HANDLER_TYPE_NEW_USER
 
     @property
@@ -76,7 +88,18 @@ class CaptchaWelcomeBotCommand(CommandInterface):
         """Returns a reply that 'welcomes' a new user"""
         if message is None or message.is_bot:
             return None
-        captcha_id = str(message.chat_id) + "." + str(message.sender_id)
+        expiration = CAPTCHA_EXPIRATION
+        captcha_id = (
+            str(message.chat_id)
+            + "."
+            + str(message.sender_id)
+            + "."
+            + str(message.message_id)
+            + "."
+            + str(int(datetime.datetime.utcnow().timestamp()))
+            + "."
+            + str(expiration)
+        )
         captcha_text, captcha_image = self.captcha.get_captcha(captcha_id)
         bytes_io = BytesIO()
         bytes_io.name = "captcha.jpeg"
@@ -100,10 +123,10 @@ class CaptchaWelcomeBotCommand(CommandInterface):
         permissions = ChatPermissions(
             False, False, False, False, False, False, False, False
         )
+        # TODO: check if user has set permissions. pylint: disable=fixme
         callback_manager_name = "CaptchaTimeoutManager"
         callback_manager_info = {
             "captcha_id": captcha_id,
-            "captcha_expiration": CAPTCHA_EXPIRATION,
         }
         return [
             BotAction(
