@@ -171,31 +171,31 @@ During the bot startup, every manager is initialized.
 Managers may behave like containers for multiple sub-managers.
 
 ## Todo list
-- [X] Add media support for outgoing messages
-- [X] Fix the roulette code
 - [ ] Eval command
 - [ ] Weather command
 - [ ] Status command
-- [X] Seen command
 - [ ] Tay command
+- [ ] Antiflood, samewords count and newlines count
+- [ ] Outgoing messages queue
+- [ ] Reminder tag/bookmark command
+- [ ] VC Radio
+- [ ] Group admin settings: enabled modules etc.
+- [ ] Add new tables: for images, for edits and for usernames
+- [X] Add media support for outgoing messages
+- [X] Fix the roulette code
+- [X] Seen command
 - [X] User ratelimit
 - [X] Group ratelimit
-- [ ] Antiflood, samewords count and newlines count
 - [X] FBI watchlist
 - [X] Captcha command
 - [X] Translate command
-- [ ] Outgoing messages queue
 - [X] Asynchronous processing <- HIGH PRIORITY | Multithreading
 - [X] Welcome messages
 - [X] Big chan url pictures
 - [X] Beaver command
-- [ ] Reminder tag/bookmark command
-- [ ] VC Radio
 - [X] Stay cool on weed questions
-- [ ] Group admin settings: enabled modules etc.
 - [X] Multiple messages per command (return a list)
 - [X] Chat events handlers
-- [ ] Add new tables: for images, for edits and for usernames
 - [X] Mute command
 - [X] Ban command
 - [X] Kick command
