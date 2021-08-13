@@ -174,14 +174,12 @@ class MessageRepository:
     def insert_username(self, user_id: int, username: Optional[str]) -> bool:
         """Inserts a username into the usernames table"""
         if username is None:
-            print("THE FUCKI")
             return False
         db_username = self.get_username_from_id(user_id)
         if db_username is not None:
             if db_username != username:
                 return self.update_username(user_id, username)
             return False
-        print("INSERTING")
         query = """
           INSERT INTO usernames (
             UserID,

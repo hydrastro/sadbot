@@ -2,7 +2,7 @@
 
 from typing import Optional, List
 
-from sadbot.app import CHAT_MEMBER_STATUS_ADMIN, CHAT_MEMBER_STATUS_CREATOR
+from sadbot.app import App, CHAT_MEMBER_STATUS_ADMIN, CHAT_MEMBER_STATUS_CREATOR
 from sadbot.command_interface import CommandInterface, BOT_HANDLER_TYPE_MESSAGE
 from sadbot.message import Message
 from sadbot.bot_action import (
@@ -18,7 +18,8 @@ from sadbot.message_repository import MessageRepository
 class KickBotCommand(CommandInterface):
     """This is the kick bot command class"""
 
-    def __init__(self, message_repository: MessageRepository):
+    def __init__(self, app: App, message_repository: MessageRepository):
+        self.app = app
         self.message_repository = message_repository
 
     @property
@@ -29,13 +30,14 @@ class KickBotCommand(CommandInterface):
     @property
     def command_regex(self) -> str:
         """Returns the regex for matching leaf commands"""
-        return r"((!|\.)([Kk][Ii][Cc][Kk])\s+.*"
+        return r"((!|\.|/)([Kk][Ii][Cc][Kk]))\s+.*"
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
         """Kicks a user"""
         if message is None or message.text is None:
             return None
         ban_user_id = None
+        ban_username = None
         if message.reply_id is not None:
             ban_user_id = self.message_repository.get_user_id_from_message_id(
                 message.reply_id
