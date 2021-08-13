@@ -171,10 +171,6 @@ During the bot startup, every manager is initialized.
 Managers may behave like containers for multiple sub-managers.
 
 ## Todo list
-- [ ] Eval command
-- [ ] Weather command
-- [ ] Status command
-- [ ] Tay command
 - [ ] Antiflood, samewords count and newlines count
 - [ ] Outgoing messages queue
 - [ ] Reminder tag/bookmark command

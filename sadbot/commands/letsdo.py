@@ -18,7 +18,7 @@ class LetsdoBotCommand(CommandInterface):
     @property
     def command_regex(self) -> str:
         """Returns the regex for matching letsdo commands"""
-        return r"((!|\.)([Ll][Ee][Tt][Ss][Dd][Oo]\s+\w+))"
+        return r"((!|\.)([Ll][Ee][Tt][Ss][Dd][Oo]\s+.*))"
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
         """Returns letsdo"""

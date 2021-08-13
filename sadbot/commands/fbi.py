@@ -2,6 +2,7 @@
 
 import sqlite3
 from typing import Optional, List
+import re
 
 from sadbot.config import FBI_WORDS, FBI_MOST_WANTED_NUMBER
 from sadbot.command_interface import CommandInterface, BOT_HANDLER_TYPE_MESSAGE
@@ -63,12 +64,9 @@ class FbiBotCommand(CommandInterface):
                 self.insert_fbi_entry(message, word)
                 return None
             self.update_fbi_entry(message, word)
-        if message.text.lower() in [
-            "fbi watchlist",
-            "watchlist",
-            "most wanted",
-            "top5",
-        ]:
+        if re.fullmatch(
+            re.compile(r"(\.|!)[Ww][Aa][Tt][Cc][Hh][Ll][Ii][Ss][Tt].*"), message.text
+        ):
             reply_text = f"Top {FBI_MOST_WANTED_NUMBER} most wanted:"
             # word = None
             # if len(message.text) > 14:
