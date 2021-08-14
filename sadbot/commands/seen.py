@@ -30,6 +30,7 @@ class SeenBotCommand(CommandInterface):
         """Gets the reply"""
         if message is None or message.text is None:
             return None
+        message.text = message.text.replace("@", "")
         username = message.text[6:]
         user_id = self.message_repository.get_user_id_from_username(username)
         if user_id is None:
