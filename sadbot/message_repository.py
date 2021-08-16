@@ -331,7 +331,7 @@ class MessageRepository:
         """
         cur.execute(query, [user_id, chat_id])
         data = cur.fetchall()
-        if data is not None:
+        if data is not None and data:
             return Message(*data[0])
         return None
 
