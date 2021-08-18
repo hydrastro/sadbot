@@ -62,10 +62,7 @@ class Permissions:
         self.con.commit()
 
     def insert_user_permissions(
-        self,
-        user_id: int,
-        chat_id: int,
-        permissions: ChatPermissions,
+        self, user_id: int, chat_id: int, permissions: ChatPermissions
     ) -> None:
         """Inserts new user permissions in the database"""
         expiration = 0
@@ -86,10 +83,7 @@ class Permissions:
         self.con.commit()
 
     def update_user_permissions(
-        self,
-        user_id: int,
-        chat_id: int,
-        permissions: ChatPermissions,
+        self, user_id: int, chat_id: int, permissions: ChatPermissions
     ):
         """Updates existing user permissions in the database"""
         expiration = 0
@@ -107,10 +101,7 @@ class Permissions:
         self.con.commit()
 
     def set_user_permissions(
-        self,
-        user_id: int,
-        chat_id: int,
-        permissions: ChatPermissions,
+        self, user_id: int, chat_id: int, permissions: ChatPermissions
     ):
         """Inserts or, if there already are, updates, user permissions in the database"""
         if self.get_user_permissions(user_id, chat_id) is None:

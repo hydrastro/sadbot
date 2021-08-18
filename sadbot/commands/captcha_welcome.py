@@ -138,9 +138,7 @@ class CaptchaWelcomeBotCommand(CommandInterface):
                 message.sender_id, message.chat_id, user_status_and_permissions[1]
             )
         callback_manager_name = "CaptchaTimeoutManager"
-        callback_manager_info = {
-            "captcha_id": captcha_id,
-        }
+        callback_manager_info = {"captcha_id": captcha_id}
         return [
             BotAction(
                 BOT_ACTION_TYPE_INLINE_KEYBOARD,

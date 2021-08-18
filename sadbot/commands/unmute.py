@@ -43,6 +43,10 @@ class UnmuteBotCommand(CommandInterface):
         user_id_to_unmute = self.message_repository.get_user_id_from_username(
             user_to_unmute
         )
+        if message.reply_id is not None:
+            user_id_to_unmute = self.message_repository.get_user_id_from_message_id(
+                message.reply_id
+            )
         if user_id_to_unmute is None:
             return None
         user_permissions = self.app.get_user_status_and_permissions(
