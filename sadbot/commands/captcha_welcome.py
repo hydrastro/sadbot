@@ -101,6 +101,8 @@ class CaptchaWelcomeBotCommand(CommandInterface):
         """Returns a reply that 'welcomes' a new user"""
         if message is None:
             return None
+        if message.is_bot:
+            return None
         expiration = CAPTCHA_EXPIRATION
         captcha_id = (
             str(message.chat_id)
