@@ -1,4 +1,4 @@
-"""Sample/uwuspeak bot command"""
+"""Cope bot command"""
 # this import is required in every module:
 from typing import Optional, List
 
