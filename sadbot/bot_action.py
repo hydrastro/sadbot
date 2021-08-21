@@ -8,6 +8,7 @@ from sadbot.chat_permissions import ChatPermissions
 BOT_ACTION_TYPE_REPLY_TEXT = 0
 BOT_ACTION_TYPE_REPLY_IMAGE = 1
 BOT_ACTION_TYPE_REPLY_AUDIO = 2
+BOT_ACTION_TYPE_REPLY_VIDEO = 3
 BOT_ACTION_TYPE_REPLY_FILE = 4
 BOT_ACTION_TYPE_REPLY_VOICE = 5
 BOT_ACTION_TYPE_BAN_USER = 6
@@ -31,6 +32,7 @@ class BotAction:
     reply_text: Optional[str] = None
     reply_text_parsemode: Optional[str] = None
     reply_image: Optional[bytes] = None
+    reply_video: Optional[bytes] = None
     reply_audio: Optional[bytes] = None
     reply_file: Optional[bytes] = None
     reply_voice: Optional[bytes] = None
