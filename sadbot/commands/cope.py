@@ -1,6 +1,6 @@
 """Cope bot command"""
 # this import is required in every module:
-from sadbot.config import SPECIAL_GROUP_ID
+from sadbot.config
 from typing import Optional, List
 
 # this imports is optional:
@@ -47,13 +47,9 @@ class CopeBotCommand(CommandInterface):
         # a very useful module of sadbot we're injecting into this class
         # we could also have injected the direct database connection and retrieved
         # the last message directly
-        if message.chat_id == SPECIAL_GROUP_ID:
-            with open('sadbot/data/cope.gif', mode="rb") as reply_video_file:
-                reply_video = reply_video_file.read()
-        else:
-            choice = random.choice(os.listdir('sadbot/data/cope'))
-            with open(f"sadbot/data/cope/{choice}", mode="rb") as reply_video_file:
-                reply_video = reply_video_file.read()
+        choice = random.choice(os.listdir('sadbot/data/cope'))
+        with open(f"sadbot/data/cope/{choice}", mode="rb") as reply_video_file:
+            reply_video = reply_video_file.read()
         return [
             BotAction(
                 BOT_ACTION_TYPE_REPLY_VIDEO,
