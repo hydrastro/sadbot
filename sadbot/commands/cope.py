@@ -1,6 +1,5 @@
 """Cope bot command"""
 # this import is required in every module:
-from sadbot.config
 from typing import Optional, List
 
 # this imports is optional:
