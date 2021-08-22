@@ -29,6 +29,7 @@ from sadbot.bot_action import (
     BotAction,
     BOT_ACTION_TYPE_REPLY_TEXT,
     BOT_ACTION_TYPE_REPLY_IMAGE,
+    BOT_ACTION_TYPE_REPLY_VIDEO,
     BOT_ACTION_TYPE_REPLY_AUDIO,
     BOT_ACTION_TYPE_REPLY_FILE,
     BOT_ACTION_TYPE_REPLY_VOICE,
@@ -375,6 +376,10 @@ class App:
         elif reply.reply_type == BOT_ACTION_TYPE_REPLY_IMAGE:
             api_method = "sendPhoto"
             files = {"photo": reply.reply_image}
+            data.update({"caption": reply_text})
+        elif reply.reply_type == BOT_ACTION_TYPE_REPLY_VIDEO:
+            api_method = "sendVideo"
+            files = {"video": reply.reply_video}
             data.update({"caption": reply_text})
         elif reply.reply_type == BOT_ACTION_TYPE_REPLY_AUDIO:
             api_method = "sendAudio"
