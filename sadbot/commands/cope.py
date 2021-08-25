@@ -51,8 +51,6 @@ class CopeBotCommand(CommandInterface):
             reply_video = reply_video_file.read()
         return [
             BotAction(
-                BOT_ACTION_TYPE_REPLY_VIDEO,
-                reply_video=reply_video,
-                reply_text="cope",
+                BOT_ACTION_TYPE_REPLY_VIDEO, reply_video=reply_video, reply_text="cope"
             )
         ]

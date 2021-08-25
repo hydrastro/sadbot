@@ -49,4 +49,6 @@ def convert_to_seconds(time_string: str) -> int:
     seconds_per_unit = {"s": 1, "m": 60, "h": 3600, "d": 86400, "w": 604_800}
     if time_string[-1] not in seconds_per_unit:
         return safe_cast(time_string, int, 0)
-    return int(time_string[:-1]) * seconds_per_unit[time_string[-1]]
+    return safe_cast(time_string[:-1], int, 0) * seconds_per_unit.get(
+        time_string[-1], 0
+    )

@@ -465,6 +465,7 @@ class App:
             return None
         if reply.reply_to_message_id is not None:
             data.update({"reply_to_message_id": reply.reply_to_message_id})
+            data.update({"allow_sending_without_reply": True})
         try:
             req = requests.post(
                 f"{self.base_url}{api_method}",
