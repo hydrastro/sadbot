@@ -261,7 +261,7 @@ class App:
         """Returns the managers actions"""
         actions = []
         for manager in self.managers.items():
-            temp = getattr(manager, "get_actions")()
+            temp = getattr(manager[1], "get_actions")()
             if temp:
                 actions.append(temp)
         if not actions:
