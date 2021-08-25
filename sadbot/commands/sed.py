@@ -43,18 +43,25 @@ class SedBotCommand(CommandInterface):
             return None
         old = second_split[1]
         new = second_split[2]
-        try:
-            re.compile(old)
-            reply_message = self.message_repository.get_previous_message(message, old)
-            if reply_message is None or reply_message.text is None:
+        if message.reply_id is not None:
+            reply_message = self.message_repository.get_message_from_id(
+                message.reply_id
+            )
+        else:
+            try:
+                matching_message = Message(chat_id=message.chat_id)
+                reply_message = self.message_repository.get_previous_message(
+                    matching_message, old
+                )
+                if reply_message is None or reply_message.text is None:
+                    return None
+                max_replace = 1
+                if replace_all:
+                    max_replace = len(reply_message.text)
+            except re.error:
                 return None
-            max_replace = 1
-            if replace_all:
-                max_replace = len(reply_message.text)
             if reply_message is not None:
                 reply = re.sub(old, new, reply_message.text, max_replace)
                 reply = "<" + reply_message.sender_name + ">: " + reply
                 return [BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text=reply)]
-        except re.error:
-            return None
         return None

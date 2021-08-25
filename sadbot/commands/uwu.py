@@ -48,9 +48,15 @@ class UwuBotCommand(CommandInterface):
         # the last message directly
         if message is None:
             return None
-        previous_message = self.message_repository.get_previous_message(
-            message, r"^(?!\s*$).+"
-        )
+        if message.reply_id is not None:
+            previous_message = self.message_repository.get_message_from_id(
+                message.reply_id
+            )
+        else:
+            matching_message = Message(chat_id=message.chat_id)
+            previous_message = self.message_repository.get_previous_message(
+                matching_message, r"^(?!\s*$).+"
+            )
         if previous_message is None:
             return None
         if previous_message.text is None:

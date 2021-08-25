@@ -260,8 +260,8 @@ class App:
     def get_managers_actions(self) -> Optional[List[List]]:
         """Returns the managers actions"""
         actions = []
-        for manager in self.managers:
-            temp = getattr(self.managers[manager], "get_actions")()
+        for manager in self.managers.items():
+            temp = getattr(manager, "get_actions")()
             if temp:
                 actions.append(temp)
         if not actions:
@@ -463,6 +463,8 @@ class App:
                 data.update({"can_pin_messages": True})
         else:
             return None
+        if reply.reply_to_message_id is not None:
+            data.update({"reply_to_message_id": reply.reply_to_message_id})
         try:
             req = requests.post(
                 f"{self.base_url}{api_method}",

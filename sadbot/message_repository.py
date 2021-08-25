@@ -3,7 +3,7 @@
 import datetime
 import re
 import sqlite3
-from typing import Optional, List
+from typing import Optional, List, Any
 
 from sadbot.message import Message
 
@@ -222,10 +222,10 @@ class MessageRepository:
         )
         self.con.commit()
 
-    def get_previous_message(self, message: Message, reg: str) -> Optional[Message]:
-        """Retrieves a previous message from the database matching a certain
-        regex pattern
-        """
+    def get_previous_message(
+        self, message: Message, regex: Optional[str] = None
+    ) -> Optional[Message]:
+        """Retrieves a previous message from the database matching some things or a regex pattern"""
         cur = self.con.cursor()
         query = """
           SELECT
@@ -239,13 +239,22 @@ class MessageRepository:
             IsBot,
             MessageTime
           FROM messages
-          WHERE Message REGEXP ? AND Message IS NOT NULL AND ChatID = ?
+          WHERE 1=1
         """
-        params = [reg, message.chat_id]
-        if message.reply_id:
-            query += "AND MessageID = ? "
-            params.append(message.reply_id)
-        query += "ORDER BY MessageID DESC"
+        params: List[Any] = []
+        if message.message_id:
+            query += " AND MessageID = ?"
+            params.append(message.message_id)
+        if message.sender_id:
+            query += " AND SenderID = ?"
+            params.append(message.sender_id)
+        if message.chat_id:
+            query += " AND ChatID = ?"
+            params.append(message.chat_id)
+        if regex:
+            query += " AND Message REGEXP ?"
+            params.append(regex)
+        query += " ORDER BY MessageID DESC"
         cur.execute(query, params)
         data = cur.fetchone()
         if data is not None:

@@ -24,8 +24,8 @@ BOT_ACTION_PRIORITY_MEDIUM = 1
 BOT_ACTION_PRIORITY_HIGH = 2
 
 
-@dataclass  # pylint: disable=too-many-instance-attributes
-class BotAction:
+@dataclass
+class BotAction:  # pylint: disable=too-many-instance-attributes
     """BotAction class"""
 
     reply_type: int = BOT_ACTION_TYPE_REPLY_TEXT
@@ -46,3 +46,4 @@ class BotAction:
     reply_callback_manager_name: Optional[str] = None
     reply_callback_manager_info: Optional[Dict] = None
     reply_chat_id: Optional[int] = None
+    reply_to_message_id: Optional[int] = None
