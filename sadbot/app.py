@@ -261,7 +261,7 @@ class App:
         """Returns the managers actions"""
         actions = []
         for manager in self.managers.items():
-            temp = getattr(manager, "get_actions")()
+            temp = getattr(manager[1], "get_actions")()
             if temp:
                 actions.append(temp)
         if not actions:
@@ -465,6 +465,7 @@ class App:
             return None
         if reply.reply_to_message_id is not None:
             data.update({"reply_to_message_id": reply.reply_to_message_id})
+            data.update({"allow_sending_without_reply": True})
         try:
             req = requests.post(
                 f"{self.base_url}{api_method}",

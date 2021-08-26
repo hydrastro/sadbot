@@ -10,7 +10,10 @@ from sadbot.message import Message
 
 def _create_func(x_val: str, y_val: str) -> int:
     """Lambda function for the regex query"""
-    return 1 if re.search(str(x_val), str(y_val)) else 0
+    try:
+        return 1 if re.search(str(x_val), str(y_val)) else 0
+    except re.error:
+        return 0
 
 
 def get_messages_table_creation_query() -> str:

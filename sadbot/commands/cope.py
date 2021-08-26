@@ -35,7 +35,7 @@ class CopeBotCommand(CommandInterface):
     @property
     def command_regex(self) -> str:
         """Here is the regex that triggers this bot command"""
-        regex = r"[.]cope"
+        regex = r".*[Cc][Oo][Pp][Ee].*"
         return regex
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
@@ -51,8 +51,6 @@ class CopeBotCommand(CommandInterface):
             reply_video = reply_video_file.read()
         return [
             BotAction(
-                BOT_ACTION_TYPE_REPLY_VIDEO,
-                reply_video=reply_video,
-                reply_text="cope",
+                BOT_ACTION_TYPE_REPLY_VIDEO, reply_video=reply_video, reply_text="cope"
             )
         ]

@@ -47,4 +47,10 @@ class SeenBotCommand(CommandInterface):
         last_seen = datetime.datetime.fromtimestamp(last_message.message_time)
         time_ago = convert_time(last_message.message_time, True)
         reply = f"{username} was last seen {time_ago} (on {last_seen})"
-        return [BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text=reply)]
+        return [
+            BotAction(
+                BOT_ACTION_TYPE_REPLY_TEXT,
+                reply_text=reply,
+                reply_to_message_id=last_message.message_id,
+            )
+        ]
