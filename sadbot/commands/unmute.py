@@ -32,20 +32,24 @@ class UnmuteBotCommand(CommandInterface):
     @property
     def command_regex(self) -> str:
         """Returns the regex for matching unmute commands"""
-        return r"((!|\.|/)([Uu][Nn][Mm][Uu][Tt][Ee]))\s+.*"
+        return r"((!|\.|/)([Uu][Nn][Mm][Uu][Tt][Ee]))(.*)?"
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
         """Unmutes a user"""
         if message is None or message.text is None:
             return None
-        message_text = message.text.split()
-        user_to_unmute = message_text[1].replace("@", "")
-        user_id_to_unmute = self.message_repository.get_user_id_from_username(
-            user_to_unmute
-        )
+        user_id_to_unmute = None
         if message.reply_id is not None:
             user_id_to_unmute = self.message_repository.get_user_id_from_message_id(
                 message.reply_id
+            )
+        if user_id_to_unmute is None:
+            message_text = message.text.split()
+            if len(message_text) < 2:
+                return None
+            user_to_unmute = message_text[1].replace("@", "")
+            user_id_to_unmute = self.message_repository.get_user_id_from_username(
+                user_to_unmute
             )
         if user_id_to_unmute is None:
             return None
@@ -59,14 +63,12 @@ class UnmuteBotCommand(CommandInterface):
             user_type != CHAT_MEMBER_STATUS_CREATOR
             and not user_permissions[1].can_restrict_members
         ):
-            print(
-                [
-                    BotAction(
-                        BOT_ACTION_TYPE_REPLY_TEXT,
-                        reply_text="You don't have enough rights to unmute, kiddo.",
-                    )
-                ]
-            )
+            return [
+                BotAction(
+                    BOT_ACTION_TYPE_REPLY_TEXT,
+                    reply_text="You don't have enough rights to unmute, kiddo.",
+                )
+            ]
         unmute_permissions = self.app.get_chat_permissions(message.chat_id)
         self.permissions.delete_user_permissions(user_id_to_unmute, message.sender_id)
         reply_text = f"{user_to_unmute} successfully unmuted."
