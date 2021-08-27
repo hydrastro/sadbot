@@ -5,7 +5,7 @@ Which main feature is its sed command, the famous UNIX command.
 ## Dependencies
 The bot has the following dependencies:
 - `requests`
-- `markdownify`
+- `html2text`
 - `pillow`
 
 Which can be installed with:
@@ -64,6 +64,18 @@ Then you can easily start the bot with:
 ```shell
 sudo docker run -it sadbot
 ```
+
+### NixOS
+If you use NixOS you can easily build the project using the `default.nix` file:
+```sh
+nix-build
+```
+Then you can start the bot with:
+```sh
+./result/bin/sadbot
+```
+Don't forget to setup the token.
+
 
 ## Contributing
 Pull requests are welcome.  

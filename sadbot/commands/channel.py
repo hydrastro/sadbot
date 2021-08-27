@@ -4,7 +4,7 @@ import re
 import html
 from typing import Optional, List
 import requests
-import markdownify
+import html2text
 
 from sadbot.command_interface import CommandInterface, BOT_HANDLER_TYPE_MESSAGE
 from sadbot.message import Message
@@ -48,7 +48,7 @@ class ChannelBotCommand(CommandInterface):
             post = post[0]
             image = post[0]
             text = html.unescape(post[1])
-            text = markdownify.markdownify(text)
+            text = html2text.html2text(text)
             text = "Post: " + text + "\n" + "https://" + image + "\n"
             return [BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text=text)]
         except (re.error, requests.ConnectionError):

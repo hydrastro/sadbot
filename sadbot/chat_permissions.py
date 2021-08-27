@@ -4,8 +4,8 @@ from dataclasses import dataclass
 from typing import Optional
 
 
-@dataclass  # pylint: disable=too-many-instance-attributes
-class ChatPermissions:
+@dataclass
+class ChatPermissions:  # pylint: disable=too-many-instance-attributes
     """ChatPermissions dataclass"""
 
     # ChatPermissions, restricted chat member:
