@@ -4,9 +4,12 @@ import os
 from sadbot import config
 from sadbot import App
 
+
 def run():
+    """Runs the bot"""
     token = os.getenv("TOKEN") or config.TOKEN
-    app = App(token)
+    App(token)
+
 
 if __name__ == "__main__":
     run()
