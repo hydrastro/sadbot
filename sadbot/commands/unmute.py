@@ -8,6 +8,7 @@ from sadbot.bot_action import (
     BotAction,
     BOT_ACTION_TYPE_RESTRICT_CHAT_MEMBER,
     BOT_ACTION_TYPE_REPLY_TEXT,
+    BOT_ACTION_PRIORITY_HIGH,
 )
 from sadbot.app import App, CHAT_MEMBER_STATUS_ADMIN, CHAT_MEMBER_STATUS_CREATOR
 from sadbot.message_repository import MessageRepository
@@ -38,11 +39,13 @@ class UnmuteBotCommand(CommandInterface):
         """Unmutes a user"""
         if message is None or message.text is None:
             return None
+        user_to_unmute = None
         user_id_to_unmute = None
         if message.reply_id is not None:
-            user_id_to_unmute = self.message_repository.get_user_id_from_message_id(
-                message.reply_id
-            )
+            old_message = self.message_repository.get_message_from_id(message.reply_id)
+            if old_message is not None:
+                user_id_to_unmute = old_message.sender_id
+                user_to_unmute = old_message.sender_name
         if user_id_to_unmute is None:
             message_text = message.text.split()
             if len(message_text) < 2:
@@ -69,6 +72,8 @@ class UnmuteBotCommand(CommandInterface):
                     reply_text="You don't have enough rights to unmute, kiddo.",
                 )
             ]
+        if user_to_unmute is None:
+            user_to_unmute = "User"
         unmute_permissions = self.app.get_chat_permissions(message.chat_id)
         self.permissions.delete_user_permissions(user_id_to_unmute, message.sender_id)
         reply_text = f"{user_to_unmute} successfully unmuted."
@@ -77,6 +82,11 @@ class UnmuteBotCommand(CommandInterface):
                 BOT_ACTION_TYPE_RESTRICT_CHAT_MEMBER,
                 reply_ban_user_id=user_id_to_unmute,
                 reply_permissions=unmute_permissions,
+                reply_priority=BOT_ACTION_PRIORITY_HIGH,
             ),
-            BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text=reply_text),
+            BotAction(
+                BOT_ACTION_TYPE_REPLY_TEXT,
+                reply_text=reply_text,
+                reply_priority=BOT_ACTION_PRIORITY_HIGH,
+            ),
         ]

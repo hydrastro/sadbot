@@ -154,14 +154,15 @@ class MessageRepository:
         cur = self.con.cursor()
         query = """
               SELECT
-                UserID,
                 Username
               FROM usernames
               WHERE UserID = ?
             """
         cur.execute(query, [user_id])
         data = cur.fetchone()
-        return data
+        if data is None:
+            return None
+        return data[0]
 
     def update_username(self, user_id: int, username: str) -> bool:
         """Updates a username"""

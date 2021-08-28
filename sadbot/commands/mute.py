@@ -9,6 +9,7 @@ from sadbot.bot_action import (
     BotAction,
     BOT_ACTION_TYPE_RESTRICT_CHAT_MEMBER,
     BOT_ACTION_TYPE_REPLY_TEXT,
+    BOT_ACTION_PRIORITY_HIGH,
 )
 from sadbot.app import App, CHAT_MEMBER_STATUS_ADMIN, CHAT_MEMBER_STATUS_CREATOR
 from sadbot.chat_permissions import ChatPermissions
@@ -35,19 +36,20 @@ class MuteBotCommand(CommandInterface):
     @property
     def command_regex(self) -> str:
         """Returns the regex for matching mute commands"""
-        return r"((!|\.|/)([Mm][Uu][Tt][Ee])).*"
+        return r"((!|\.|/)([Mm][Uu][Tt][Ee]))(.*)?"
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
         """Mutes a user"""
         if message is None or message.text is None:
             return None
         user_id_to_mute = None
+        user_to_mute = None
         until_date = 0
         if message.reply_id is not None:
-            user_id_to_mute = self.message_repository.get_user_id_from_message_id(
-                message.reply_id
-            )
-        user_to_mute = None
+            old_message = self.message_repository.get_message_from_id(message.reply_id)
+            if old_message is not None:
+                user_id_to_mute = old_message.sender_id
+                user_to_mute = old_message.sender_name
         if len(message.text) > 5:
             message_text = message.text.split()
             if len(message_text) == 2:
@@ -91,15 +93,19 @@ class MuteBotCommand(CommandInterface):
         self.permissions.set_user_permissions(
             user_id_to_mute, message.chat_id, mute_permissions
         )
-        reply_text = "User successfully muted."
-        if user_to_mute is not None:
-            reply_text = f"{user_to_mute} has successfully been muted."
+        user_to_mute = "User" if user_to_mute is None else user_to_mute
+        reply_text = f"{user_to_mute} has successfully been muted."
         return [
             BotAction(
                 BOT_ACTION_TYPE_RESTRICT_CHAT_MEMBER,
                 reply_ban_user_id=user_id_to_mute,
                 reply_permissions=mute_permissions,
                 reply_restrict_until_date=until_date,
+                reply_priority=BOT_ACTION_PRIORITY_HIGH,
             ),
-            BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text=reply_text),
+            BotAction(
+                BOT_ACTION_TYPE_REPLY_TEXT,
+                reply_text=reply_text,
+                reply_priority=BOT_ACTION_PRIORITY_HIGH,
+            ),
         ]
