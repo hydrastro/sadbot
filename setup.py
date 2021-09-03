@@ -1,12 +1,10 @@
-from distutils.core import setup
+"""Setup"""
+import setuptools
 
-setup(
+setuptools.setup(
     name="sadbot",
-    version="",
-    packages=["sadbot", "sadbot.classes", "sadbot.commands"],
-    url="",
-    license="Do whatever license",
-    author="hydrastro",
-    author_email="hydrastro",
-    description="A sad telegram bot",
+    version="0.1",
+    py_modules=["sadbot"],
+    packages=setuptools.find_packages(),
+    entry_points={"console_scripts": ["sadbot = sadbot:run"]},
 )
