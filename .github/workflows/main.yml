@@ -32,6 +32,6 @@ jobs:
       # Runs a set of commands using the runners shell
       - name: Check code quality
         run: |
-          black sadbot scripts
-          pylint sadbot scripts
-          mypy sadbot scripts
+          black sadbot
+          python3 -m pylint sadbot
+          mypy sadbot
