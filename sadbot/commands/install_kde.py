@@ -12,7 +12,7 @@ from sadbot.message_repository import MessageRepository
 class InstallKdeBotCommand(CommandInterface):
     """This is the anti-denk bot command class"""
 
-    def __init__(self, message_repository: MessageRepository) -> None:
+    def __init__(self, message_repository: MessageRepository):
         """Initializes the command"""
         self.message_repository = message_repository
 
