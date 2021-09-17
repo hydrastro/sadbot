@@ -1,6 +1,6 @@
 """Youtube Shorts bot command"""
 
-from typing import Optional, List
+from typing import Optional, List, Dict
 
 import logging
 import json
@@ -27,61 +27,75 @@ class ShortsBotCommand(CommandInterface):
         """Returns the regex for matching ping commands"""
         return r"((!|\.)([Ss][Hh][Oo][Rr][Tt][Ss])).*"
 
-    def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
-        """
-	        Scraps Youtube shorts
-            selects a random video
-            uses pytube to extract the direct download url
-            formats a caption containing video information
-            returns the result
-        """
-        headers = {
+    @staticmethod
+    def get_request_headers() -> Dict:
+        """Returns the request headers"""
+        return {
             "Accept-Language": "en-US",
-            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:88.0) Gecko/20100101 Firefox/88.0"
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:88.0) Gecko/20100101 Firefox/88.0",
         }
+
+    def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
+        """Scraps Youtube shorts
+        selects a random video
+        uses pytube to extract the direct download url
+        formats a caption containing video information
+        returns the result
+        """
         try:
             req = requests.get(
-                "https://www.youtube.com/hashtag/shorts", headers=headers, cookies={"CONSENT": "YES+42"}
+                "https://www.youtube.com/hashtag/shorts",
+                headers=self.get_request_headers(),
+                cookies={"CONSENT": "YES+42"},
             )
         except requests.exceptions.RequestException as exception:
             logging.error("An error occured while sending the youtube shorts request")
-            logging.error(str(exception))
+            logging.error("%s", str(exception))
             return None
         if not req.ok:
             logging.warning("Failed to get youtube shorts data - details: %s", req.text)
             return None
-        data = re.findall(re.compile('"content":{"richGridRenderer":(.*?)},"tabIdentifier":'), req.text)
+        data = re.findall(
+            re.compile('"content":{"richGridRenderer":(.*?)},"tabIdentifier":'),
+            req.text,
+        )
         if data is None:
             logging.warning("Failed to get Youtube shorts data: regex gave no results.")
             return None
 
-        
         try:
             json_data = json.loads(data[0])
-            
-            videos = json_data['contents']
-            random_video = random.choice(videos)['richItemRenderer']['content']['videoRenderer']
-            watch_url = "https://www.youtube.com/watch?v="+random_video['videoId']
+
+            videos = json_data["contents"]
+            random_video = random.choice(videos)["richItemRenderer"]["content"][
+                "videoRenderer"
+            ]
+            watch_url = "https://www.youtube.com/watch?v=" + random_video["videoId"]
             download_url = YouTube(watch_url).streams.get_highest_resolution().url
-            title = random_video['title']['runs'][0]['text']
-            channel = random_video['ownerText']['runs'][0]['text']
-            channel_url = "https://www.youtube.com"+random_video['ownerText']['runs'][0]['navigationEndpoint']['commandMetadata']['webCommandMetadata']['url']
-            views =  random_video['viewCountText']['simpleText']
+            title = random_video["title"]["runs"][0]["text"]
+            channel = random_video["ownerText"]["runs"][0]["text"]
+            channel_url = (
+                "https://www.youtube.com"
+                + random_video["ownerText"]["runs"][0]["navigationEndpoint"][
+                    "commandMetadata"
+                ]["webCommandMetadata"]["url"]
+            )
+            views = random_video["viewCountText"]["simpleText"]
         except IndexError as exception:
             logging.warning("re.finall returned no results.")
             logging.warning(str(exception))
             return None
         except KeyError as exception:
             logging.error("An error occured while extracting the Youtube short data.")
-            logging.error(f"key {exception} doesn't exist.")
+            logging.error("Key %s doesn't exist.", exception)
             return None
 
         caption = f"{title}\n{watch_url}\n{views}\nSource: {channel}\n {channel_url}"
-        
+
         return [
             BotAction(
                 BOT_ACTION_TYPE_REPLY_VIDEO_ONLINE,
                 reply_online_media_url=download_url,
-                reply_text=caption
+                reply_text=caption,
             )
         ]

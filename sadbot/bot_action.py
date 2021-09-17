@@ -19,9 +19,6 @@ BOT_ACTION_TYPE_RESTRICT_CHAT_MEMBER = 10
 BOT_ACTION_TYPE_UNBAN_USER = 11
 BOT_ACTION_TYPE_PROMOTE_CHAT_MEMBER = 12
 BOT_ACTION_TYPE_NONE = 13
-# this action type is used for sending media videos directly from a video url
-# added for the .short command since downloading videos before sending them can
-# take too much time
 BOT_ACTION_TYPE_REPLY_VIDEO_ONLINE = 14
 BOT_ACTION_PRIORITY_LOW = 0
 BOT_ACTION_PRIORITY_MEDIUM = 1
