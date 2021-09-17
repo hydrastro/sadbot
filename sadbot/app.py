@@ -33,6 +33,7 @@ from sadbot.bot_action import (
     BOT_ACTION_TYPE_REPLY_AUDIO,
     BOT_ACTION_TYPE_REPLY_FILE,
     BOT_ACTION_TYPE_REPLY_VOICE,
+    BOT_ACTION_TYPE_REPLY_VIDEO_ONLINE,
     BOT_ACTION_TYPE_BAN_USER,
     BOT_ACTION_TYPE_INLINE_KEYBOARD,
     BOT_ACTION_TYPE_ANSWER_CALLBACK_QUERY,
@@ -83,6 +84,7 @@ def is_bot_action_message(action_type: int) -> bool:
         BOT_ACTION_TYPE_REPLY_FILE,
         BOT_ACTION_TYPE_REPLY_TEXT,
         BOT_ACTION_TYPE_REPLY_VOICE,
+        BOT_ACTION_TYPE_REPLY_VIDEO_ONLINE,
         BOT_ACTION_TYPE_INLINE_KEYBOARD,
     ]
 
@@ -381,6 +383,9 @@ class App:
             api_method = "sendVideo"
             files = {"video": reply.reply_video}
             data.update({"caption": reply_text})
+        elif reply.reply_type == BOT_ACTION_TYPE_REPLY_VIDEO_ONLINE:
+            api_method = "sendVideo"
+            data.update({"video": reply.reply_online_media_url, "caption": reply_text})
         elif reply.reply_type == BOT_ACTION_TYPE_REPLY_AUDIO:
             api_method = "sendAudio"
             files = {"audio": reply.reply_audio}
