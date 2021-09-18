@@ -3,7 +3,7 @@
 import datetime
 import glob
 import json
-import threading
+import multiprocessing
 import re
 import sqlite3
 import time
@@ -19,6 +19,7 @@ from sadbot.config import (
     OFFLINE_ANTIFLOOD_TIMEOUT,
     MAX_REPLY_LENGTH,
     UPDATES_TIMEOUT,
+    UPDATE_PROCESSING_MAX_TIMEOUT,
     OUTGOING_REQUESTS_TIMEOUT,
     MESSAGES_CHAT_RATE_NUMBER,
     MESSAGES_CHAT_RATE_PERIOD,
@@ -89,7 +90,7 @@ def is_bot_action_message(action_type: int) -> bool:
     ]
 
 
-class App:
+class App:  # pylint: disable=too-many-instance-attributes, too-many-public-methods
     """Main app class, starts the bot when it's called"""
 
     def __init__(self, token: str) -> None:
@@ -104,6 +105,9 @@ class App:
         self.classes["MessageRepository"] = self.message_repository
         self.managers: Dict[str, object] = {}
         self.commands: List[Dict] = []
+        self.updates_workers: Dict[float, multiprocessing.Process] = {}
+        self.manager = multiprocessing.Manager()
+        self.outgoing_messages: Dict[float, List] = self.manager.dict()
         self.load_commands()
         self.load_managers()
         self.start_bot()
@@ -505,13 +509,30 @@ class App:
                     return None
         return messages
 
+    def send_message_queue(self, message: Message, reply_info: BotAction) -> None:
+        """Adds an outgoing messages to the queue"""
+        self.outgoing_messages.update({time.time(): [message, reply_info]})
+
+    def handle_outgoing_messages(self) -> None:
+        """Handles the outgoing messages queue"""
+        while True:
+            sent_messages = []
+            for outgoing_message_id, outgoing_message in self.outgoing_messages.items():
+                self.send_message_and_update_db(
+                    outgoing_message[0], outgoing_message[1]
+                )
+                sent_messages.append(outgoing_message_id)
+            for sent_message_id in sent_messages:
+                del self.outgoing_messages[sent_message_id]
+            time.sleep(1)
+
     def handle_messages(self, message: Message) -> None:
         """Handles the messages"""
         replies_info = self.get_replies(message)
         if replies_info is None:
             return
         for reply_info in replies_info:
-            self.send_message_and_update_db(message, reply_info)
+            self.send_message_queue(message, reply_info)
 
     def handle_new_chat_members(self, message: Message) -> None:
         """Handles new chat members events"""
@@ -521,7 +542,7 @@ class App:
                 if reply_message is None:
                     continue
                 for reply in reply_message:
-                    self.send_message_and_update_db(message, reply)
+                    self.send_message_queue(message, reply)
 
     def handle_photos(self, message: Message) -> None:
         """Handles photo messages"""
@@ -537,7 +558,7 @@ class App:
                         if reply_message is None:
                             continue
                         for reply in reply_message:
-                            self.send_message_and_update_db(message, reply)
+                            self.send_message_queue(message, reply)
                 except re.error:
                     return None
         return None
@@ -552,72 +573,100 @@ class App:
             for manager in managers_actions:
                 for manager_trigger_messages_and_actions in manager:
                     for bot_action in manager_trigger_messages_and_actions[1]:
-                        self.send_message_and_update_db(
+                        self.send_message_queue(
                             manager_trigger_messages_and_actions[0], bot_action
                         )
 
-    def handle_updates(self) -> None:
+    def handle_update(self, item) -> None:
         """Handles the bot updates"""
+        logging.info("Processing update message: process started")
+        # catching the text messages
+        if "message" in item:
+            message = Message(
+                item["message"]["message_id"],
+                item["message"]["from"]["first_name"],
+                item["message"]["from"]["id"],
+                item["message"]["chat"]["id"],
+                None,
+                item["message"].get("reply_to_message", {}).get("message_id"),
+                item["message"]["from"].get("username", None),
+                False,
+                item["message"]["date"],
+            )
+            if "text" in item["message"]:
+                message.text = str(item["message"]["text"])
+                self.handle_messages(message)
+            if "photo" in item["message"]:
+                if "caption" in item["message"]:
+                    message.text = str(item["message"]["caption"])
+                self.handle_photos(message)
+            if "new_chat_member" in item["message"]:
+                message.sender_id = item["message"]["new_chat_member"]["id"]
+                message.sender_username = item["message"]["new_chat_member"].get(
+                    "username", None
+                )
+                message.sender_name = item["message"]["new_chat_member"]["first_name"]
+                message.is_bot = item["message"]["new_chat_member"]["is_bot"]
+                self.handle_new_chat_members(message)
+            self.message_repository.insert_message(message)
+        if "edited_message" in item:
+            if "text" in item["edited_message"]:
+                text = item["edited_message"]["text"]
+                message_id = item["edited_message"]["message_id"]
+                self.message_repository.edit_message(message_id, text)
+        if "callback_query" in item:
+            message = Message(
+                item["callback_query"]["id"],
+                item["callback_query"]["from"]["first_name"],
+                item["callback_query"]["from"]["id"],
+                item["callback_query"]["message"]["chat"]["id"],
+                item["callback_query"]["data"],
+                item["callback_query"]["message"]["message_id"],
+                item["callback_query"]["from"].get("username", None),
+                False,
+            )
+            self.handle_callback_query(message)
+
+    def remove_inactive_workers(self) -> None:
+        """Deletes inactive or expired workers"""
+        inactive_workers = []
+        for worker_id, worker in self.updates_workers.items():
+            if (
+                not worker.is_alive
+                or worker_id + UPDATE_PROCESSING_MAX_TIMEOUT > time.time()
+            ):
+                inactive_workers.append(worker_id)
+        for inactive_worker_id in inactive_workers:
+            del self.updates_workers[inactive_worker_id]
+
+    def handle_updates(self) -> None:
+        """Handles updates"""
         while True:
+            self.remove_inactive_workers()
             updates = self.get_updates(offset=self.update_id) or {}
             for item in updates.get("result", []):
-                logging.info("Processing updates")
                 self.update_id = item["update_id"]
-                # catching the text messages
-                if "message" in item:
-                    message = Message(
-                        item["message"]["message_id"],
-                        item["message"]["from"]["first_name"],
-                        item["message"]["from"]["id"],
-                        item["message"]["chat"]["id"],
-                        None,
-                        item["message"].get("reply_to_message", {}).get("message_id"),
-                        item["message"]["from"].get("username", None),
-                        False,
-                        item["message"]["date"],
-                    )
-                    if "text" in item["message"]:
-                        message.text = str(item["message"]["text"])
-                        self.handle_messages(message)
-                    if "photo" in item["message"]:
-                        if "caption" in item["message"]:
-                            message.text = str(item["message"]["caption"])
-                        self.handle_photos(message)
-                    if "new_chat_member" in item["message"]:
-                        message.sender_id = item["message"]["new_chat_member"]["id"]
-                        message.sender_username = item["message"][
-                            "new_chat_member"
-                        ].get("username", None)
-                        message.sender_name = item["message"]["new_chat_member"][
-                            "first_name"
-                        ]
-                        message.is_bot = item["message"]["new_chat_member"]["is_bot"]
-                        self.handle_new_chat_members(message)
-                    self.message_repository.insert_message(message)
-                if "edited_message" in item:
-                    if "text" in item["edited_message"]:
-                        text = item["edited_message"]["text"]
-                        message_id = item["edited_message"]["message_id"]
-                        self.message_repository.edit_message(message_id, text)
-                if "callback_query" in item:
-                    message = Message(
-                        item["callback_query"]["id"],
-                        item["callback_query"]["from"]["first_name"],
-                        item["callback_query"]["from"]["id"],
-                        item["callback_query"]["message"]["chat"]["id"],
-                        item["callback_query"]["data"],
-                        item["callback_query"]["message"]["message_id"],
-                        item["callback_query"]["from"].get("username", None),
-                        False,
-                    )
-                    self.handle_callback_query(message)
+                logging.info("Processing updates")
+                print(item)
+                update_worker = multiprocessing.Process(
+                    target=self.handle_update, args=(item,)
+                )
+                self.updates_workers.update({time.time(): update_worker})
+                update_worker.start()
+                update_worker.join()
             time.sleep(1)
 
     def start_bot(self) -> None:
         """Starts the bot"""
-        managers_process = threading.Thread(target=self.handle_managers)
-        updates_process = threading.Thread(target=self.handle_updates)
-        managers_process.start()
+        updates_process = multiprocessing.Process(target=self.handle_updates)
+        outgoing_process = multiprocessing.Process(target=self.handle_outgoing_messages)
         updates_process.start()
-        managers_process.join()
+        outgoing_process.start()
         updates_process.join()
+        outgoing_process.join()
+        # managers_process = threading.Thread(target=self.handle_managers)
+        # updates_process = threading.Thread(target=self.handle_updates)
+        # managers_process.start()
+        # updates_process.start()
+        # managers_process.join()
+        # updates_process.join()
