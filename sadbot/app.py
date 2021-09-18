@@ -637,6 +637,7 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
             ):
                 inactive_workers.append(worker_id)
         for inactive_worker_id in inactive_workers:
+            self.updates_workers[inactive_worker_id].kill()
             del self.updates_workers[inactive_worker_id]
 
     def handle_updates(self) -> None:

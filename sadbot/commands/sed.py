@@ -2,6 +2,8 @@
 
 import re
 from typing import Optional, List
+from multiprocessing import Manager, Process
+from multiprocessing.managers import ValueProxy
 
 from sadbot.command_interface import CommandInterface, BOT_HANDLER_TYPE_MESSAGE
 from sadbot.message import Message
@@ -28,7 +30,6 @@ class SedBotCommand(CommandInterface):
     def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
         """Performs the sed command on a given message"""
         if message is None or message.text is None:
-            print("RETURN 0")
             return None
         replace_all = False
         text = message.text
@@ -41,7 +42,6 @@ class SedBotCommand(CommandInterface):
         second_split = ["s"]
         second_split += first_split[1].rsplit("/", 1)
         if len(second_split) != 3:
-            print("RETURN 1")
             return None
         old = second_split[1]
         new = second_split[2]
@@ -56,12 +56,36 @@ class SedBotCommand(CommandInterface):
             )
         if reply_message is None or reply_message.text is None:
             return None
-        try:
-            max_replace = 1
-            if replace_all:
-                max_replace = len(reply_message.text)
-        except re.error:
-            return None
-        reply = re.sub(old, new, reply_message.text, max_replace)
+        max_replace = 1
+        if replace_all:
+            max_replace = len(reply_message.text)
+        manager = Manager()
+        regex_result = manager.Value("c", "")
+        regex_process = Process(
+            target=self.regex_substitution,
+            args=(
+                old,
+                new,
+                reply_message.text,
+                max_replace,
+                regex_result,
+            ),
+        )
+        regex_process.start()
+        regex_process.join(1)
+        regex_process.kill()
+        regex_process.join()
+        reply = regex_result.value
         reply = "<" + reply_message.sender_name + ">: " + reply
         return [BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text=reply)]
+
+    @staticmethod
+    def regex_substitution(
+        old: str,
+        new: str,
+        text: str,
+        max_replace: int,
+        regex_result: ValueProxy,
+    ) -> None:
+        """Performs the regex substitution"""
+        regex_result.value = re.sub(old, new, text, max_replace)

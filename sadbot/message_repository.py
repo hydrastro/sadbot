@@ -4,16 +4,40 @@ import datetime
 import re
 import sqlite3
 from typing import Optional, List, Any
+from multiprocessing import Manager, Process
+from multiprocessing.managers import ValueProxy
 
 from sadbot.message import Message
 
 
 def _create_func(x_val: str, y_val: str) -> int:
     """Lambda function for the regex query"""
+    manager = Manager()
+    regex_result = manager.Value("i", 0)
+    regex_process = Process(
+        target=regex_lambda,
+        args=(
+            x_val,
+            y_val,
+            regex_result,
+        ),
+    )
+    regex_process.start()
+    regex_process.join(1)
+    regex_process.kill()
+    regex_process.join()
+    return regex_result.value
+
+
+def regex_lambda(x_val: str, y_val: str, regex_result: ValueProxy) -> None:
+    """Regex lambda function for the SQL queries"""
     try:
-        return 1 if re.search(str(x_val), str(y_val)) else 0
+        if re.search(str(x_val), str(y_val)):
+            regex_result.value = 1
+            return
+        regex_result.value = 0
     except re.error:
-        return 0
+        regex_result.value = 0
 
 
 def get_messages_table_creation_query() -> str:
