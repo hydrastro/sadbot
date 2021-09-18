@@ -631,6 +631,7 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
         """Deletes inactive or expired workers"""
         inactive_workers = []
         for worker_id, worker in self.updates_workers.items():
+            print(worker_id)
             if (
                 not worker.is_alive
                 or worker_id + UPDATE_PROCESSING_MAX_TIMEOUT > time.time()
@@ -647,13 +648,11 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
             for item in updates.get("result", []):
                 self.update_id = item["update_id"]
                 logging.info("Processing updates")
-                print(item)
                 update_worker = multiprocessing.Process(
                     target=self.handle_update, args=(item,)
                 )
                 self.updates_workers.update({time.time(): update_worker})
                 update_worker.start()
-                update_worker.join()
             time.sleep(1)
 
     def start_bot(self) -> None:
@@ -665,8 +664,5 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
         updates_process.join()
         outgoing_process.join()
         # managers_process = threading.Thread(target=self.handle_managers)
-        # updates_process = threading.Thread(target=self.handle_updates)
         # managers_process.start()
-        # updates_process.start()
         # managers_process.join()
-        # updates_process.join()
