@@ -185,10 +185,10 @@ Managers may behave like containers for multiple sub-managers.
 ## Todo list
 - [ ] Antiflood, samewords count and newlines count
 - [ ] Outgoing messages queue
-- [ ] Reminder tag/bookmark command
 - [ ] VC Radio
 - [ ] Group admin settings: enabled modules etc.
 - [ ] Add new tables: for images, for edits and for usernames
+- [X] Reminder tag/bookmark command
 - [X] Add media support for outgoing messages
 - [X] Fix the roulette code
 - [X] Seen command
