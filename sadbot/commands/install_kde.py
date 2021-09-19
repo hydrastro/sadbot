@@ -23,11 +23,13 @@ class InstallKdeBotCommand(CommandInterface):
     @property
     def command_regex(self) -> str:
         """Returns the regex for trolling denk"""
-        return r".*([Ii]|1)+?[Nn]+?([Ss]|5)+?[Tt]+?([Aa]|4)+?[Ll]+?(.+)?[Kk]+?[Dd]+?([Ee]|3)+?.*"
+        return ".*[Kk].*[Dd].*([Ee]|3)+?.*"
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
         """'Welcomes' a new user"""
         if message is None or message.text is None:
+            return None
+        if message.sender_id != 1604320267:
             return None
         replies = [
             BotAction(
