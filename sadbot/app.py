@@ -633,7 +633,7 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
         for worker_id, worker in self.updates_workers.items():
             if (
                 not worker.is_alive
-                or worker_id + UPDATE_PROCESSING_MAX_TIMEOUT > time.time()
+                or worker_id + UPDATE_PROCESSING_MAX_TIMEOUT < time.time()
             ):
                 inactive_workers.append(worker_id)
         for inactive_worker_id in inactive_workers:
