@@ -146,8 +146,8 @@ class CaptchaKickBotCommand(CommandInterface):
                     reply_priority=BOT_ACTION_PRIORITY_HIGH,
                 ),
             ]
-        # return self.kick_user(message, captcha_id)
-        return self.ask_user_to_join_again(message)
+        return self.kick_user(message, captcha_id)
+        # return self.ask_user_to_join_again(message)
 
     @staticmethod
     def ask_user_to_join_again(message: Message) -> List[BotAction]:
@@ -230,6 +230,19 @@ class CaptchaKickBotCommand(CommandInterface):
             ),
             BotAction(
                 BOT_ACTION_TYPE_UNBAN_USER,
+                reply_ban_user_id=message.sender_id,
+                reply_priority=BOT_ACTION_PRIORITY_HIGH,
+            ),
+        ]
+        permissions = self.permissions.get_user_permissions(
+            message.sender_id, message.chat_id
+        )
+        if permissions is None:
+            permissions = self.app.get_chat_permissions(message.chat_id)
+        replies += [
+            BotAction(
+                BOT_ACTION_TYPE_RESTRICT_CHAT_MEMBER,
+                reply_permissions=permissions,
                 reply_ban_user_id=message.sender_id,
                 reply_priority=BOT_ACTION_PRIORITY_HIGH,
             ),
