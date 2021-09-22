@@ -5,39 +5,16 @@ import re
 import sqlite3
 from typing import Optional, List, Any
 from multiprocessing import Manager, Process
-from multiprocessing.managers import ValueProxy
 
 from sadbot.message import Message
 
 
-def _create_func(x_val: str, y_val: str) -> int:
-    """Lambda function for the regex query"""
-    manager = Manager()
-    regex_result = manager.Value("i", 0)
-    regex_process = Process(
-        target=regex_lambda,
-        args=(
-            x_val,
-            y_val,
-            regex_result,
-        ),
-    )
-    regex_process.start()
-    regex_process.join(1)
-    regex_process.kill()
-    regex_process.join()
-    return regex_result.value
-
-
-def regex_lambda(x_val: str, y_val: str, regex_result: ValueProxy) -> None:
+def regex_lambda(x_val: str, y_val: str) -> int:
     """Regex lambda function for the SQL queries"""
     try:
-        if re.search(str(x_val), str(y_val)):
-            regex_result.value = 1
-            return
-        regex_result.value = 0
+        return 1 if re.search(str(x_val), str(y_val)) else 0
     except re.error:
-        regex_result.value = 0
+        return 0
 
 
 def get_messages_table_creation_query() -> str:
@@ -84,7 +61,7 @@ class MessageRepository:
     def __init__(self, con: sqlite3.Connection) -> None:
         """Initializes the message repository class"""
         self.con = con
-        self.con.create_function("regexp", 2, _create_func)
+        self.con.create_function("regexp", 2, regex_lambda)
         self.con.execute(get_messages_table_creation_query())
         self.con.execute(get_usernames_table_creation_query())
         self.con.execute(get_bot_triggers_table_creation_query())
@@ -253,6 +230,29 @@ class MessageRepository:
     def get_previous_message(
         self, message: Message, regex: Optional[str] = None
     ) -> Optional[Message]:
+        """Calls a worker which tries to retrieve, from the database, a message matching some things
+        or a regex pattern and  eventually kills it if it gets stuck"""
+        manager = Manager()
+        result_list: List = manager.list()
+        message_process = Process(
+            target=self.get_previous_message_worker,
+            args=(
+                result_list,
+                message,
+                regex,
+            ),
+        )
+        message_process.start()
+        message_process.join(2)
+        message_process.kill()
+        message_process.join()
+        if result_list == []:
+            return None
+        return Message(*result_list)
+
+    def get_previous_message_worker(
+        self, result_list: List, message: Message, regex: Optional[str] = None
+    ) -> None:
         """Retrieves a previous message from the database matching some things or a regex pattern"""
         cur = self.con.cursor()
         query = """
@@ -286,8 +286,8 @@ class MessageRepository:
         cur.execute(query, params)
         data = cur.fetchone()
         if data is not None:
-            return Message(*data)
-        return None
+            for element in data:
+                result_list.append(element)
 
     def edit_message(self, message_id: int, message_text: str) -> None:
         """Edits a message in the messages table and updates the events table"""
