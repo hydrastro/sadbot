@@ -24,7 +24,7 @@ class SeenBotCommand(CommandInterface):
     @property
     def command_regex(self) -> str:
         """Returns the regex for matching the seen command"""
-        return r"(!|\.)([Ss][Ee]{2}[Nn])\s\w+"
+        return r"(!|\.)([Ss][Ee]{2}[Nn])\s.*"
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
         """Gets the reply"""
