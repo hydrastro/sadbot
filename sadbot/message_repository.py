@@ -1,5 +1,6 @@
 """Here is the MessageRepository class"""
 
+import os.path
 import datetime
 import re
 import json
@@ -70,6 +71,8 @@ class MessageRepository:
 
     def heal_database(self) -> None:
         """Heals the database"""
+        if not os.path.isfile("dump.json"):
+            return
         with open("dump.json", mode="r", encoding="utf-8") as json_file:
             data = json.load(json_file)
             for row_data in data:
@@ -395,9 +398,7 @@ class MessageRepository:
             return Message(*data[0])
         return None
 
-    def get_random_message_from_user(
-        self, user_id: int, chat_id: int
-    ) -> Optional[Message]:
+    def get_random_message_from_user(self, user_id: int) -> Optional[Message]:
         """Returns a random message sent by a user in a specific chat"""
         cur = self.con.cursor()
         query = """
@@ -412,11 +413,11 @@ class MessageRepository:
             IsBot,
             MessageTime
           FROM messages
-          WHERE SenderID = ? AND ChatID = ?
+          WHERE SenderID = ?
           ORDER BY RANDOM()
           LIMIT 1
         """
-        cur.execute(query, [user_id, chat_id])
+        cur.execute(query, [user_id])
         data = cur.fetchone()
         if data is not None:
             return Message(*data)

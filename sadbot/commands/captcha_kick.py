@@ -190,6 +190,8 @@ class CaptchaKickBotCommand(CommandInterface):
         sent_message_to_delete_id: Optional[int] = None,
     ) -> List[BotAction]:
         """Kicks a user from a chat"""
+        if message is None:
+            return None
         new_user = (
             message.sender_name
             if message.sender_username is None
