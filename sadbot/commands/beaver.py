@@ -46,17 +46,32 @@ class BeaverBotCommand(CommandInterface):
         data = cur.fetchone()
         return data
 
+    def get_quote_max_id(self) -> int:
+        """Returns the max id (count) of the current quote"""
+        cur = self.con.cursor()
+        query = """
+        SELECT
+          QuoteID
+        FROM beaver
+        ORDER BY QuoteID DESC
+        """
+        cur.execute(query)
+        data = cur.fetchone()
+        if data is None:
+            return -1
+        return data[0]
+
     def insert_beaver_quote(self, message: Message) -> None:
         """Inserts a beaver quote into the database"""
         if message.text is None:
             return
         query = """
         INSERT INTO beaver(
-          QuoteID,
           QuoteText
-        ) VALUES (?, ?)
+        ) VALUES (?)
         """
-        self.con.execute(query, [message.message_id, message.text])
+        quote_id = self.get_quote_max_id() + 1
+        self.con.execute(query, [quote_id, message.text])
         self.con.commit()
 
     @property
