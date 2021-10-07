@@ -1,18 +1,63 @@
 """Beaver bot command"""
 
 from typing import Optional, List
+import re
+import sqlite3
 
 from sadbot.command_interface import CommandInterface, BOT_HANDLER_TYPE_MESSAGE
 from sadbot.message import Message
-from sadbot.message_repository import MessageRepository
 from sadbot.bot_action import BotAction, BOT_ACTION_TYPE_REPLY_TEXT
+from sadbot.functions import safe_cast
 
 
 class BeaverBotCommand(CommandInterface):
     """This is the beaver bot command class"""
 
-    def __init__(self, message_repository: MessageRepository):
-        self.message_repository = message_repository
+    def __init__(self, con: sqlite3.Connection):
+        self.con = con
+        self.con.execute(self.get_beaver_table_creation_query())
+
+    @staticmethod
+    def get_beaver_table_creation_query() -> str:
+        """Returns the beaver table creation query"""
+        return """
+        CREATE TABLE IF NOT EXISTS beaver (
+            QuoteID   int,
+            QuoteText text
+        )
+        """
+
+    def get_beaver_quote(self, quote_id: Optional[int]) -> Optional[List]:
+        """Returns a beaver quote"""
+        cur = self.con.cursor()
+        query = """
+        SELECT
+          QuoteID,
+          QuoteText
+        FROM beaver
+        """
+        params = []
+        if quote_id is None:
+            query += "ORDER BY RANDOM()"
+        else:
+            query += "WHERE QuoteID = ?"
+            params.append(quote_id)
+        cur.execute(query, params)
+        data = cur.fetchone()
+        return data
+
+    def insert_beaver_quote(self, message: Message) -> None:
+        """Inserts a beaver quote into the database"""
+        if message.text is None:
+            return
+        query = """
+        INSERT INTO beaver(
+          QuoteID,
+          QuoteText
+        ) VALUES (?, ?)
+        """
+        self.con.execute(query, [message.message_id, message.text])
+        self.con.commit()
 
     @property
     def handler_type(self) -> int:
@@ -21,18 +66,32 @@ class BeaverBotCommand(CommandInterface):
 
     @property
     def command_regex(self) -> str:
-        """Returns the regex for matching sed command"""
-        return r"(!|\.)([Ss][Ee]{2}[Tt][Hh][Ee]|[Bb][Ee][Aa][Vv][Ee][Rr]).*"
+        """Returns the regex for matching the beaver command"""
+        return r".*"
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
         """Speaks the truth"""
         if message is None:
             return None
         beaver_user_id = 1749391268
-        beaver_message = self.message_repository.get_random_message_from_user(
-            beaver_user_id
+        if message.sender_id == beaver_user_id:
+            self.insert_beaver_quote(message)
+        command_regex = re.compile(
+            r"(!|\.)([Ss][Ee]{2}[Tt][Hh][Ee]|[Bb][Ee][Aa][Vv][Ee][Rr]).*"
         )
-        if beaver_message is None or beaver_message.text is None:
+        if message.text is None or not re.fullmatch(command_regex, message.text):
             return None
-        reply_text = f"Here's a quote from beaver:\n{beaver_message.text}"
+        int_quote_id = None
+        split = message.text.split()
+        if len(split) > 1:
+            quote_id = split[1]
+            int_quote_id = safe_cast(quote_id, int, None)
+        beaver_quote = self.get_beaver_quote(int_quote_id)
+        if beaver_quote is None:
+            return None
+        beaver_quote_id = beaver_quote[0]
+        beaver_quote_text = beaver_quote[1]
+        reply_text = (
+            f"Here's a quote ({beaver_quote_id}) from beaver:\n{beaver_quote_text}"
+        )
         return [BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text=reply_text)]
