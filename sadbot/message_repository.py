@@ -2,6 +2,7 @@
 
 import datetime
 import re
+import json
 import sqlite3
 from typing import Optional, List, Any
 from multiprocessing import Manager, Process
@@ -65,6 +66,28 @@ class MessageRepository:
         self.con.execute(get_messages_table_creation_query())
         self.con.execute(get_usernames_table_creation_query())
         self.con.execute(get_bot_triggers_table_creation_query())
+        self.heal_database()
+
+    def heal_database(self) -> None:
+        """Heals the database"""
+        with open("dump.json", mode="r", encoding="utf-8") as json_file:
+            data = json.load(json_file)
+            for row_data in data:
+                heal_message = Message(
+                    row_data.get("MessageID", None),
+                    row_data.get("SenderName", None),
+                    row_data.get("SenderID", None),
+                    row_data.get("ChatID", None),
+                    row_data.get("Message", None),
+                    row_data.get("ReplyToMessageID", None),
+                    row_data.get("SenderUsername", row_data.get("SenderName", None)),
+                    row_data.get("IsBot", False),
+                    row_data.get("MessageTime", None),
+                )
+                if heal_message.text is None:
+                    continue
+                print(heal_message)
+                self.insert_message(heal_message)
 
     def delete_old_bot_triggers_logs(self, time: int) -> None:
         """Deletes old bot triggers"""
