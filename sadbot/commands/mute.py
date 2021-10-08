@@ -74,6 +74,7 @@ class MuteBotCommand(CommandInterface):
             message.chat_id, message.sender_id
         )
         if user_permissions is None:
+            # to be done: log
             return None
         user_type = user_permissions[0]
         if user_type not in [CHAT_MEMBER_STATUS_ADMIN, CHAT_MEMBER_STATUS_CREATOR] or (

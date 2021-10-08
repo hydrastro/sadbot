@@ -31,7 +31,9 @@ def get_messages_table_creation_query() -> str:
       ReplyToMessageID int,
       SenderUsername   text,
       IsBot            bool,
-      MessageTime      int
+      MessageTime      int,
+      FileType         int,
+      FileID           text
     )
     """
 
@@ -86,10 +88,11 @@ class MessageRepository:
                     row_data.get("SenderUsername", row_data.get("SenderName", None)),
                     row_data.get("IsBot", False),
                     row_data.get("MessageTime", None),
+                    row_data.get("FileType", None),
+                    row_data.get("FileID", None),
                 )
                 if heal_message.text is None:
                     continue
-                print(heal_message)
                 self.insert_message(heal_message)
 
     def delete_old_bot_triggers_logs(self, time: int) -> None:
@@ -234,8 +237,10 @@ class MessageRepository:
             ReplyToMessageID,
             SenderUsername,
             IsBot,
-            MessageTime
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            MessageTime,
+            FileType,
+            FileID
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """
         self.con.execute(
             query,
@@ -249,6 +254,8 @@ class MessageRepository:
                 message.sender_username,
                 message.is_bot,
                 message.message_time,
+                message.file_type,
+                message.file_id,
             ),
         )
         self.con.commit()
@@ -291,7 +298,9 @@ class MessageRepository:
             ReplyToMessageID,
             SenderUsername,
             IsBot,
-            MessageTime
+            MessageTime,
+            FileType,
+            FileID
           FROM messages
           WHERE 1=1
         """
@@ -339,7 +348,9 @@ class MessageRepository:
             ReplyToMessageID,
             SenderUsername,
             IsBot,
-            MessageTime
+            MessageTime,
+            FileType,
+            FileID
           FROM messages
           WHERE MessageID = ? AND ChatID = ?
         """
@@ -363,7 +374,9 @@ class MessageRepository:
             ReplyToMessageID,
             SenderUsername,
             IsBot,
-            MessageTime
+            MessageTime,
+            FileType,
+            FileID
           FROM messages
           WHERE MessageID = ?
         """
@@ -386,7 +399,9 @@ class MessageRepository:
             ReplyToMessageID,
             SenderUsername,
             IsBot,
-            MessageTime
+            MessageTime,
+            FileType,
+            FileID
           FROM messages
           WHERE SenderID = ? AND ChatID = ?
           ORDER BY MessageTime DESC
@@ -399,7 +414,7 @@ class MessageRepository:
         return None
 
     def get_random_message_from_user(self, user_id: int) -> Optional[Message]:
-        """Returns a random message sent by a user in a specific chat"""
+        """Returns a random message sent by a user in a specific chat"""  # this should be deleted
         cur = self.con.cursor()
         query = """
           SELECT
@@ -411,7 +426,9 @@ class MessageRepository:
             ReplyToMessageID,
             SenderUsername,
             IsBot,
-            MessageTime
+            MessageTime,
+            FileType,
+            FileID
           FROM messages
           WHERE SenderID = ?
           ORDER BY RANDOM()

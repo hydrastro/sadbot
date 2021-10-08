@@ -2,13 +2,11 @@
 import datetime
 from typing import Optional, List, Dict
 
-from sadbot.app import App
 from sadbot.message import Message
 from sadbot.classes.captcha import Captcha
-from sadbot.action_manager_interface import ActionManagerInterface
 from sadbot.message_repository import MessageRepository
+from sadbot.action_manager_interface import ActionManagerInterface
 from sadbot.commands.captcha_kick import CaptchaKickBotCommand
-from sadbot.classes.permissions import Permissions
 
 
 class CaptchaTimeoutManager(ActionManagerInterface):
@@ -16,15 +14,14 @@ class CaptchaTimeoutManager(ActionManagerInterface):
 
     def __init__(
         self,
-        app: App,
         message_repository: MessageRepository,
         captcha: Captcha,
-        permissions: Permissions,
+        captcha_kick: CaptchaKickBotCommand,
     ):
         """Initializes the event handler"""
         self.message_repository = message_repository
         self.captcha = captcha
-        self.captcha_kick = CaptchaKickBotCommand(app, captcha, permissions)
+        self.captcha_kick = captcha_kick
         self.instances: Dict[str, Dict] = {}
         self.restore_dead_instances()
 
@@ -69,7 +66,7 @@ class CaptchaTimeoutManager(ActionManagerInterface):
         actions = []
         inactive_instance_ids = []
         now = datetime.datetime.utcnow().timestamp()
-        for captcha_id in self.instances:
+        for captcha_id, captcha_instance in self.instances.items():
             if self.captcha.get_captcha_from_id(captcha_id) is None:
                 inactive_instance_ids.append(captcha_id)
                 continue
@@ -82,8 +79,8 @@ class CaptchaTimeoutManager(ActionManagerInterface):
             ) = captcha_id.split(".")
             if int(expiration) + int(start_time) > now:
                 continue
-            trigger_message = self.instances[captcha_id]["trigger_message"]
-            sent_message = self.instances[captcha_id]["sent_message"]
+            trigger_message = captcha_instance["trigger_message"]
+            sent_message = captcha_instance["sent_message"]
             message_to_delete = None
             if sent_message is not None:
                 message_to_delete = sent_message.message_id

@@ -20,16 +20,24 @@ from sadbot.bot_action import (
 from sadbot.app import App
 from sadbot.classes.captcha import Captcha
 from sadbot.classes.permissions import Permissions
+from sadbot.classes.group_configs import GroupConfigs
 
 
 class CaptchaKickBotCommand(CommandInterface):
     """This is the captcha bot command class"""
 
-    def __init__(self, app: App, captcha: Captcha, permissions: Permissions):
+    def __init__(
+        self,
+        app: App,
+        captcha: Captcha,
+        permissions: Permissions,
+        group_configs: GroupConfigs,
+    ):
         """Initializes the captcha command"""
         self.app = app
         self.captcha = captcha
         self.permissions = permissions
+        self.group_configs = group_configs
 
     @property
     def handler_type(self) -> int:
@@ -59,6 +67,12 @@ class CaptchaKickBotCommand(CommandInterface):
         ]
         return random.choice(not_your_captcha_replies)
 
+    @staticmethod
+    def get_correct_captcha_callback_reply() -> str:
+        """Returns a reply for the callback query on correct captcha"""
+        correct_captcha_replies = ["Correct.", "Yo! You got it right!", "uwu nice"]
+        return random.choice(correct_captcha_replies)
+
     def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
         """'Welcomes' a new user"""
         if message is None or message.text is None:
@@ -82,96 +96,25 @@ class CaptchaKickBotCommand(CommandInterface):
         if captcha_text is None:
             logging.warning("Error: captcha not found in the database.")
             return None
-        if callback_data[1] == captcha_text:
-            correct_captcha_replies = ["Correct.", "Yo! You got it right!", "uwu nice"]
-            correct_captcha = random.choice(correct_captcha_replies)
-            new_user = (
-                message.sender_name
-                if message.sender_username is None
-                else f"@{message.sender_username}"
-            )
-            self.captcha.delete_captcha(captcha_id)
-            welcome_reply = self.get_welcome_reply(new_user)
-            permissions = self.permissions.get_user_permissions(
-                message.sender_id, message.chat_id
-            )
-            if permissions is None:
-                permissions = self.app.get_chat_permissions(message.chat_id)
-            if message.chat_id == -1_001_127_994_403:
-                with open("./sadbot/data/grules.jpg", mode="rb") as reply_image_file:
-                    reply_image = reply_image_file.read()
-                return [
-                    BotAction(
-                        BOT_ACTION_TYPE_ANSWER_CALLBACK_QUERY,
-                        reply_callback_query_id=message.message_id,
-                        reply_text=correct_captcha,
-                        reply_priority=BOT_ACTION_PRIORITY_HIGH,
-                    ),
-                    BotAction(
-                        BOT_ACTION_TYPE_REPLY_IMAGE,
-                        reply_text=welcome_reply,
-                        reply_image=reply_image,
-                    ),
-                    BotAction(
-                        BOT_ACTION_TYPE_DELETE_MESSAGE,
-                        reply_ban_user_id=message.sender_id,
-                        reply_delete_message_id=message.reply_id,
-                        reply_priority=BOT_ACTION_PRIORITY_HIGH,
-                    ),
-                    BotAction(
-                        BOT_ACTION_TYPE_RESTRICT_CHAT_MEMBER,
-                        reply_permissions=permissions,
-                        reply_ban_user_id=message.sender_id,
-                        reply_priority=BOT_ACTION_PRIORITY_HIGH,
-                    ),
-                ]
-            return [
-                BotAction(
-                    BOT_ACTION_TYPE_ANSWER_CALLBACK_QUERY,
-                    reply_callback_query_id=message.message_id,
-                    reply_text=correct_captcha,
-                    reply_priority=BOT_ACTION_PRIORITY_HIGH,
-                ),
-                BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text=welcome_reply),
-                BotAction(
-                    BOT_ACTION_TYPE_DELETE_MESSAGE,
-                    reply_ban_user_id=message.sender_id,
-                    reply_delete_message_id=message.reply_id,
-                    reply_priority=BOT_ACTION_PRIORITY_HIGH,
-                ),
-                BotAction(
-                    BOT_ACTION_TYPE_RESTRICT_CHAT_MEMBER,
-                    reply_permissions=permissions,
-                    reply_ban_user_id=message.sender_id,
-                    reply_priority=BOT_ACTION_PRIORITY_HIGH,
-                ),
-            ]
-        return self.kick_user(message, captcha_id)
-        # return self.ask_user_to_join_again(message)
-
-    @staticmethod
-    def ask_user_to_join_again(message: Message) -> List[BotAction]:
-        """Instead of kicking the user, this function asks to rejoin"""
-        user = (
+        if callback_data[1] != captcha_text:
+            return self.kick_user(message, captcha_id, True, message.reply_id)
+        new_user = (
             message.sender_name
             if message.sender_username is None
             else f"@{message.sender_username}"
         )
-        reply_text = (
-            f"{user} if you want to talk here you have to rejoin the chat and get a new "
-            f"captcha."
+        self.captcha.delete_captcha(captcha_id)
+        welcome_reply = self.get_welcome_reply(new_user)
+        permissions = self.permissions.get_user_permissions(
+            message.sender_id, message.chat_id
         )
-        wrong_captcha = "Wrong captcha"
-        return [
+        if permissions is None:
+            permissions = self.app.get_chat_permissions(message.chat_id)
+        replies = [
             BotAction(
                 BOT_ACTION_TYPE_ANSWER_CALLBACK_QUERY,
                 reply_callback_query_id=message.message_id,
-                reply_text=wrong_captcha,
-                reply_priority=BOT_ACTION_PRIORITY_HIGH,
-            ),
-            BotAction(
-                BOT_ACTION_TYPE_REPLY_TEXT,
-                reply_text=reply_text,
+                reply_text=self.get_correct_captcha_callback_reply(),
                 reply_priority=BOT_ACTION_PRIORITY_HIGH,
             ),
             BotAction(
@@ -180,7 +123,34 @@ class CaptchaKickBotCommand(CommandInterface):
                 reply_delete_message_id=message.reply_id,
                 reply_priority=BOT_ACTION_PRIORITY_HIGH,
             ),
+            BotAction(
+                BOT_ACTION_TYPE_RESTRICT_CHAT_MEMBER,
+                reply_permissions=permissions,
+                reply_ban_user_id=message.sender_id,
+                reply_priority=BOT_ACTION_PRIORITY_HIGH,
+            ),
         ]
+        rules = self.group_configs.get_group_config(message.chat_id, "rules")
+        if rules is not None:
+            if "text" in rules and rules["text"] is not None:
+                welcome_reply += "\n" + rules["text"]
+            if "photo" in rules and rules["photo"] is not None:
+                with open(
+                    f"./sadbot/data/{message.chat_id}.jpg", mode="rb"
+                ) as reply_image_file:
+                    reply_image = reply_image_file.read()
+                replies += [
+                    BotAction(
+                        BOT_ACTION_TYPE_REPLY_IMAGE,
+                        reply_text=welcome_reply,
+                        reply_image=reply_image,
+                    )
+                ]
+            else:
+                replies += [
+                    BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text=welcome_reply)
+                ]
+        return replies
 
     def kick_user(
         self,

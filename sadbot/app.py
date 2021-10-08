@@ -13,7 +13,12 @@ import logging
 from dataclasses import asdict
 import requests
 
-from sadbot.message import Message
+from sadbot.message import (
+    Message,
+    MESSAGE_FILE_TYPE_PHOTO,
+    # MESSAGE_FILE_TYPE_DOCUMENT,
+    # MESSAGE_FILE_TYPE_VOICE,
+)
 from sadbot.message_repository import MessageRepository
 from sadbot.config import (
     OFFLINE_ANTIFLOOD_TIMEOUT,
@@ -97,6 +102,7 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
         logging.basicConfig(filename="sadbot.log", level=logging.INFO)
         logging.info("Started sadbot")
         self.base_url = f"https://api.telegram.org/bot{token}/"
+        self.base_file_url = f"https://api.telegram.org/file/bot{token}/"
         self.update_id = None
         self.classes: Dict[str, object] = {"App": self}
         con = sqlite3.connect("./messages.db", check_same_thread=False)
@@ -407,6 +413,7 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
             data.update({"chat_id": chat_id, "user_id": reply.reply_ban_user_id})
         elif reply.reply_type == BOT_ACTION_TYPE_RESTRICT_CHAT_MEMBER:
             api_method = "restrictChatMember"
+            print(reply.reply_permissions)
             permissions = json.dumps(asdict(reply.reply_permissions))
             data.update(
                 {
@@ -579,6 +586,42 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
                             manager_trigger_messages_and_actions[0], bot_action
                         )
 
+    def get_file_path_from_id(self, file_id) -> Optional[str]:
+        """Retrieves a file path given its id from the Telegram API"""
+        url = f"{self.base_url}getFile?file_id={file_id}"
+        try:
+            req = requests.get(url, timeout=UPDATES_TIMEOUT)
+        except requests.exceptions.RequestException:
+            logging.error("An error occurred sending the getFile request")
+            return None
+        if not req.ok:
+            logging.error(
+                "Failed to retrieve file path from server - details: %s", req.json()
+            )
+            return None
+        data = json.loads(req.content)
+        if "result" not in data or "file_path" not in data["result"]:
+            return None
+        return data["result"]["file_path"]
+
+    def get_file_from_id(self, file_id) -> Optional[bytes]:
+        """Retrieves a file given its id from the Telegram API"""
+        file_path = self.get_file_path_from_id(file_id)
+        if file_path is None:
+            return None
+        url = f"{self.base_file_url}{file_path}"
+        try:
+            req = requests.get(url, timeout=UPDATES_TIMEOUT)
+        except requests.exceptions.RequestException:
+            logging.error("An error occurred sending the request")
+            return None
+        if not req.ok:
+            logging.error(
+                "Failed to retrieve file from server - details: %s", req.json()
+            )
+            return None
+        return req.content
+
     def handle_update(self, item) -> None:
         """Handles the bot updates"""
         logging.info("Processing update message: process started")
@@ -601,6 +644,8 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
             if "photo" in item["message"]:
                 if "caption" in item["message"]:
                     message.text = str(item["message"]["caption"])
+                message.file_type = MESSAGE_FILE_TYPE_PHOTO
+                message.file_id = item["message"]["photo"][2]["file_id"]
                 self.handle_photos(message)
             if "new_chat_member" in item["message"]:
                 message.sender_id = item["message"]["new_chat_member"]["id"]

@@ -4,6 +4,12 @@ from typing import Optional
 from dataclasses import dataclass
 
 
+MESSAGE_FILE_TYPE_PHOTO = 0
+MESSAGE_FILE_TYPE_DOCUMENT = 1
+MESSAGE_FILE_TYPE_VOICE = 2
+# and so on..
+
+
 @dataclass
 class Message:  # pylint: disable=too-many-instance-attributes
     """Message class"""
@@ -17,4 +23,5 @@ class Message:  # pylint: disable=too-many-instance-attributes
     sender_username: Optional[str] = None
     is_bot: Optional[bool] = False
     message_time: Optional[int] = 0
-    is_admin: Optional[bool] = False
+    file_type: Optional[int] = None
+    file_id: Optional[str] = None

@@ -24,7 +24,7 @@ class Permissions:
     """Permissions class"""
 
     def __init__(self, con: sqlite3.Connection):
-        """Initializes the captcha class"""
+        """Initializes the permissions class"""
         self.con = con
         self.con.execute(get_user_permissions_table_creation_query())
 

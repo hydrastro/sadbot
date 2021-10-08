@@ -22,8 +22,8 @@ class BeaverBotCommand(CommandInterface):
         """Returns the beaver table creation query"""
         return """
         CREATE TABLE IF NOT EXISTS beaver (
-            QuoteID   int,
-            QuoteText text
+          QuoteID   int,
+          QuoteText text
         )
         """
 
