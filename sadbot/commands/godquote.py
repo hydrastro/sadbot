@@ -46,5 +46,6 @@ class GodquoteBotCommand(CommandInterface):
                 verse -= 1
             arabic_quote = god_book_arabic[f"{chapter}"][verse]["text"]
             english_quote = god_book_english[f"{chapter}"][verse]["text"]
+            verse += 1
             reply_text = f"{chapter}, {verse}:\n{arabic_quote}\n{english_quote}"
             return [BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text=reply_text)]
