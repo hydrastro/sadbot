@@ -413,7 +413,6 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
             data.update({"chat_id": chat_id, "user_id": reply.reply_ban_user_id})
         elif reply.reply_type == BOT_ACTION_TYPE_RESTRICT_CHAT_MEMBER:
             api_method = "restrictChatMember"
-            print(reply.reply_permissions)
             permissions = json.dumps(asdict(reply.reply_permissions))
             data.update(
                 {

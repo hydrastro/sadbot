@@ -2,6 +2,7 @@
 
 from typing import Optional, List
 import time
+import logging
 
 from sadbot.command_interface import CommandInterface, BOT_HANDLER_TYPE_MESSAGE
 from sadbot.message import Message
@@ -74,7 +75,7 @@ class MuteBotCommand(CommandInterface):
             message.chat_id, message.sender_id
         )
         if user_permissions is None:
-            # to be done: log
+            logging.error("User permissions not found.")
             return None
         user_type = user_permissions[0]
         if user_type not in [CHAT_MEMBER_STATUS_ADMIN, CHAT_MEMBER_STATUS_CREATOR] or (

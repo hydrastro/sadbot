@@ -1,6 +1,7 @@
 """Config bot command"""
 
 from typing import Optional, List, Dict, Any
+import logging
 
 from sadbot.app import App, CHAT_MEMBER_STATUS_ADMIN, CHAT_MEMBER_STATUS_CREATOR
 from sadbot.command_interface import CommandInterface, BOT_HANDLER_TYPE_MESSAGE
@@ -44,7 +45,7 @@ class ConfigBotCommand(CommandInterface):
             message.chat_id, message.sender_id
         )
         if user_permissions is None:
-            # to be done: log
+            logging.error("User permissions not found")
             return None
         if user_permissions[0] not in [
             CHAT_MEMBER_STATUS_ADMIN,

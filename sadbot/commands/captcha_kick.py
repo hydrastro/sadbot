@@ -1,5 +1,4 @@
 """Captcha kick bot command"""
-
 from typing import Optional, List
 import random
 import logging
@@ -131,14 +130,23 @@ class CaptchaKickBotCommand(CommandInterface):
             ),
         ]
         rules = self.group_configs.get_group_config(message.chat_id, "rules")
-        if rules is not None:
-            if "text" in rules and rules["text"] is not None:
-                welcome_reply += "\n" + rules["text"]
-            if "photo" in rules and rules["photo"] is not None:
-                with open(
-                    f"./sadbot/data/{message.chat_id}.jpg", mode="rb"
-                ) as reply_image_file:
-                    reply_image = reply_image_file.read()
+        if rules is not None and "rules" in rules:
+            if "text" in rules["rules"]:
+                if rules["rules"]["text"] is not None:
+                    welcome_reply += "\n" + rules["rules"].get("text", "")
+            if "photo" in rules["rules"] and rules["rules"]["photo"] is not None:
+                try:
+                    with open(
+                        f"./sadbot/data/rules/{message.chat_id}.jpg", mode="rb"
+                    ) as reply_image_file:
+                        reply_image = reply_image_file.read()
+                except FileNotFoundError:
+                    replies += [
+                        BotAction(
+                            BOT_ACTION_TYPE_REPLY_TEXT,
+                            reply_text="An error occured retrieving the group rules",
+                        )
+                    ]
                 replies += [
                     BotAction(
                         BOT_ACTION_TYPE_REPLY_IMAGE,
