@@ -5,3 +5,4 @@ sadbot/commands/__pycache__
 sadbot/managers/__pycache__
 messages.db
 sadbot.log
+.mypy_cache
