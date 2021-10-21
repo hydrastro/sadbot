@@ -25,3 +25,4 @@ class Message:  # pylint: disable=too-many-instance-attributes
     message_time: Optional[int] = 0
     file_type: Optional[int] = None
     file_id: Optional[str] = None
+    mime_type: Optional[str] = None

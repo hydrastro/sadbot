@@ -16,7 +16,7 @@ import requests
 from sadbot.message import (
     Message,
     MESSAGE_FILE_TYPE_PHOTO,
-    # MESSAGE_FILE_TYPE_DOCUMENT,
+    MESSAGE_FILE_TYPE_DOCUMENT,
     # MESSAGE_FILE_TYPE_VOICE,
 )
 from sadbot.message_repository import MessageRepository
@@ -57,6 +57,7 @@ from sadbot.command_interface import (
     BOT_HANDLER_TYPE_CALLBACK_QUERY,
     # BOT_HANDLER_TYPE_EDITED_MESSAGE,
     # BOT_HANDLER_TYPE_PICTURE,
+    BOT_HANDLER_TYPE_DOCUMENT,
     BOT_HANDLER_TYPE_MESSAGE,
 )
 from sadbot.chat_permissions import ChatPermissions
@@ -569,6 +570,14 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
                     return None
         return None
 
+    def handle_document(self, message: Message) -> None:
+        """Handles photo messages"""
+        for command in self.commands:
+            if command["class"].handler_type == BOT_HANDLER_TYPE_DOCUMENT:
+                reply_message = command["class"].get_reply(message)
+                for reply in reply_message:
+                    self.send_message_queue(message, reply)
+
     def handle_managers(self) -> None:
         """Handles the bot managers"""
         while True:
@@ -654,6 +663,14 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
                 message.sender_name = item["message"]["new_chat_member"]["first_name"]
                 message.is_bot = item["message"]["new_chat_member"]["is_bot"]
                 self.handle_new_chat_members(message)
+            if "document" in item["message"]:
+                if "caption" in item["message"]:
+                    message.text = str(item["message"]["caption"])
+                if "mime_type" in item["message"]["document"]:
+                    message.mime_type = item["message"]["document"]["mime_type"]
+                message.file_type = MESSAGE_FILE_TYPE_DOCUMENT
+                message.file_id = item["message"]["document"]["file_id"]
+                self.handle_document(message)
             self.message_repository.insert_message(message)
         if "edited_message" in item:
             if "text" in item["edited_message"]:

@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "sadbot"
+version = "0.1.0"
+description = "a telegram bot"
+authors = ["Your Name <you@example.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+requests = "^2.26.0"
+Pillow = "^8.4.0"
+html2text = "^2020.1.16"
+pytube = "^11.0.1"
+types-requests = "^2.25.11"
+
+[tool.poetry.dev-dependencies]
+pylint = "^2.11.1"
+mypy = "^0.910"
+black = "^21.9b0"
+
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
