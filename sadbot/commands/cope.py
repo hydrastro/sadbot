@@ -49,7 +49,6 @@ class CopeBotCommand(CommandInterface):
         choice = random.choice(os.listdir("sadbot/data/cope"))
         with open(f"sadbot/data/cope/{choice}", mode="rb") as reply_video_file:
             reply_video = reply_video_file.read()
-        print(len(reply_video))
         return [
             BotAction(
                 BOT_ACTION_TYPE_REPLY_VIDEO, reply_video=reply_video, reply_text="cope"
