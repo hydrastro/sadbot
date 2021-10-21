@@ -38,7 +38,7 @@ class WebmBotCommand(CommandInterface):
         if message.mime_type is None:
             return None
         mime_type = "video/webm"
-        if message.mime_type is not mime_type:
+        if message.mime_type != mime_type:
             return None
         file_bytes = self.app.get_file_from_id(message.file_id)
         if file_bytes is None:
@@ -48,7 +48,9 @@ class WebmBotCommand(CommandInterface):
             file.write(file_bytes)
         output = name + ".mp4"
         retcode = subprocess.call(
-            ["ffmpeg", "-i", name, "-vf", "pad=ceil(iw/2)*2:ceil(ih/2)*2", output]
+            ["ffmpeg", "-i", name, "-vf", "pad=ceil(iw/2)*2:ceil(ih/2)*2", output],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL
         )
         if retcode != 0:
             return None
