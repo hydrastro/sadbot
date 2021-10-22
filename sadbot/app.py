@@ -575,6 +575,8 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
         for command in self.commands:
             if command["class"].handler_type == BOT_HANDLER_TYPE_DOCUMENT:
                 reply_message = command["class"].get_reply(message)
+                if reply_message is None:
+                    continue
                 for reply in reply_message:
                     self.send_message_queue(message, reply)
 

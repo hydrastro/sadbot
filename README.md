@@ -12,6 +12,7 @@ Which can be installed with:
 ```
 pip3 install -r requirements.txt \
              -r dev-requirements.txt # Add this when developing the bot
+poetry shell
 ```
 The captcha command may depend on `fonts-freefont-ttf`, which can be installed
 via:
