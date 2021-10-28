@@ -19,11 +19,15 @@ class AmogusBotCommand(CommandInterface):
     @property
     def command_regex(self) -> str:
         """Returns the regex for matching leaf commands"""
-        return r".*([Aa][Mm][Oo][Gg][Uu][Ss]).*|([Ss][Uu][Ss])"
+        return r".*([Aa][Mm][Oo][Gg][Uu][Ss]).*|.*([Ss][Uu][Ss]).*"
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
         """Amogus"""
         if message is None:
+            return None
+        # Handles bot names
+        # Kinda shitty solution, but it `werks`
+        if message.text is not None and "@" in message.text:
             return None
         reply_user = (
             message.sender_username

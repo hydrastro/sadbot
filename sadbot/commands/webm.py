@@ -50,7 +50,7 @@ class WebmBotCommand(CommandInterface):
         retcode = subprocess.call(
             ["ffmpeg", "-i", name, "-vf", "pad=ceil(iw/2)*2:ceil(ih/2)*2", output],
             stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL
+            stderr=subprocess.DEVNULL,
         )
         if retcode != 0:
             return None
