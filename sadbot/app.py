@@ -48,6 +48,7 @@ from sadbot.bot_action import (
     BOT_ACTION_TYPE_PROMOTE_CHAT_MEMBER,
     BOT_ACTION_TYPE_NONE,
     BOT_ACTION_TYPE_REPLY_VIDEO_ONLINE,
+    BOT_ACTION_TYPE_REPLY_PHOTO_ONLINE,
     # BOT_ACTION_PRIORITY_LOW,
     # BOT_ACTION_PRIORITY_MEDIUM,
     BOT_ACTION_PRIORITY_HIGH,
@@ -403,6 +404,10 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
         elif reply.reply_type == BOT_ACTION_TYPE_REPLY_FILE:
             api_method = "sendDocument"
             files = {"file": reply.reply_file}
+            data.update({"caption": reply_text})
+        elif reply.reply_type == BOT_ACTION_TYPE_REPLY_PHOTO_ONLINE:
+            api_method = "sendPhoto"
+            data.update({"photo": reply.reply_online_photo_url, "caption": reply_text})
         elif reply.reply_type == BOT_ACTION_TYPE_REPLY_VOICE:
             api_method = "sendVoice"
             files = {"voice": reply.reply_voice}

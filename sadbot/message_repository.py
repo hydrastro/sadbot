@@ -105,6 +105,23 @@ class MessageRepository:
         self.con.execute(query, [message_time])
         self.con.commit()
 
+    def get_count_messages_sent_in_range(self, begin: int, end: int) -> int:
+        """Returns the count of messages sent in a range of time"""
+        cur = self.con.cursor()
+        query = """
+        SELECT
+            MessageTime,
+            count(*)
+        FROM messages
+        WHERE MessageTime > ?
+        AND MessageTime < ?
+        """
+        cur.execute(query, [begin, end])
+        data = cur.fetchall()
+        if not data:
+            return 0
+        return data[0][1]
+
     def get_n_timestamp_chat(self, chat_id: int, message_number: int) -> int:
         """Returns the timestamp of the last n message sent in a specific chat"""
         if message_number == 0:
