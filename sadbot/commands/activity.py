@@ -60,7 +60,7 @@ class ActivityBotCommand(CommandInterface):
         end: int = math.ceil(time.time())
         for _ in range(0, days):
             begin = end - 86400
-            count = self.message_repository.get_count_messages_sent_in_range(begin, end)
+            count = self.message_repository.get_count_messages_sent_in_range(begin, end, message.chat_id)
             dates.append(datetime.utcfromtimestamp(end))
             counts.append(count)
             end = begin
