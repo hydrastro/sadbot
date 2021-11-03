@@ -7,6 +7,7 @@ from dataclasses import dataclass
 MESSAGE_FILE_TYPE_PHOTO = 0
 MESSAGE_FILE_TYPE_DOCUMENT = 1
 MESSAGE_FILE_TYPE_VOICE = 2
+MESSAGE_FILE_TYPE_VIDEO = 3
 # and so on..
 
 
