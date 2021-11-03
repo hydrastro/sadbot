@@ -2,3 +2,4 @@ requests
 pillow
 html2text
 pytube
+matplotlib
