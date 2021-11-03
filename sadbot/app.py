@@ -642,7 +642,7 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
             return None
         return req.content
 
-    def handle_update(self, item) -> None:
+    def handle_update(self, item) -> None: # pylint: disable=too-many-branches
         """Handles the bot updates"""
         logging.info("Processing update message: process started")
         # catching the text messages
