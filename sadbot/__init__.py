@@ -14,6 +14,6 @@ __all__ = ["App", "Message", "run"]
 def run() -> None:
     """Runs the bot"""
     token = os.getenv("TOKEN") or config.TOKEN
-    if token == "" or token == "tokenplaceholder":
+    if token in ("", "tokenplaceholder"):
         sys.exit("You forgot to set the token")
     App(token)
