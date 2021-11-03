@@ -18,6 +18,7 @@ from sadbot.message import (
     MESSAGE_FILE_TYPE_PHOTO,
     MESSAGE_FILE_TYPE_DOCUMENT,
     # MESSAGE_FILE_TYPE_VOICE,
+    MESSAGE_FILE_TYPE_VIDEO,
 )
 from sadbot.message_repository import MessageRepository
 from sadbot.config import (
@@ -560,6 +561,10 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
         """Handles photo messages"""
         return self.handle_messages(message)
 
+    def handle_videos(self, message: Message) -> None:
+        """Handles video messages"""
+        return self.handle_messages(message)
+    
     def handle_callback_query(self, message: Message) -> None:
         """Handles inline keyboard inputs"""
         for command in self.commands:
@@ -637,7 +642,7 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
             return None
         return req.content
 
-    def handle_update(self, item) -> None:
+    def handle_update(self, item) -> None: # pylint: disable=too-many-branches
         """Handles the bot updates"""
         logging.info("Processing update message: process started")
         # catching the text messages
@@ -662,6 +667,12 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
                 message.file_type = MESSAGE_FILE_TYPE_PHOTO
                 message.file_id = item["message"]["photo"][2]["file_id"]
                 self.handle_photos(message)
+            if "video" in item["message"]:
+                if "caption" in item["message"]:
+                    message.text = str(item["message"]["caption"])
+                message.file_type = MESSAGE_FILE_TYPE_VIDEO
+                message.file_id = item["message"]["video"]["file_id"]
+                self.handle_videos(message)
             if "new_chat_member" in item["message"]:
                 message.sender_id = item["message"]["new_chat_member"]["id"]
                 message.sender_username = item["message"]["new_chat_member"].get(
