@@ -741,7 +741,6 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
 
     def start_bot(self) -> None:
         """Starts the bot"""
-        print("The bot has started")
         updates_process = multiprocessing.Process(target=self.handle_updates)
         outgoing_process = multiprocessing.Process(target=self.handle_outgoing_messages)
         managers_process = multiprocessing.Process(target=self.handle_managers)
