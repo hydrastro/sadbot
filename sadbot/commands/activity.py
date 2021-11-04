@@ -38,7 +38,7 @@ class ActivityBotCommand(CommandInterface):
     @property
     def command_regex(self) -> str:
         """Returns the regex for matching activity commands"""
-        return r"(.|!)([aA][cC][tT][iI][vV][iI][tT][yY].*)"
+        return r"(.|!)([aA][cC][tT][iI][vV][iI][tT][yY]).*"
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
         """Activity"""
@@ -93,6 +93,8 @@ class ActivityBotCommand(CommandInterface):
         return [
             BotAction(
                 BOT_ACTION_TYPE_REPLY_TEXT,
+                reply_text="Here's the chat activity, you can click on the link " +
+                f"to see the full quality image:\n{url}"
                 reply_text=f"If you want to check the quality image, use {url}",
             ),
         ]
