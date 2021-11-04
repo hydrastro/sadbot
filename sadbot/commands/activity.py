@@ -93,8 +93,7 @@ class ActivityBotCommand(CommandInterface):
         return [
             BotAction(
                 BOT_ACTION_TYPE_REPLY_TEXT,
-                reply_text="Here's the chat activity, you can click on the link " +
-                f"to see the full quality image:\n{url}"
-                reply_text=f"If you want to check the quality image, use {url}",
+                reply_text=f"""Here's the chat activity, you can click on the link to see the
+                full quality image:\n{url}""",
             ),
         ]
