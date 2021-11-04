@@ -67,13 +67,9 @@ sudo docker run -it sadbot
 ```
 
 ### NixOS
-If you use NixOS you can easily build the project using the `default.nix` file:
+If you use NixOS you can easily run the project using the `flake.nix` file:
 ```sh
-nix-build
-```
-Then you can start the bot with:
-```sh
-./result/bin/sadbot
+nix run
 ```
 Don't forget to setup the token.
 
