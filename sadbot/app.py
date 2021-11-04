@@ -3,18 +3,20 @@
 import datetime
 import glob
 import json
+import logging
 import multiprocessing
 import re
 import sqlite3
 import time
-from os.path import dirname, basename, isfile, join
-from typing import Optional, Dict, List, Any
-import logging
 from dataclasses import asdict
+from os.path import basename, dirname, isfile, join
+from typing import Any, Dict, List, Optional
+
 import requests
 
 from sadbot.message import (
     Message,
+    Entity,
     MESSAGE_FILE_TYPE_PHOTO,
     MESSAGE_FILE_TYPE_DOCUMENT,
     # MESSAGE_FILE_TYPE_VOICE,
@@ -63,7 +65,6 @@ from sadbot.command_interface import (
     BOT_HANDLER_TYPE_MESSAGE,
 )
 from sadbot.chat_permissions import ChatPermissions
-
 
 CHAT_MEMBER_STATUS_CREATOR = 0
 CHAT_MEMBER_STATUS_ADMIN = 1
@@ -509,7 +510,7 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
         text = message.text
         if not text:
             return None
-        messages: List[BotAction] = []
+        actions: List[BotAction] = []
         for command in self.commands:
             if command["class"].handler_type == BOT_HANDLER_TYPE_MESSAGE:
                 try:
@@ -517,10 +518,10 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
                         reply_message = command["class"].get_reply(message)
                         if reply_message is None:
                             continue
-                        messages += reply_message
+                        actions += reply_message
                 except re.error:
                     return None
-        return messages
+        return actions
 
     def send_message_queue(self, message: Message, reply_info: BotAction) -> None:
         """Adds an outgoing messages to the queue"""
@@ -658,6 +659,13 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
                 False,
                 item["message"]["date"],
             )
+            if "entities" in item["message"]:
+                entities: List[Entity] = []
+                for entity in item["message"]["entities"]:
+                    entities.append(
+                        Entity(entity["offset"], entity["length"], entity["type"]),
+                    )
+                message.entities = entities
             if "text" in item["message"]:
                 message.text = str(item["message"]["text"])
                 self.handle_messages(message)
