@@ -53,11 +53,10 @@ def convert_to_seconds(time_string: str) -> int:
         time_string[-1], 0
     )
 
+
 def convert_to_days(time_string: str) -> int:
     """Converts a time string format to days"""
-    days_per_unit = {"d": 1, "w": 7, 'm': 30}
+    days_per_unit = {"d": 1, "w": 7, "m": 30}
     if time_string[-1] not in days_per_unit:
         return safe_cast(time_string, int, 0)
-    return safe_cast(time_string[:-1], int, 0) * days_per_unit.get(
-        time_string[-1], 0
-    )
+    return safe_cast(time_string[:-1], int, 0) * days_per_unit.get(time_string[-1], 0)

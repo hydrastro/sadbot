@@ -564,7 +564,7 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
     def handle_videos(self, message: Message) -> None:
         """Handles video messages"""
         return self.handle_messages(message)
-    
+
     def handle_callback_query(self, message: Message) -> None:
         """Handles inline keyboard inputs"""
         for command in self.commands:
@@ -642,7 +642,7 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
             return None
         return req.content
 
-    def handle_update(self, item) -> None: # pylint: disable=too-many-branches
+    def handle_update(self, item) -> None:  # pylint: disable=too-many-branches
         """Handles the bot updates"""
         logging.info("Processing update message: process started")
         # catching the text messages

@@ -105,7 +105,9 @@ class MessageRepository:
         self.con.execute(query, [message_time])
         self.con.commit()
 
-    def get_count_messages_sent_in_range(self, begin: int, end: int, chat_id: int) -> int:
+    def get_count_messages_sent_in_range(
+        self, begin: int, end: int, chat_id: int
+    ) -> int:
         """Returns the count of messages sent in a range of time"""
         cur = self.con.cursor()
         query = """

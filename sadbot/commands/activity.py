@@ -18,7 +18,7 @@ from sadbot.message_repository import MessageRepository
 from sadbot.bot_action import (
     BotAction,
     BOT_ACTION_TYPE_REPLY_IMAGE,
-    BOT_ACTION_TYPE_REPLY_TEXT
+    BOT_ACTION_TYPE_REPLY_TEXT,
 )
 
 
@@ -60,27 +60,29 @@ class ActivityBotCommand(CommandInterface):
         end: int = math.ceil(time.time())
         for _ in range(0, days):
             begin = end - 86400
-            count = self.message_repository.get_count_messages_sent_in_range(begin, end, message.chat_id)
+            count = self.message_repository.get_count_messages_sent_in_range(
+                begin, end, message.chat_id
+            )
             dates.append(datetime.utcfromtimestamp(end))
             counts.append(count)
             end = begin
         dates.reverse()
         counts.reverse()
-        with plt.style.context(plt.style.library['Solarize_Light2']):
-            plt.rcParams["figure.figsize"] = (16,4)
+        with plt.style.context(plt.style.library["Solarize_Light2"]):
+            plt.rcParams["figure.figsize"] = (16, 4)
             plt.plot(dates, counts, label="count")
             plt.xlabel("time")
             plt.ylabel("count")
             plt.legend(frameon=False)
 
-            name = str(random.randint(14124124124, 1412412412414124124124)) + '.png'
+            name = str(random.randint(14124124124, 1412412412414124124124)) + ".png"
             plt.savefig(name, dpi=300)
         with open(name, "rb") as file:
             byte_array = file.read()
         os.remove(name)
         try:
-            req = requests.post('https://oshi.at', files={name: byte_array})
-            url = req.text.splitlines()[1].split(' ')[1]
+            req = requests.post("https://oshi.at", files={name: byte_array})
+            url = req.text.splitlines()[1].split(" ")[1]
         except (requests.ConnectionError, IndexError):
             return [
                 BotAction(
@@ -89,12 +91,9 @@ class ActivityBotCommand(CommandInterface):
                 )
             ]
         return [
-            BotAction(
-                BOT_ACTION_TYPE_REPLY_IMAGE,
-                reply_image=byte_array
-            ),
+            BotAction(BOT_ACTION_TYPE_REPLY_IMAGE, reply_image=byte_array),
             BotAction(
                 BOT_ACTION_TYPE_REPLY_TEXT,
-                reply_text=f"If you want to check the quality image, use {url}"
-            )
+                reply_text=f"If you want to check the quality image, use {url}",
+            ),
         ]
