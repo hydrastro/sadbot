@@ -1,14 +1,22 @@
 """This module contains the Message class"""
 
-from typing import Optional
 from dataclasses import dataclass
-
+from typing import Optional, List
 
 MESSAGE_FILE_TYPE_PHOTO = 0
 MESSAGE_FILE_TYPE_DOCUMENT = 1
 MESSAGE_FILE_TYPE_VOICE = 2
 MESSAGE_FILE_TYPE_VIDEO = 3
 # and so on..
+
+
+@dataclass
+class Entity:
+    """Telegram entity class"""
+
+    offset: int
+    length: int
+    type: str
 
 
 @dataclass
@@ -27,3 +35,4 @@ class Message:  # pylint: disable=too-many-instance-attributes
     file_type: Optional[int] = None
     file_id: Optional[str] = None
     mime_type: Optional[str] = None
+    entities: Optional[List[Entity]] = None

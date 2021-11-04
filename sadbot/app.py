@@ -3,67 +3,63 @@
 import datetime
 import glob
 import json
+import logging
 import multiprocessing
 import re
 import sqlite3
 import time
-from os.path import dirname, basename, isfile, join
-from typing import Optional, Dict, List, Any
-import logging
 from dataclasses import asdict
+from os.path import basename, dirname, isfile, join
+from typing import Any, Dict, List, Optional
+
 import requests
 
-from sadbot.message import (
-    Message,
-    MESSAGE_FILE_TYPE_PHOTO,
-    MESSAGE_FILE_TYPE_DOCUMENT,
-    # MESSAGE_FILE_TYPE_VOICE,
-    MESSAGE_FILE_TYPE_VIDEO,
+from sadbot.bot_action import (
+    BOT_ACTION_PRIORITY_HIGH,
+    BOT_ACTION_TYPE_ANSWER_CALLBACK_QUERY,
+    BOT_ACTION_TYPE_BAN_USER,
+    BOT_ACTION_TYPE_DELETE_MESSAGE,
+    BOT_ACTION_TYPE_INLINE_KEYBOARD,
+    BOT_ACTION_TYPE_NONE,
+    BOT_ACTION_TYPE_PROMOTE_CHAT_MEMBER,
+    BOT_ACTION_TYPE_REPLY_AUDIO,
+    BOT_ACTION_TYPE_REPLY_FILE,
+    BOT_ACTION_TYPE_REPLY_IMAGE,
+    BOT_ACTION_TYPE_REPLY_PHOTO_ONLINE,
+    BOT_ACTION_TYPE_REPLY_TEXT,
+    BOT_ACTION_TYPE_REPLY_VIDEO,
+    BOT_ACTION_TYPE_REPLY_VIDEO_ONLINE,
+    BOT_ACTION_TYPE_REPLY_VOICE,
+    BOT_ACTION_TYPE_RESTRICT_CHAT_MEMBER,
+    BOT_ACTION_TYPE_UNBAN_USER,
+    BotAction,
 )
-from sadbot.message_repository import MessageRepository
+from sadbot.chat_permissions import ChatPermissions
+from sadbot.command_interface import (
+    BOT_HANDLER_TYPE_CALLBACK_QUERY,
+    BOT_HANDLER_TYPE_DOCUMENT,
+    BOT_HANDLER_TYPE_MESSAGE,
+    BOT_HANDLER_TYPE_NEW_USER,
+)
 from sadbot.config import (
-    OFFLINE_ANTIFLOOD_TIMEOUT,
     MAX_REPLY_LENGTH,
-    UPDATES_TIMEOUT,
-    UPDATE_PROCESSING_MAX_TIMEOUT,
-    OUTGOING_REQUESTS_TIMEOUT,
     MESSAGES_CHAT_RATE_NUMBER,
     MESSAGES_CHAT_RATE_PERIOD,
     MESSAGES_USER_RATE_NUMBER,
     MESSAGES_USER_RATE_PERIOD,
+    OFFLINE_ANTIFLOOD_TIMEOUT,
+    OUTGOING_REQUESTS_TIMEOUT,
+    UPDATE_PROCESSING_MAX_TIMEOUT,
+    UPDATES_TIMEOUT,
 )
-from sadbot.bot_action import (
-    BotAction,
-    BOT_ACTION_TYPE_REPLY_TEXT,
-    BOT_ACTION_TYPE_REPLY_IMAGE,
-    BOT_ACTION_TYPE_REPLY_VIDEO,
-    BOT_ACTION_TYPE_REPLY_AUDIO,
-    BOT_ACTION_TYPE_REPLY_FILE,
-    BOT_ACTION_TYPE_REPLY_VOICE,
-    BOT_ACTION_TYPE_BAN_USER,
-    BOT_ACTION_TYPE_INLINE_KEYBOARD,
-    BOT_ACTION_TYPE_ANSWER_CALLBACK_QUERY,
-    BOT_ACTION_TYPE_DELETE_MESSAGE,
-    BOT_ACTION_TYPE_RESTRICT_CHAT_MEMBER,
-    BOT_ACTION_TYPE_UNBAN_USER,
-    BOT_ACTION_TYPE_PROMOTE_CHAT_MEMBER,
-    BOT_ACTION_TYPE_NONE,
-    BOT_ACTION_TYPE_REPLY_VIDEO_ONLINE,
-    BOT_ACTION_TYPE_REPLY_PHOTO_ONLINE,
-    # BOT_ACTION_PRIORITY_LOW,
-    # BOT_ACTION_PRIORITY_MEDIUM,
-    BOT_ACTION_PRIORITY_HIGH,
+from sadbot.message import (  # MESSAGE_FILE_TYPE_VOICE,
+    MESSAGE_FILE_TYPE_DOCUMENT,
+    MESSAGE_FILE_TYPE_PHOTO,
+    MESSAGE_FILE_TYPE_VIDEO,
+    Entity,
+    Message,
 )
-from sadbot.command_interface import (
-    BOT_HANDLER_TYPE_NEW_USER,
-    BOT_HANDLER_TYPE_CALLBACK_QUERY,
-    # BOT_HANDLER_TYPE_EDITED_MESSAGE,
-    # BOT_HANDLER_TYPE_PICTURE,
-    BOT_HANDLER_TYPE_DOCUMENT,
-    BOT_HANDLER_TYPE_MESSAGE,
-)
-from sadbot.chat_permissions import ChatPermissions
-
+from sadbot.message_repository import MessageRepository
 
 CHAT_MEMBER_STATUS_CREATOR = 0
 CHAT_MEMBER_STATUS_ADMIN = 1
@@ -509,7 +505,7 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
         text = message.text
         if not text:
             return None
-        messages: List[BotAction] = []
+        actions: List[BotAction] = []
         for command in self.commands:
             if command["class"].handler_type == BOT_HANDLER_TYPE_MESSAGE:
                 try:
@@ -517,10 +513,10 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
                         reply_message = command["class"].get_reply(message)
                         if reply_message is None:
                             continue
-                        messages += reply_message
+                        actions += reply_message
                 except re.error:
                     return None
-        return messages
+        return actions
 
     def send_message_queue(self, message: Message, reply_info: BotAction) -> None:
         """Adds an outgoing messages to the queue"""
@@ -658,6 +654,13 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
                 False,
                 item["message"]["date"],
             )
+            if "entities" in item["message"]:
+                entities: List[Entity] = []
+                for entity in item["message"]["entities"]:
+                    entities.append(
+                        Entity(entity["offset"], entity["length"], entity["type"]),
+                    )
+                message.entities = entities
             if "text" in item["message"]:
                 message.text = str(item["message"]["text"])
                 self.handle_messages(message)
@@ -738,6 +741,7 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
 
     def start_bot(self) -> None:
         """Starts the bot"""
+        print("The bot has started")
         updates_process = multiprocessing.Process(target=self.handle_updates)
         outgoing_process = multiprocessing.Process(target=self.handle_outgoing_messages)
         managers_process = multiprocessing.Process(target=self.handle_managers)

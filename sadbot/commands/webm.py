@@ -1,14 +1,13 @@
 """Webm bot command"""
-from typing import Optional, List
+import os
 import random
 import subprocess
-import os
+from typing import List, Optional
 
-from sadbot.command_interface import BOT_HANDLER_TYPE_DOCUMENT, CommandInterface
-from sadbot.bot_action import BotAction, BOT_ACTION_TYPE_REPLY_VIDEO
-
-from sadbot.message import Message
 from sadbot.app import App
+from sadbot.bot_action import BOT_ACTION_TYPE_REPLY_VIDEO, BotAction
+from sadbot.command_interface import BOT_HANDLER_TYPE_DOCUMENT, CommandInterface
+from sadbot.message import Message
 
 
 class WebmBotCommand(CommandInterface):
@@ -37,8 +36,8 @@ class WebmBotCommand(CommandInterface):
             return None
         if message.mime_type is None:
             return None
-        mime_type = "video/webm"
-        if message.mime_type != mime_type:
+        mime_types = ["video/webm", "video/x-matroska"]
+        if message.mime_type not in mime_types:
             return None
         file_bytes = self.app.get_file_from_id(message.file_id)
         if file_bytes is None:

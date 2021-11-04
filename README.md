@@ -181,7 +181,6 @@ Managers may behave like containers for multiple sub-managers.
 
 ## Todo list
 - [ ] Antiflood, samewords count and newlines count
-- [ ] Outgoing messages queue
 - [ ] VC Radio
 - [ ] Group admin settings: enabled modules etc.
 - [ ] Add new tables: for images, for edits and for usernames

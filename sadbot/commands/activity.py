@@ -91,7 +91,6 @@ class ActivityBotCommand(CommandInterface):
                 )
             ]
         return [
-            BotAction(BOT_ACTION_TYPE_REPLY_IMAGE, reply_image=byte_array),
             BotAction(
                 BOT_ACTION_TYPE_REPLY_TEXT,
                 reply_text=f"If you want to check the quality image, use {url}",
