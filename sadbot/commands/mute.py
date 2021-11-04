@@ -67,8 +67,11 @@ class MuteBotCommand(CommandInterface):
                     user_to_mute
                 )
                 until_date = convert_to_seconds(message_text[2])
-        if until_date is not None:
-            until_date += int(time.time())
+        until_text = "ever, lmao."
+        if until_date is not None and until_date >= 30:
+            until_text = message_text[2]
+        until_date += int(time.time())
+        until_date += 2  # Delay for the api request and elaboration time
         if user_id_to_mute is None:
             return None
         user_permissions = self.app.get_user_status_and_permissions(
@@ -96,7 +99,7 @@ class MuteBotCommand(CommandInterface):
             user_id_to_mute, message.chat_id, mute_permissions
         )
         user_to_mute = "User" if user_to_mute is None else user_to_mute
-        reply_text = f"{user_to_mute} has successfully been muted."
+        reply_text = f"{user_to_mute} has successfully been muted for {until_text}."
         return [
             BotAction(
                 BOT_ACTION_TYPE_RESTRICT_CHAT_MEMBER,
