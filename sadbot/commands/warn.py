@@ -80,7 +80,6 @@ class WarnBotCommand(CommandInterface):
             warn_username = text[1].replace("@", "")
             if warn_username is None:
                 return None
-            print(warn_username)
             warn_sender_id = self.message_repository.get_user_id_from_username(
                 warn_username
             )
@@ -113,7 +112,8 @@ class WarnBotCommand(CommandInterface):
         if mute is None:
             reply_text = (
                 f"{warn_username} has been successfully warned.\n"
-                + f"The user has {count} {'warns' if count != 1 else 'warn'} in the last week"
+                + f"The user has been warned {count} {'times' if count != 1 else 'time'} "
+                + "in the last week"
             )
             return [
                 BotAction(
@@ -124,9 +124,9 @@ class WarnBotCommand(CommandInterface):
             ]
         username = "User" if warn_username is None else warn_username
         reply_text = (
-            f"{username} has been successfully warned.\n"
-            + f"The user has {count} {'warns' if count != 1 else 'warn'} in the last week.\n"
-            + f"Because of the warnings, you are muted for {mute[1]}"
+            f"{username} has successfully been warned.\n"
+            + f"The user has been warned {count} {'times' if count != 1 else 'time'} in the "
+            + f"last week.\nBecause of the warnings, you are muted for {mute[1]}"
         )
         mute_permissions = ChatPermissions(
             False, False, False, False, False, False, False, False
