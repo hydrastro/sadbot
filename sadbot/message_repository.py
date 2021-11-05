@@ -173,7 +173,7 @@ class MessageRepository:  # pylint: disable=R0904
         return data[-1][2]
 
     def log_bot_trigger(self, chat_id: int, user_id: int) -> None:
-        """logs a bot trigger"""
+        """Logs a bot trigger"""
         query = """
         INSERT INTO bot_triggers (
           ChatID,
