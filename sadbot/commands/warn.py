@@ -14,6 +14,7 @@ from sadbot.classes.permissions import Permissions
 from sadbot.command_interface import BOT_HANDLER_TYPE_MESSAGE, CommandInterface
 from sadbot.message import Message
 from sadbot.message_repository import MessageRepository
+from sadbot.classes.user_warnings import UserWarnings
 
 
 def mute_time(count: int) -> Optional[Tuple[int, str]]:
@@ -39,12 +40,17 @@ class WarnBotCommand(CommandInterface):
     """This is the warn command class"""
 
     def __init__(
-        self, app: App, message_repository: MessageRepository, permissions: Permissions
+        self,
+        app: App,
+        message_repository: MessageRepository,
+        permissions: Permissions,
+        user_warnings: UserWarnings,
     ):
         """Initializes the warn command"""
         self.app = app
         self.message_repository = message_repository
         self.permissions = permissions
+        self.user_warnings = user_warnings
 
     @property
     def handler_type(self) -> int:
@@ -94,14 +100,14 @@ class WarnBotCommand(CommandInterface):
             return [
                 BotAction(
                     BOT_ACTION_TYPE_REPLY_TEXT,
-                    reply_text="You don't have enough rights to mute, kiddo.",
+                    reply_text="You don't have enough rights to warn, kiddo.",
                 )
             ]
         timestamp = int(time.time()) - 604800
-        self.message_repository.insert_new_warn(
+        self.user_warnings.insert_new_warn(
             message.chat_id, warn_sender_id, int(time.time())
         )
-        count = self.message_repository.get_warns_since_timestamp(
+        count = self.user_warnings.get_warns_since_timestamp(
             message.chat_id, warn_sender_id, timestamp
         )
         mute = mute_time(count)
@@ -127,9 +133,7 @@ class WarnBotCommand(CommandInterface):
                 False, False, False, False, False, False, False, False
             )
             until_date = int(time.time() + mute[0])
-            print(until_date)
             mute_permissions.ban_until_date = until_date
-            print(warn_sender_id, message.chat_id, mute_permissions)
             self.permissions.set_user_permissions(
                 warn_sender_id, message.chat_id, mute_permissions
             )
