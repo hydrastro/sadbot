@@ -59,7 +59,7 @@ def get_bot_triggers_table_creation_query() -> str:
     """
 
 
-class MessageRepository:
+class MessageRepository:  # pylint: disable=R0904
     """This class handles the messages database"""
 
     def __init__(self, con: sqlite3.Connection) -> None:
