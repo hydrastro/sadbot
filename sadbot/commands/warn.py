@@ -26,14 +26,13 @@ def mute_time(count: int) -> Optional[Tuple[int, str]]:
     # >5 - permamute
     if count < 3:
         return None
-    elif count == 3:
+    if count == 3:
         return (14400, "4 hours")
-    elif count == 4:
+    if count == 4:
         return (86400, "1 day")
-    elif count == 5:
+    if count == 5:
         return (259200, "3 days")
-    else:
-        return (0, "eternity")
+    return (0, "eternity")
 
 
 class WarnBotCommand(CommandInterface):
@@ -123,31 +122,31 @@ class WarnBotCommand(CommandInterface):
                     reply_priority=BOT_ACTION_PRIORITY_HIGH,
                 )
             ]
-        else:
-            reply_text = (
-                f"{'User' if warn_username is None else warn_username} has been successfully warned.\n"
-                + f"The user has {count} {'warns' if count != 1 else 'warn'} in the last week.\n"
-                + f"Because of the warnings, you are muted for {mute[1]}"
-            )
-            mute_permissions = ChatPermissions(
-                False, False, False, False, False, False, False, False
-            )
-            until_date = int(time.time() + mute[0])
-            mute_permissions.ban_until_date = until_date
-            self.permissions.set_user_permissions(
-                warn_sender_id, message.chat_id, mute_permissions
-            )
-            return [
-                BotAction(
-                    BOT_ACTION_TYPE_RESTRICT_CHAT_MEMBER,
-                    reply_ban_user_id=warn_sender_id,
-                    reply_permissions=mute_permissions,
-                    reply_restrict_until_date=until_date,
-                    reply_priority=BOT_ACTION_PRIORITY_HIGH,
-                ),
-                BotAction(
-                    BOT_ACTION_TYPE_REPLY_TEXT,
-                    reply_text=reply_text,
-                    reply_priority=BOT_ACTION_PRIORITY_HIGH,
-                ),
-            ]
+        username = "User" if warn_username is None else warn_username
+        reply_text = (
+            f"{username} has been successfully warned.\n"
+            + f"The user has {count} {'warns' if count != 1 else 'warn'} in the last week.\n"
+            + f"Because of the warnings, you are muted for {mute[1]}"
+        )
+        mute_permissions = ChatPermissions(
+            False, False, False, False, False, False, False, False
+        )
+        until_date = int(time.time() + mute[0])
+        mute_permissions.ban_until_date = until_date
+        self.permissions.set_user_permissions(
+            warn_sender_id, message.chat_id, mute_permissions
+        )
+        return [
+            BotAction(
+                BOT_ACTION_TYPE_RESTRICT_CHAT_MEMBER,
+                reply_ban_user_id=warn_sender_id,
+                reply_permissions=mute_permissions,
+                reply_restrict_until_date=until_date,
+                reply_priority=BOT_ACTION_PRIORITY_HIGH,
+            ),
+            BotAction(
+                BOT_ACTION_TYPE_REPLY_TEXT,
+                reply_text=reply_text,
+                reply_priority=BOT_ACTION_PRIORITY_HIGH,
+            ),
+        ]
