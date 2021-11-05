@@ -70,7 +70,7 @@ def get_warn_table_creation_query() -> str:
     """
 
 
-class MessageRepository:
+class MessageRepository:  # pylint: disable=R0904
     """This class handles the messages database"""
 
     def __init__(self, con: sqlite3.Connection) -> None:
@@ -129,7 +129,9 @@ class MessageRepository:
         cur = self.con.cursor()
         cur.execute(query, [chat_id, user_id, message_time])
 
-    def get_warns_since_timestamp(self, chat_id: int, user_id: int, timestamp: int) -> int:
+    def get_warns_since_timestamp(
+        self, chat_id: int, user_id: int, timestamp: int
+    ) -> int:
         """Get the count of warns since timestamp"""
         query = """
         SELECT

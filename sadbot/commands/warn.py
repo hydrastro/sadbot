@@ -27,10 +27,14 @@ class WarnBotCommand(CommandInterface):
         """Returns the regex string that triggers this command"""
         return "([.]|[!]|[/])[wW][aA][rR][nN]"
 
-    def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
+    def get_reply(
+        self, message: Optional[Message] = None
+    ) -> Optional[List[BotAction]]:
+        # pylint: disable=R0911
         """Returns the command output"""
         if message is None or message.text is None:
             return None
+        warn_sender_id = None
         if message.reply_id is not None:
             warn_message = self.message_repository.get_reply_message(message)
             if warn_message is None:
@@ -42,11 +46,11 @@ class WarnBotCommand(CommandInterface):
             if len(text) < 2:
                 return None
             warn_username = text[1].replace("@", "")
+            if warn_username is None:
+                return None
             warn_sender_id = self.message_repository.get_user_id_from_username(
                 warn_username
             )
-            if warn_sender_id is None:
-                return None
         if warn_sender_id is None:
             return None
         user_permissions = self.app.get_user_status_and_permissions(
@@ -69,7 +73,8 @@ class WarnBotCommand(CommandInterface):
         count = self.message_repository.get_warns_since_timestamp(
             message.chat_id, warn_sender_id, timestamp
         )
-        reply_text = f"{warn_username} has been successfully warned. The user has {count} {'warns' if count != 1 else 'warn'} in the last week"
+        reply_text = f"""{warn_username} has been successfully warned.
+        The user has {count} {'warns' if count != 1 else 'warn'} in the last week"""
         self.message_repository.insert_new_warn(
             message.chat_id, warn_sender_id, int(time.time())
         )
