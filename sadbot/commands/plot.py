@@ -1,6 +1,7 @@
 """Function plot bot command"""
 
 import os
+import re
 from typing import Optional, List
 import random
 from sympy.plotting import plot, plot3d
@@ -26,24 +27,48 @@ class PlotBotCommand(CommandInterface):
     @property
     def command_regex(self) -> str:
         """Returns the regex for matching function plot commands"""
-        return r"((!|\.)([Pp][Ll][Oo][Tt])).*"
+        return r"((!|\.)([Pp][Ll][Oo][Tt])([3][Dd])?)\s.*"
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
         """Plots"""
         if message is None or message.text is None:
             return None
-        split = message.text.split()
-        if len(split) < 2:
-            return self.exit_message("Yo insert an expression.")
+        if "3d" in message.text:
+            plot_3d = True
+            split = message.text[8:].split(",")
+        else:
+            plot_3d = False
+            split = message.text[6:].split(",")
+        ranges = re.split("[Rr][Aa][Nn][Gg][Ee]", split[-1])
+        split[-1] = ranges[0]
+        expressions = []
+        xlim = None
+        ylim = None
+        if len(ranges) > 1:
+            temp = ranges[-1].split()
+            if len(temp) < 3:
+                return self.exit_message(
+                    "Invalid ranges. Format: `xmin xmax ymin ymax`."
+                )
+            xlim = (temp[0], temp[1])
+            ylim = (temp[2], temp[3])
         try:
-            if "3d" in split[0]:
+            for expression in split:
+                expressions.append(parse_maxima(expression))
+            if expressions == []:
+                return self.exit_message("Please enter at least one valid expression.")
+            if plot_3d:
                 da_plot = plot3d(
-                    parse_maxima(split[1]),
+                    *expressions,
+                    xlim=xlim,
+                    ylim=ylim,
                     show=False,
                 )
             else:
                 da_plot = plot(
-                    parse_maxima(split[1]),
+                    *expressions,
+                    xlim=xlim,
+                    ylim=ylim,
                     show=False,
                 )
         except (SyntaxError, ValueError, TypeError) as caught_exception:
