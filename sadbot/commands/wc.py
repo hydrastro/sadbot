@@ -28,7 +28,7 @@ class WcBotCommand(CommandInterface):
     @property
     def command_regex(self) -> str:
         """Returns the regex for matching leaf commands"""
-        return r"[.]([wW][cC]).*"
+        return r"(!|\.)([wW][cC]).*"
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
         if message is None:
