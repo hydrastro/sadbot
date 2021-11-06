@@ -40,7 +40,6 @@ class HugBotCommand(CommandInterface):
                 previous_message.sender_username or previous_message.sender_name
             )
         else:
-            print("Help")
             if message.text is None:
                 return None
             if len(message.text) < 5:
@@ -50,7 +49,7 @@ class HugBotCommand(CommandInterface):
             r_username = r_username.replace(" ", "")
         s_username = message.sender_username or message.sender_name
         text = f"@{s_username} hugs @{r_username}"
-        with open("sadbot/assets/hug.mp4", "rb") as file:
+        with open("sadbot/assets/hug/hug.mp4", "rb") as file:
             hug = file.read()
         return [
             BotAction(BOT_ACTION_TYPE_REPLY_VIDEO, reply_video=hug, reply_text=text)
