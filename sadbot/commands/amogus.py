@@ -19,7 +19,7 @@ class AmogusBotCommand(CommandInterface):
     @property
     def command_regex(self) -> str:
         """Returns the regex for matching leaf commands"""
-        return r".*([Aa][Mm][Oo][Gg][Uu][Ss]|\s[Ss][Uu][Ss]).*"
+        return r"(.*([Aa][Mm][Oo][Gg][Uu][Ss])|(\s[Ss][Uu][Ss])).*"
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
         """Amogus"""
