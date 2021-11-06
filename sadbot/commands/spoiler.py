@@ -58,7 +58,7 @@ class SpoilerBotCommand(CommandInterface):
             reason = message.text[8:]
         else:
             reason = "I don't care, kiddo."
-        with open("sadbot/data/cry_about_it.mp4", "rb") as file:
+        with open("sadbot/assets/spoiler/cry_about_it.mp4", "rb") as file:
             video = file.read()
         return [
             BotAction(

@@ -137,7 +137,7 @@ class CaptchaKickBotCommand(CommandInterface):
             if "photo" in rules["rules"] and rules["rules"]["photo"] is not None:
                 try:
                     with open(
-                        f"./sadbot/data/rules/{message.chat_id}.jpg", mode="rb"
+                        f"./sadbot/assets/rules/{message.chat_id}.jpg", mode="rb"
                     ) as reply_image_file:
                         reply_image = reply_image_file.read()
                 except FileNotFoundError:

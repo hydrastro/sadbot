@@ -84,7 +84,7 @@ class ConfigBotCommand(CommandInterface):
             photo = self.app.get_file_from_id(rules_message.file_id)
             if photo is not None:
                 with open(
-                    f"./sadbot/data/rules/{message.chat_id}.jpg", "wb"
+                    f"./sadbot/assets/rules/{message.chat_id}.jpg", "wb"
                 ) as image_file:
                     image_file.write(photo)
                 rules["photo"] = True
