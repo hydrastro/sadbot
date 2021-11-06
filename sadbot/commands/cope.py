@@ -46,8 +46,8 @@ class CopeBotCommand(CommandInterface):
         # a very useful module of sadbot we're injecting into this class
         # we could also have injected the direct database connection and retrieved
         # the last message directly
-        choice = random.choice(os.listdir("sadbot/data/cope"))
-        with open(f"sadbot/data/cope/{choice}", mode="rb") as reply_video_file:
+        choice = random.choice(os.listdir("sadbot/assets/cope"))
+        with open(f"sadbot/assets/cope/{choice}", mode="rb") as reply_video_file:
             reply_video = reply_video_file.read()
         return [
             BotAction(

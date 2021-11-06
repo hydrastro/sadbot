@@ -28,9 +28,9 @@ class GodquoteBotCommand(CommandInterface):
         if message is None or message.text is None:
             return None
         with open(
-            "./sadbot/data/quran_arabic.json", mode="r", encoding="utf-8"
+            "./sadbot/assets/quran_arabic.json", mode="r", encoding="utf-8"
         ) as god_file_arabic, open(
-            "./sadbot/data/quran_english.json", mode="r", encoding="utf-8"
+            "./sadbot/assets/quran_english.json", mode="r", encoding="utf-8"
         ) as god_file_english:
             god_book_arabic = json.load(god_file_arabic)
             god_book_english = json.load(god_file_english)

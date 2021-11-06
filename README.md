@@ -152,7 +152,7 @@ class UwuBotCommand(CommandInterface):
         except re.error:
             return None
         # here is how you open/set an image for the bot action
-        with open("./sadbot/data/uwu.jpg", mode="rb") as reply_image_file:
+        with open("./sadbot/assets/uwu.jpg", mode="rb") as reply_image_file:
             reply_image = reply_image_file.read()
         return [
             BotAction(
