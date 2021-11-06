@@ -601,7 +601,7 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
             for manager in managers_actions:
                 for manager_trigger_messages_and_actions in manager:
                     if manager_trigger_messages_and_actions[1] is None:
-                        return None
+                        continue
                     for bot_action in manager_trigger_messages_and_actions[1]:
                         self.send_message_queue(
                             manager_trigger_messages_and_actions[0], bot_action
