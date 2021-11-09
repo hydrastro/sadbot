@@ -184,6 +184,14 @@ Managers may behave like containers for multiple sub-managers.
 - [ ] VC Radio
 - [ ] Group admin settings: enabled modules etc.
 - [ ] Add new tables: for images, for edits and for usernames
+- [ ] .slap command
+- [ ] Fix roulette revolver regex
+- [ ] Report command
+- [ ] Fix .remindme
+- [ ] Random hug gifs?
+- [ ] Check if the mute/unmute replies are correct
+- [X] .hug command
+- [X] Redefine the data directories to sadbot/assets/command_name and the commands with assets
 - [X] Reminder tag/bookmark command
 - [X] Add media support for outgoing messages
 - [X] Fix the roulette code
