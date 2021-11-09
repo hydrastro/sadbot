@@ -26,7 +26,7 @@ class SlapBotCommand(CommandInterface):
     @property
     def command_regex(self) -> str:
         """Here is the regex that triggers this bot command"""
-        return r"((!|\.)([Hh][Uu][Gg])).*"
+        return r"((!|\.)([Ss][Ll][Aa][Pp])).*"
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
         """This function can return some bot actions/replies that will  be sent later"""
