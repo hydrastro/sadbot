@@ -66,7 +66,9 @@ class UwuBotCommand(CommandInterface):
             reply_text = re.sub(r"(\w{3})", r"\1w", previous_message.text)
         except re.error:
             return None
-        # here is how you open/set an image for the bot action
+        # here is how you open/set an image for the bot action, please note that in
+        # this project the standard directory for storing command assets is:
+        # ./sadbot/assets/{command_name}/
         with open("./sadbot/assets/uwu/uwu.jpg", mode="rb") as reply_image_file:
             reply_image = reply_image_file.read()
         return [

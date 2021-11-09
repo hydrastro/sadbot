@@ -139,9 +139,15 @@ class UwuBotCommand(CommandInterface):
         # the last message directly
         if message is None:
             return None
-        previous_message = self.message_repository.get_previous_message(
-            message, r"^(?!\s*$).+"
-        )
+        if message.reply_id is not None:
+            previous_message = self.message_repository.get_message_from_id(
+                message.reply_id, message.chat_id
+            )
+        else:
+            matching_message = Message(chat_id=message.chat_id)
+            previous_message = self.message_repository.get_previous_message(
+                matching_message, r"^(?!\s*$).+"
+            )
         if previous_message is None:
             return None
         if previous_message.text is None:
@@ -151,8 +157,10 @@ class UwuBotCommand(CommandInterface):
             reply_text = re.sub(r"(\w{3})", r"\1w", previous_message.text)
         except re.error:
             return None
-        # here is how you open/set an image for the bot action
-        with open("./sadbot/assets/uwu.jpg", mode="rb") as reply_image_file:
+        # here is how you open/set an image for the bot action, please note that in
+        # this project the standard directory for storing command assets is:
+        # ./sadbot/assets/{command_name}/
+        with open("./sadbot/assets/uwu/uwu.jpg", mode="rb") as reply_image_file:
             reply_image = reply_image_file.read()
         return [
             BotAction(
