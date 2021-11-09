@@ -71,7 +71,9 @@ class ConfigBotCommand(CommandInterface):
         """Sets rules and returns a result string"""
         if message.reply_id is None:
             return "You have to specify a message for the rules."
-        rules_message = self.message_repository.get_message_from_id(message.reply_id)
+        rules_message = self.message_repository.get_message_from_id(
+            message.reply_id, message.chat_id
+        )
         if rules_message is None:
             return "An error occured, the message was not found in the database."
         rules: Dict[str, Any] = {}

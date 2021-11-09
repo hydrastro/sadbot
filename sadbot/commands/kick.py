@@ -40,7 +40,7 @@ class KickBotCommand(CommandInterface):
         ban_username = None
         if message.reply_id is not None:
             ban_user_id = self.message_repository.get_user_id_from_message_id(
-                message.reply_id
+                message.reply_id, message.chat_id
             )
         if ban_user_id is None:
             message_text = message.text.split()

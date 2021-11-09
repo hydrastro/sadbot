@@ -31,7 +31,9 @@ class GetIdBotCommand(CommandInterface):
         user_id_to_find = None
         user_to_find = None
         if message.reply_id is not None:
-            old_message = self.message_repository.get_message_from_id(message.reply_id)
+            old_message = self.message_repository.get_message_from_id(
+                message.reply_id, message.chat_id
+            )
             if old_message is not None:
                 user_id_to_find = old_message.sender_id
                 user_to_find = old_message.sender_name

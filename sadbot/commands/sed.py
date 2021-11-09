@@ -47,7 +47,7 @@ class SedBotCommand(CommandInterface):
         new = second_split[2]
         if message.reply_id is not None:
             reply_message = self.message_repository.get_message_from_id(
-                message.reply_id
+                message.reply_id, message.chat_id
             )
         else:
             matching_message = Message(chat_id=message.chat_id)

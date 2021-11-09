@@ -33,13 +33,15 @@ class CaptchaTimeoutManager(ActionManagerInterface):
         for captcha in unsolved_captchas:
             captcha_id = captcha[0]
             (
-                _chat_id,
+                chat_id,
                 _sender_id,
                 message_id,
                 _start_time,
                 _expiration,
             ) = captcha_id.split(".")
-            trigger_message = self.message_repository.get_message_from_id(message_id)
+            trigger_message = self.message_repository.get_message_from_id(
+                message_id, chat_id
+            )
             self.instances[captcha_id] = {
                 "trigger_message": trigger_message,
                 "sent_message": None,

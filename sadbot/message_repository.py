@@ -382,7 +382,7 @@ class MessageRepository:  # pylint: disable=R0904
             return Message(*data)
         return None
 
-    def get_message_from_id(self, message_id: int) -> Optional[Message]:
+    def get_message_from_id(self, message_id: int, chat_id: int) -> Optional[Message]:
         """Retrieve a message from DB"""
         cur = self.con.cursor()
         query = """
@@ -400,8 +400,9 @@ class MessageRepository:  # pylint: disable=R0904
             FileID
           FROM messages
           WHERE MessageID = ?
+          AND ChatID = ?
         """
-        cur.execute(query, [message_id])
+        cur.execute(query, [message_id, chat_id])
         data = cur.fetchone()
         if data is not None:
             return Message(*data)
@@ -461,9 +462,11 @@ class MessageRepository:  # pylint: disable=R0904
             return Message(*data)
         return None
 
-    def get_user_id_from_message_id(self, message_id: int) -> Optional[int]:
+    def get_user_id_from_message_id(
+        self, message_id: int, chat_id: int
+    ) -> Optional[int]:
         """Returns the user id from a given message id"""
-        message = self.get_message_from_id(message_id)
+        message = self.get_message_from_id(message_id, chat_id)
         if message is None:
             return None
         return message.sender_id

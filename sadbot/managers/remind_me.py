@@ -16,6 +16,7 @@ def get_reminders_table_creation_query() -> str:
       TriggerMessageID  int,
       RemindMessageID   int,
       RemindUserID      text,
+      RemindChatID      int,
       RemindTime        int
     )
     """
@@ -53,8 +54,9 @@ class RemindMeManager(ActionManagerInterface):
           TriggerMessageID,
           RemindMessageID,
           RemindUserID,
+          RemindChatID,
           RemindTime
-        ) VALUES (?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?)
         """
         remind_time = datetime.datetime.utcnow().timestamp() + duration
         self.con.execute(
@@ -62,6 +64,7 @@ class RemindMeManager(ActionManagerInterface):
             [
                 trigger_message.message_id,
                 trigger_message.reply_id,
+                trigger_message.chat_id,
                 trigger_message.sender_id,
                 remind_time,
             ],
@@ -86,6 +89,7 @@ class RemindMeManager(ActionManagerInterface):
           TriggerMessageID,
           RemindMessageID,
           RemindUserID,
+          RemindChatID,
           RemindTime
         FROM reminders
         """
@@ -93,11 +97,11 @@ class RemindMeManager(ActionManagerInterface):
         return cur.fetchall()
 
     def get_remind_reply(
-        self, trigger_message_id: int, reminder_message_id: int
+        self, trigger_message_id: int, reminder_message_id: int, chat_id: int
     ) -> List:
         """Returns the single reminder reply"""
         trigger_message = self.message_repository.get_message_from_id(
-            trigger_message_id
+            trigger_message_id, chat_id
         )
         if trigger_message is not None:
             user = (
@@ -109,7 +113,7 @@ class RemindMeManager(ActionManagerInterface):
             user = "user"
         reply_text = f"Yo {user}, you told me to remind you this now:\n"
         remind_message = self.message_repository.get_message_from_id(
-            reminder_message_id
+            reminder_message_id, chat_id
         )
         if remind_message is not None and remind_message.text is not None:
             reply_text += remind_message.text
@@ -131,7 +135,9 @@ class RemindMeManager(ActionManagerInterface):
             return None
         actions = []
         for reminder in knowledge:
-            if reminder[3] < datetime.datetime.utcnow().timestamp():
-                actions.append(self.get_remind_reply(reminder[0], reminder[1]))
+            if reminder[4] < datetime.datetime.utcnow().timestamp():
+                actions.append(
+                    self.get_remind_reply(reminder[0], reminder[1], reminder[2])
+                )
         self.delete_expired_reminders()
         return actions

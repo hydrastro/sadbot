@@ -47,7 +47,9 @@ class MuteBotCommand(CommandInterface):
         user_to_mute = None
         until_date = 0
         if message.reply_id is not None:
-            old_message = self.message_repository.get_message_from_id(message.reply_id)
+            old_message = self.message_repository.get_message_from_id(
+                message.reply_id, message.chat_id
+            )
             if old_message is not None:
                 user_id_to_mute = old_message.sender_id
                 user_to_mute = old_message.sender_name

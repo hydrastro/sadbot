@@ -32,7 +32,7 @@ class HugBotCommand(CommandInterface):
             return None
         if message.reply_id is not None:
             previous_message = self.message_repository.get_message_from_id(
-                message.reply_id
+                message.reply_id, message.chat_id
             )
             if previous_message is None:
                 return None
