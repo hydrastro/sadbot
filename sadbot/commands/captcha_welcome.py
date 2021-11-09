@@ -12,7 +12,7 @@ from sadbot.command_interface import CommandInterface, BOT_HANDLER_TYPE_NEW_USER
 from sadbot.message import Message
 from sadbot.bot_action import (
     BotAction,
-    BOT_ACTION_TYPE_INLINE_KEYBOARD,
+    BOT_ACTION_TYPE_REPLY_IMAGE,
     BOT_ACTION_TYPE_RESTRICT_CHAT_MEMBER,
     BOT_ACTION_PRIORITY_HIGH,
 )
@@ -143,7 +143,7 @@ class CaptchaWelcomeBotCommand(CommandInterface):
         callback_manager_info = {"captcha_id": captcha_id}
         return [
             BotAction(
-                BOT_ACTION_TYPE_INLINE_KEYBOARD,
+                BOT_ACTION_TYPE_REPLY_IMAGE,
                 reply_text=welcome_message,
                 reply_image=image_bytes,
                 reply_inline_keyboard=inline_keyboard,

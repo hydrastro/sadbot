@@ -43,7 +43,6 @@ from sadbot.bot_action import (
     BOT_ACTION_TYPE_REPLY_FILE,
     BOT_ACTION_TYPE_REPLY_VOICE,
     BOT_ACTION_TYPE_BAN_USER,
-    BOT_ACTION_TYPE_INLINE_KEYBOARD,
     BOT_ACTION_TYPE_ANSWER_CALLBACK_QUERY,
     BOT_ACTION_TYPE_DELETE_MESSAGE,
     BOT_ACTION_TYPE_RESTRICT_CHAT_MEMBER,
@@ -95,7 +94,6 @@ def is_bot_action_message(action_type: int) -> bool:
         BOT_ACTION_TYPE_REPLY_TEXT,
         BOT_ACTION_TYPE_REPLY_VOICE,
         BOT_ACTION_TYPE_REPLY_VIDEO_ONLINE,
-        BOT_ACTION_TYPE_INLINE_KEYBOARD,
     ]
 
 
@@ -431,18 +429,6 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
             )
             if reply.reply_restrict_until_date is not None:
                 data.update({"until_date": reply.reply_restrict_until_date})
-        elif reply.reply_type == BOT_ACTION_TYPE_INLINE_KEYBOARD:
-            # here we need to check reply_type
-            api_method = "sendPhoto"
-            files = {"photo": reply.reply_image}
-            data.update({"caption": reply_text})
-            data.update(
-                {
-                    "reply_markup": json.dumps(
-                        {"inline_keyboard": reply.reply_inline_keyboard}
-                    )
-                }
-            )
         elif reply.reply_type == BOT_ACTION_TYPE_ANSWER_CALLBACK_QUERY:
             api_method = "answerCallbackQuery"
             data.update(
@@ -486,6 +472,14 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
                 data.update({"can_pin_messages": True})
         else:
             return None
+        if reply.reply_inline_keyboard is not None:
+            data.update(
+                {
+                    "reply_markup": json.dumps(
+                        {"inline_keyboard": reply.reply_inline_keyboard}
+                    )
+                }
+            )
         if reply.reply_to_message_id is not None:
             data.update({"reply_to_message_id": reply.reply_to_message_id})
             data.update({"allow_sending_without_reply": True})

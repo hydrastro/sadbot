@@ -174,7 +174,7 @@ So when a manager triggered, it's `handle_callback` function will be called and
 it will be given as parameters:
 - the message that triggered the command
 - the optional outgoing message/reply that triggered the manager
-- the optional callback info
+- the optional callback info, which will be located in `message.text`
 
 During the bot startup, every manager is initialized.
 Managers may behave like containers for multiple sub-managers.
