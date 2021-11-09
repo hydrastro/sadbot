@@ -31,11 +31,13 @@ class Revolver:
         """Updates the revolver entry in the db"""
         query = """
           UPDATE revolvers
-          SET Revolver = ?
+          SET Revolver = ?,
           BulletNumber = ?
           WHERE ChatID = ?
         """
-        self.con.execute(query, [revolver_data[1], revolver_data[2], revolver_data[0]])
+        self.con.execute(
+            query, [json.dumps(revolver_data[1]), revolver_data[2], revolver_data[0]]
+        )
         self.con.commit()
 
     def insert_revolver(self, revolver_data: List) -> None:
@@ -68,7 +70,7 @@ class Revolver:
         data = cur.fetchone()
         if data is None:
             return None
-        return json.loads(data)
+        return [data[0], json.loads(data[1]), data[2]]
 
     def get_default_revolver_data(self, chat_id) -> List:
         """Returns the default revolver entry"""
@@ -99,7 +101,7 @@ class Revolver:
     def shoot(self, chat_id: int) -> List[BotAction]:
         """Shoots"""
         revolver_data = self.get_revolver_data(chat_id)
-        if len(revolver_data[1] - 1 < revolver_data[2]):
+        if len(revolver_data[1]) - 1 < revolver_data[2]:
             return self.exit_message("No more bullets, you have to .reload")
         self.update_revolver_data([chat_id, revolver_data[1], revolver_data[2] + 1])
         if revolver_data[1][revolver_data[2]] == 1:
