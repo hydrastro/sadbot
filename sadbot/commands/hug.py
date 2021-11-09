@@ -52,7 +52,7 @@ class HugBotCommand(CommandInterface):
         s_username = message.sender_username or message.sender_name
         text = f"@{s_username} hugs @{r_username}"
         choice = random.choice(os.listdir("sadbot/assets/hug"))
-        with open(choice, "rb") as file:
+        with open(f"sadbot/assets/hug/{choice}", "rb") as file:
             hug = file.read()
         return [
             BotAction(BOT_ACTION_TYPE_REPLY_VIDEO, reply_video=hug, reply_text=text)
