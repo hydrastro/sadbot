@@ -140,6 +140,13 @@ class CaptchaKickBotCommand(CommandInterface):
                         f"./sadbot/assets/rules/{message.chat_id}.jpg", mode="rb"
                     ) as reply_image_file:
                         reply_image = reply_image_file.read()
+                        replies += [
+                            BotAction(
+                                BOT_ACTION_TYPE_REPLY_IMAGE,
+                                reply_text=welcome_reply,
+                                reply_image=reply_image,
+                            )
+                        ]
                 except FileNotFoundError:
                     replies += [
                         BotAction(
@@ -147,13 +154,6 @@ class CaptchaKickBotCommand(CommandInterface):
                             reply_text="An error occured retrieving the group rules",
                         )
                     ]
-                replies += [
-                    BotAction(
-                        BOT_ACTION_TYPE_REPLY_IMAGE,
-                        reply_text=welcome_reply,
-                        reply_image=reply_image,
-                    )
-                ]
             else:
                 replies += [
                     BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text=welcome_reply)
@@ -225,7 +225,7 @@ class CaptchaKickBotCommand(CommandInterface):
                 reply_permissions=permissions,
                 reply_ban_user_id=message.sender_id,
                 reply_priority=BOT_ACTION_PRIORITY_HIGH,
-            ),
+            )
         ]
         if sent_message_to_delete_id is not None:
             replies += [
