@@ -24,7 +24,7 @@ class HugBotCommand(CommandInterface):
     @property
     def command_regex(self) -> str:
         """Here is the regex that triggers this bot command"""
-        return "hug.*"
+        return r"((!|\.)([Hh][Uu][Gg])).*"
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
         """This function can return some bot actions/replies that will  be sent later"""
