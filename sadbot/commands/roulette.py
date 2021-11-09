@@ -5,19 +5,18 @@ from typing import Optional, List
 
 from sadbot.command_interface import CommandInterface, BOT_HANDLER_TYPE_MESSAGE
 from sadbot.message import Message
-from sadbot.config import REVOLVER_CHAMBERS, REVOLVER_BULLETS
+from sadbot.config import REVOLVER_CHAMBERS
 from sadbot.functions import safe_cast
-from sadbot.bot_action import BotAction, BOT_ACTION_TYPE_REPLY_TEXT
+from sadbot.bot_action import BotAction
 from sadbot.classes.revolver import Revolver
 
 
 class RouletteBotCommand(CommandInterface):
     """This is the roulette bot command class"""
 
-    def __init__(self):
+    def __init__(self, revolver: Revolver):
         """Initializes the roulette bot command class"""
-        self.bullets = REVOLVER_BULLETS
-        self.revolvers = {}
+        self.revolver = revolver
 
     @property
     def handler_type(self) -> int:
@@ -36,31 +35,18 @@ class RouletteBotCommand(CommandInterface):
         """Plays the Russian roulette"""
         if message is None or message.text is None:
             return None
-        if message.chat_id not in self.revolvers:
-            revolver = Revolver(REVOLVER_CHAMBERS)
-            revolver.reload(self.bullets)
-            self.revolvers.update({message.chat_id: revolver})
-        revolver = self.revolvers[message.chat_id]
         reload_regex = re.compile(r"(\.[Rr][Ee][Ll][Oo][Aa][Dd]).*")
         if re.fullmatch(reload_regex, message.text):
             bullets = message.text[7:]
             bullets = bullets.replace(" ", "")
-            int_bullets = safe_cast(bullets, int, self.bullets)
-            return [
-                BotAction(
-                    BOT_ACTION_TYPE_REPLY_TEXT, reply_text=revolver.reload(int_bullets)
-                )
-            ]
+            int_bullets = safe_cast(bullets, int, bullets)
+            return self.revolver.reload(message.chat_id, int_bullets)
         revolver_regex = re.compile(r"(\.[Rr][Ee][Vv][Oo][Ll][Vv][Ee][Rr]\s[0-9]+)")
         if re.fullmatch(revolver_regex, message.text):
-            capacity = message.text[9:]
-            capacity = capacity.replace(" ", "")
-            int_capacity = safe_cast(capacity, int, REVOLVER_CHAMBERS)
-            return [
-                BotAction(
-                    BOT_ACTION_TYPE_REPLY_TEXT,
-                    reply_text=revolver.set_capacity(int_capacity)
-                    + revolver.reload(self.bullets),
-                )
-            ]
-        return [BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text=revolver.shoot())]
+            split = message.text[9:].split()
+            capacity = safe_cast(split[0], int, REVOLVER_CHAMBERS)
+            int_bullets = 1
+            if len(split) > 1:
+                int_bullets = safe_cast(split[1], int, 1)
+            return self.revolver.revolver(message.chat_id, capacity, int_bullets)
+        return self.revolver.shoot(message.chat_id)

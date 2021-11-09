@@ -1,4 +1,4 @@
-"""Hug bot command"""
+"""Slap bot command"""
 import os
 import random
 from typing import Optional, List
@@ -11,7 +11,7 @@ from sadbot.message import Message
 from sadbot.bot_action import BotAction, BOT_ACTION_TYPE_REPLY_VIDEO
 
 
-class HugBotCommand(CommandInterface):
+class SlapBotCommand(CommandInterface):
     """This is the sample command bot command class"""
 
     def __init__(self, message_repository: MessageRepository):
@@ -50,10 +50,10 @@ class HugBotCommand(CommandInterface):
             r_username = username.replace("@", " ")
             r_username = r_username.replace(" ", "")
         s_username = message.sender_username or message.sender_name
-        text = f"@{s_username} hugs @{r_username}"
-        choice = random.choice(os.listdir("sadbot/assets/hug"))
+        text = f"@{s_username} slaps @{r_username}"
+        choice = random.choice(os.listdir("sadbot/assets/slap"))
         with open(choice, "rb") as file:
-            hug = file.read()
+            slap = file.read()
         return [
-            BotAction(BOT_ACTION_TYPE_REPLY_VIDEO, reply_video=hug, reply_text=text)
+            BotAction(BOT_ACTION_TYPE_REPLY_VIDEO, reply_video=slap, reply_text=text)
         ]
