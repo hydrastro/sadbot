@@ -52,7 +52,7 @@ from sadbot.bot_action import (
     BOT_ACTION_TYPE_REPLY_VIDEO_ONLINE,
     BOT_ACTION_TYPE_REPLY_PHOTO_ONLINE,
     # BOT_ACTION_PRIORITY_LOW,
-    # BOT_ACTION_PRIORITY_MEDIUM,
+    BOT_ACTION_PRIORITY_MEDIUM,
     BOT_ACTION_PRIORITY_HIGH,
 )
 from sadbot.command_interface import (
@@ -308,6 +308,7 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
             message.message_time is not None
             and message.message_time != 0
             and time.time() - message.message_time > OFFLINE_ANTIFLOOD_TIMEOUT
+            and reply_info.reply_priority != BOT_ACTION_PRIORITY_MEDIUM
         ):
             logging.warning("Dropping message: I am too late")
             return None

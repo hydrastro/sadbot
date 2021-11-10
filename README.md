@@ -193,9 +193,9 @@ Managers may behave like containers for multiple sub-managers.
 - [ ] Group admin settings: enabled modules etc.
 - [ ] Add new tables: for images, for edits and for usernames
 - [ ] Report command
-- [ ] Fix .remindme
 - [ ] Good morning / Good night messages/gifs (later)
 - [ ] Add warn reason
+- [X] Fix .remindme
 - [X] Fix roulette command
 - [X] Check if the mute/unmute replies are correct
 - [X] Random hug gifs?
