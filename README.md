@@ -196,8 +196,8 @@ Managers may behave like containers for multiple sub-managers.
 - [ ] Fix .remindme
 - [ ] Good morning / Good night messages/gifs (later)
 - [ ] Add warn reason
-- [ ] Fix roulette command
-- [ ] Check if the mute/unmute replies are correct
+- [X] Fix roulette command
+- [X] Check if the mute/unmute replies are correct
 - [X] Random hug gifs?
 - [X] Fix roulette revolver regex
 - [X] .getchatid command
