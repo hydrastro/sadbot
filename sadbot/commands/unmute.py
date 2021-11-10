@@ -52,9 +52,9 @@ class UnmuteBotCommand(CommandInterface):
             message_text = message.text.split()
             if len(message_text) < 2:
                 return None
-            user_to_unmute = message_text[1].replace("@", "")
+            user_to_unmute = message_text[1]
             user_id_to_unmute = self.message_repository.get_user_id_from_username(
-                user_to_unmute
+                user_to_unmute[1:]
             )
         if user_id_to_unmute is None:
             return None

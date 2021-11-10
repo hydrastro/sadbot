@@ -44,9 +44,16 @@ class KickBotCommand(CommandInterface):
             )
         if ban_user_id is None:
             message_text = message.text.split()
-            ban_username = message_text[1].replace("@", "")
+            if len(message_text) < 2:
+                return [
+                    BotAction(
+                        BOT_ACTION_TYPE_REPLY_TEXT,
+                        reply_text="Please specify a user to kick.",
+                    )
+                ]
+            ban_username = message_text[1]
             ban_user_id = self.message_repository.get_user_id_from_username(
-                ban_username
+                ban_username[1:]
             )
         if ban_user_id is None:
             return None

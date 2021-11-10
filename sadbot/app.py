@@ -88,10 +88,11 @@ def pascal_to_snake_case(pascal_str: str):
 def is_bot_action_message(action_type: int) -> bool:
     """Checks if a bot outgoing action will result in/is a message"""
     return action_type in [
+        BOT_ACTION_TYPE_REPLY_TEXT,
         BOT_ACTION_TYPE_REPLY_IMAGE,
         BOT_ACTION_TYPE_REPLY_AUDIO,
+        BOT_ACTION_TYPE_REPLY_VIDEO,
         BOT_ACTION_TYPE_REPLY_FILE,
-        BOT_ACTION_TYPE_REPLY_TEXT,
         BOT_ACTION_TYPE_REPLY_VOICE,
         BOT_ACTION_TYPE_REPLY_VIDEO_ONLINE,
     ]
