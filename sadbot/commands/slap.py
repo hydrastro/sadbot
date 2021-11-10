@@ -32,7 +32,6 @@ class SlapBotCommand(CommandInterface):
         """This function can return some bot actions/replies that will  be sent later"""
         if message is None:
             return None
-        print("a")
         if message.reply_id is not None:
             previous_message = self.message_repository.get_message_from_id(
                 message.reply_id, message.chat_id
@@ -43,7 +42,6 @@ class SlapBotCommand(CommandInterface):
                 previous_message.sender_username or previous_message.sender_name
             )
         else:
-            print("b")
             if message.text is None:
                 return None
             if len(message.text) < 5:
@@ -51,7 +49,6 @@ class SlapBotCommand(CommandInterface):
             username = message.text[4:]
             r_username = username.replace("@", " ")
             r_username = r_username.replace(" ", "")
-        print("c")
         s_username = message.sender_username or message.sender_name
         text = f"@{s_username} slaps @{r_username}"
         choice = random.choice(os.listdir("sadbot/assets/slap"))
