@@ -57,9 +57,9 @@ class MuteBotCommand(CommandInterface):
             message_text = message.text.split()
             if len(message_text) == 2:
                 if user_id_to_mute is None:
-                    user_to_mute = message_text[1]
+                    user_to_mute = message_text[1].replace("@", "")
                     user_id_to_mute = self.message_repository.get_user_id_from_username(
-                        user_to_mute[1:]
+                        user_to_mute
                     )
                 else:
                     until_date = convert_to_seconds(message_text[1])

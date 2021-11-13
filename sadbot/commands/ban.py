@@ -50,9 +50,9 @@ class BanBotCommand(CommandInterface):
                         reply_text="Please specify a user to ban.",
                     )
                 ]
-            ban_username = message_text[1]
+            ban_username = message_text[1].replace("@", "")
             ban_user_id = self.message_repository.get_user_id_from_username(
-                ban_username[1:]
+                ban_username
             )
         if ban_user_id is None:
             return [
