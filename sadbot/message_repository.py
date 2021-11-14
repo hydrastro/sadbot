@@ -222,7 +222,7 @@ class MessageRepository:  # pylint: disable=R0904
           SET Username = ?
           WHERE UserID = ?
         """
-        self.con.execute(query, [user_id, username])
+        self.con.execute(query, [username, user_id])
         self.con.commit()
         return True
 
