@@ -88,10 +88,10 @@ class CaptchaWelcomeBotCommand(CommandInterface):
         """Returns a 'welcome' message lol"""
         welcome_message_replies = [
             f"Welcome {new_user}\nPlease solve the captcha.",
-            f"""W-w.. welcomee {new_user} ~~ uwu~\nP-p pweaswe c-c.. *blushing* c- c-an ywou
-            slwolve t-the capthwa for me {new_user} -senpai ~~""",
-            f"""Hmmmmm. I bet {new_user} is a bot lol\nAnd you know..\nThere's space for only
-            one bot here, and that's me.\nHere's your test.""",
+            f"""W-w.. welcomee {new_user} ~~ uwu~\nP-p pweaswe c-c.. *blushing* c- c-an """
+            + """ywou slwolve t-the capthwa for me {new_user} -senpai ~~""",
+            f"""Hmmmmm. I bet {new_user} is a bot lol\nAnd you know..\nThere's space for """
+            + """one bot here, and that's me.\nHere's your test.""",
             f"Yoo {new_user} wassup\nCan ya solve da captcha?",
             f"{new_user} looking kinda sus, ngl.\nProve us ur not the impostor.",
         ]
