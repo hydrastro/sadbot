@@ -209,7 +209,7 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
             )
 
         except requests.exceptions.RequestException:
-            logging.error("An error occured sending the getChatMember request")
+            logging.error("An error occured sending the getChatAdministrators request")
             return None
         if not req.ok:
             logging.error("Failed sending message - details: %s", req.json())
