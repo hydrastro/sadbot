@@ -197,6 +197,25 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
             return None
         return json.loads(req.content)
 
+    def get_chat_administrators(self, chat_id: int) -> Optional[Dict]:
+        """Gets all the chat administrators"""
+        data = {"chat_id": chat_id}
+        api_method = "getChatAdministrators"
+        try:
+            req = requests.post(
+                f"{self.base_url}{api_method}",
+                data=data,
+                timeout=OUTGOING_REQUESTS_TIMEOUT,
+            )
+
+        except requests.exceptions.RequestException:
+            logging.error("An error occured sending the getChatAdministrators request")
+            return None
+        if not req.ok:
+            logging.error("Failed sending message - details: %s", req.json())
+            return None
+        return json.loads(req.content)
+
     def get_user_status_and_permissions(  # pylint: disable=too-many-return-statements
         self, chat_id: int, user_id: int
     ) -> Optional[List]:
@@ -386,9 +405,9 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
             if len(reply_text) > MAX_REPLY_LENGTH:
                 reply_text = reply_text[:MAX_REPLY_LENGTH] + "..."
             data.update({"text": reply_text})
-            parsemode = reply.reply_text_parsemode
-            if parsemode is not None:
-                data.update({"parsemode": parsemode})
+            parse_mode = reply.reply_text_parse_mode
+            if parse_mode is not None:
+                data.update({"parse_mode": parse_mode})
         elif reply.reply_type == BOT_ACTION_TYPE_REPLY_IMAGE:
             api_method = "sendPhoto"
             files = {"photo": reply.reply_image}
