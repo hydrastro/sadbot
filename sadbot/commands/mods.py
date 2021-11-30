@@ -25,7 +25,7 @@ class ModsBotCommand(CommandInterface):
     @property
     def command_regex(self) -> str:
         """Returns the regex for matching mods commands"""
-        return r".*(@([Mm][Oo][Dd][Ss])).*"
+        return r".*(@([Mm][Oo][Dd][Ss])|((!|\.|/)[Rr][Ee][Pp][Oo][Rr][Tt])).*"
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
         """Lists all moderators of a chat"""

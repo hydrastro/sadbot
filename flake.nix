@@ -10,7 +10,6 @@
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
-        
         sadbot = pkgs.python3.withPackages(p: with p; [
           requests
           pillow
@@ -33,4 +32,3 @@
         devShell = sadbot.env;
       });
 }
-
