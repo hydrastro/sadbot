@@ -10,26 +10,27 @@
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
-
-        customOverrides = self: super: {
-        };
-
-        sadbot = pkgs.poetry2nix.mkPoetryApplication {
-          projectDir = ./.;
-          overrides =
-            [ pkgs.poetry2nix.defaultPoetryOverrides customOverrides ];
-        };
-
+        
+        sadbot = pkgs.python3.withPackages(p: with p; [
+          requests
+          pillow
+          matplotlib
+          numpy
+          pytube
+          sympy
+          html2text
+          types-requests
+          mypy
+          black
+          pylint
+        ]);
         packageName = "sadbot";
       in {
         packages.${packageName} = sadbot;
 
         defaultPackage = self.packages.${system}.${packageName};
 
-        devShell = pkgs.mkShell {
-          buildInputs = with pkgs; [ poetry ];
-          inputsFrom = builtins.attrValues self.packages.${system};
-        };
+        devShell = sadbot.env;
       });
 }
 

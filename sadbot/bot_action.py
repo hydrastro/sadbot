@@ -31,7 +31,7 @@ class BotAction:  # pylint: disable=too-many-instance-attributes
 
     reply_type: int = BOT_ACTION_TYPE_REPLY_TEXT
     reply_text: Optional[str] = None
-    reply_text_parsemode: Optional[str] = None
+    reply_text_parse_mode: Optional[str] = None
     reply_image: Optional[bytes] = None
     reply_video: Optional[bytes] = None
     reply_audio: Optional[bytes] = None
