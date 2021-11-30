@@ -106,6 +106,7 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
         logging.info("Started sadbot")
         self.base_url = f"https://api.telegram.org/bot{token}/"
         self.base_file_url = f"https://api.telegram.org/file/bot{token}/"
+        self.user = self.get_me()
         self.update_id = None
         self.classes: Dict[str, object] = {"App": self}
         con = sqlite3.connect("./messages.db", check_same_thread=False)
@@ -174,6 +175,22 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
             manager_class = self.classes[class_name]
             self.managers[class_name] = manager_class
 
+    def get_me(self):
+        """Get information about the bot"""
+        api_method = "getMe"
+        try:
+            req = requests.post(
+                f"{self.base_url}{api_method}",
+                timeout=OUTGOING_REQUESTS_TIMEOUT,
+            )
+        except requests.exceptions.RequestException:
+            logging.error("An error occurred sending the getChatMember request")
+            return None
+        if not req.ok:
+            logging.error("Failed sending message - details: %s", req.json())
+            return None
+        return json.loads(req.content)
+
     def get_chat_permissions_api_json(
         self, chat_id: int, user_id: int = None
     ) -> Optional[Dict]:
@@ -190,7 +207,7 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
                 timeout=OUTGOING_REQUESTS_TIMEOUT,
             )
         except requests.exceptions.RequestException:
-            logging.error("An error occured sending the getChatMember request")
+            logging.error("An error occurred sending the getChatMember request")
             return None
         if not req.ok:
             logging.error("Failed sending message - details: %s", req.json())
@@ -209,7 +226,7 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
             )
 
         except requests.exceptions.RequestException:
-            logging.error("An error occured sending the getChatMember request")
+            logging.error("An error occurred sending the getChatMember request")
             return None
         if not req.ok:
             logging.error("Failed sending message - details: %s", req.json())
@@ -512,7 +529,7 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
                 timeout=OUTGOING_REQUESTS_TIMEOUT,
             )
         except requests.exceptions.RequestException:
-            logging.error("An error occured sending the message request")
+            logging.error("An error occurred sending the message request")
             return None
         logging.info("Sent message")
         if not req.ok:

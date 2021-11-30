@@ -76,6 +76,8 @@ class KickBotCommand(CommandInterface):
             ]
         if ban_user_id is not None:
             reply_text = f"{ban_username} has successfully been kicked."
+        if ban_user_id == self.app.user["result"]["id"]:
+            return None
         return [
             BotAction(
                 BOT_ACTION_TYPE_BAN_USER,
