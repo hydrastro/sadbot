@@ -55,9 +55,8 @@ class KickBotCommand(CommandInterface):
             ban_user_id = self.message_repository.get_user_id_from_username(
                 ban_username
             )
-        if ban_user_id is None:
+        if ban_user_id is None or ban_user_id == self.app.user["result"]["id"]:
             return None
-        reply_text = "User successfully kicked."
         user_permissions = self.app.get_user_status_and_permissions(
             message.chat_id, message.sender_id
         )
@@ -74,8 +73,10 @@ class KickBotCommand(CommandInterface):
                     reply_text="You don't have enough rights to mute, kiddo.",
                 )
             ]
-        if ban_user_id is not None:
+        if ban_username is None:
             reply_text = f"{ban_username} has successfully been kicked."
+        else:
+            reply_text = "User has successfully been kicked."
         return [
             BotAction(
                 BOT_ACTION_TYPE_BAN_USER,
