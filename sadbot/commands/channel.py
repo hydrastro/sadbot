@@ -22,7 +22,7 @@ class ChannelBotCommand(CommandInterface):
     @property
     def command_regex(self) -> str:
         """Returns the regex for matching 4channel commands"""
-        return r".*https://boards.4chan(nel)?.org/.*?/thread/[0-9]*?.*"
+        return r".*https://boards\.4chan(nel)?.org/.*?/thread/[0-9]*?.*"
 
     @property
     def parsemode(self) -> Optional[str]:
