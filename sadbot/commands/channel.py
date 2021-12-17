@@ -35,7 +35,7 @@ class ChannelBotCommand(CommandInterface):
             return None
         try:
             url = re.findall(
-                r"https://boards.4chan(?:nel)?.org/.*?/thread/[0-9]*", message.text
+                r"https://boards\.4chan(?:nel)?.org/.*?/thread/[0-9]*", message.text
             )
             req_url = url[0]
             req = requests.get(req_url)
