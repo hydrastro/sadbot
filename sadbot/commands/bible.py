@@ -28,7 +28,6 @@ class BibleBotCommand(CommandInterface):
             return None
         verse = message.text[7:]
         verse.strip()
-        print(verse)
         with open(
             "./sadbot/assets/bible/bible.txt", mode="r", encoding="utf-8"
         ) as bible:
