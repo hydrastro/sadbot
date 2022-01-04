@@ -11,17 +11,18 @@
       let
         pkgs = nixpkgs.legacyPackages.${system};
         sadbot = pkgs.python3.withPackages(p: with p; [
+          pkgs.ffmpeg
           requests
           pillow
           matplotlib
           numpy
-          pytube
           sympy
           html2text
           types-requests
           mypy
           black
           pylint
+          yt-dlp
         ]);
         packageName = "sadbot";
       in {

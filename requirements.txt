@@ -30,8 +30,6 @@ pyparsing==3.0.3
     # via matplotlib
 python-dateutil==2.8.2
     # via matplotlib
-pytube==11.0.1
-    # via -r requirements.in
 requests==2.26.0
     # via -r requirements.in
 six==1.16.0
