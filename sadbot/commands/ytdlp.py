@@ -4,6 +4,8 @@ from typing import Optional, List
 
 import random
 import os
+from yt_dlp import YoutubeDL
+
 
 from sadbot.command_interface import CommandInterface, BOT_HANDLER_TYPE_MESSAGE
 from sadbot.message import Message
@@ -29,12 +31,21 @@ class YtdlpBotCommand(CommandInterface):
             return []
         watch_url = message.text[7:]
         file_name = str(random.randint(10000000000, 35000000000))
-        ret = os.system(f"yt-dlp -o {file_name} -f '(mp4)[filesize<25M]' {watch_url}")
-        if ret != 0:
-            BotAction(
-                BOT_HANDLER_TYPE_MESSAGE,
-                reply_text="Something went wrong",
-            )
+        ydl_opts = {
+            "format": "(mp4)[filesize<50M]",
+            "outtmpl": file_name,
+        }
+        with YoutubeDL(ydl_opts) as ydl:
+            try:
+                ydl.download([watch_url])
+            # pylint: disable=W0702
+            except:
+                return [
+                    BotAction(
+                        BOT_HANDLER_TYPE_MESSAGE,
+                        reply_text="Something went wrong",
+                    )
+                ]
         with open(file_name, "rb") as file:
             buf = file.read()
         os.remove(file_name)
