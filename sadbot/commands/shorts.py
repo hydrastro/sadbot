@@ -75,7 +75,7 @@ class ShortsBotCommand(CommandInterface):
             return [
                 BotAction(
                     BOT_ACTION_TYPE_REPLY_TEXT,
-                    reply_text="Something went wrong",
+                    reply_text="Something went wrong.",
                 )
             ]
         with open(file_name, "rb") as file:
@@ -102,7 +102,7 @@ class ShortsBotCommand(CommandInterface):
             try:
                 ydl.download([watch_url])
                 return True
-            # pylint: disable=W0702
+            # pylint: disable=broad-except
             except:
                 return False
 

@@ -38,12 +38,12 @@ class YtdlpBotCommand(CommandInterface):
         with YoutubeDL(ydl_opts) as ydl:
             try:
                 ydl.download([watch_url])
-            # pylint: disable=W0702
+            # pylint: disable=broad-except
             except:
                 return [
                     BotAction(
                         BOT_HANDLER_TYPE_MESSAGE,
-                        reply_text="Something went wrong",
+                        reply_text="Something went wrong.",
                     )
                 ]
         with open(file_name, "rb") as file:
