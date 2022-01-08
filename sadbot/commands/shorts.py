@@ -102,7 +102,7 @@ class ShortsBotCommand(CommandInterface):
             try:
                 ydl.download([watch_url])
                 return True
-            # pylint: disable=broad-except
+            # pylint: disable=bare-except
             except:
                 return False
 

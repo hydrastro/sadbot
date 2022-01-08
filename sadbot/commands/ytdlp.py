@@ -38,7 +38,7 @@ class YtdlpBotCommand(CommandInterface):
         with YoutubeDL(ydl_opts) as ydl:
             try:
                 ydl.download([watch_url])
-            # pylint: disable=broad-except
+            # pylint: disable=bare-except
             except:
                 return [
                     BotAction(
