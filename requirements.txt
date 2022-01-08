@@ -24,7 +24,7 @@ mpmath==1.2.1
     # via sympy
 mutagen==1.45.1
     # via yt-dlp
-numpy==1.22.0
+numpy==1.21.5
     # via matplotlib
 packaging==21.3
     # via matplotlib
