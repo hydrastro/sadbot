@@ -1,17 +1,23 @@
 """Youtube Shorts bot command"""
 
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, Tuple
 
 import logging
-import json
 import random
+import json
 import re
+import os
+
 import requests
-from pytube import YouTube
+from yt_dlp import YoutubeDL
 
 from sadbot.command_interface import CommandInterface, BOT_HANDLER_TYPE_MESSAGE
 from sadbot.message import Message
-from sadbot.bot_action import BotAction, BOT_ACTION_TYPE_REPLY_VIDEO_ONLINE
+from sadbot.bot_action import (
+    BotAction,
+    BOT_ACTION_TYPE_REPLY_VIDEO,
+    BOT_ACTION_TYPE_REPLY_TEXT,
+)
 
 
 class ShortsBotCommand(CommandInterface):
@@ -27,6 +33,11 @@ class ShortsBotCommand(CommandInterface):
         """Returns the regex for matching ping commands"""
         return r"((!|\.)([Ss][Hh][Oo][Rr][Tt][Ss])).*"
 
+    @property
+    def parsemode(self) -> Optional[str]:
+        """Returns the command parsemode"""
+        return "MarkdownV2"
+
     @staticmethod
     def get_request_headers() -> Dict:
         """Returns the request headers"""
@@ -38,7 +49,7 @@ class ShortsBotCommand(CommandInterface):
     def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
         """Scraps Youtube shorts
         selects a random video
-        uses pytube to extract the direct download url
+        uses ytdlp to download the url
         formats a caption containing video information
         returns the result
         """
@@ -55,23 +66,64 @@ class ShortsBotCommand(CommandInterface):
         if not req.ok:
             logging.warning("Failed to get youtube shorts data - details: %s", req.text)
             return None
+        data = self.extract_data(req.text)
+        if data is None:
+            return None
+        caption, watch_url = data
+        file_name = str(random.randint(10000000000, 35000000000))
+        if not self.save_video(file_name, watch_url):
+            return [
+                BotAction(
+                    BOT_ACTION_TYPE_REPLY_TEXT,
+                    reply_text="Something went wrong.",
+                )
+            ]
+        with open(file_name, "rb") as file:
+            buf = file.read()
+        os.remove(file_name)
+        return [
+            BotAction(
+                BOT_ACTION_TYPE_REPLY_VIDEO,
+                reply_video=buf,
+                reply_text=caption,
+            )
+        ]
+
+    @staticmethod
+    def save_video(file_name: str, watch_url: str) -> bool:
+        """
+        Saves the video
+        """
+        ydl_opts = {
+            "format": "(mp4)[filesize<50M]",
+            "outtmpl": file_name,
+        }
+        with YoutubeDL(ydl_opts) as ydl:
+            try:
+                ydl.download([watch_url])
+                return True
+            # pylint: disable=bare-except
+            except:
+                return False
+
+    @staticmethod
+    def extract_data(text: str) -> Optional[Tuple[str, str]]:
+        """
+        Extract the data from a youtube entry
+        """
         data = re.findall(
             re.compile('"content":{"richGridRenderer":(.*?)},"tabIdentifier":'),
-            req.text,
+            text,
         )
         if data is None:
             logging.warning("Failed to get Youtube shorts data: regex gave no results.")
             return None
 
         try:
-            json_data = json.loads(data[0])
-
-            videos = json_data["contents"]
-            random_video = random.choice(videos)["richItemRenderer"]["content"][
-                "videoRenderer"
-            ]
+            random_video = random.choice(json.loads(data[0])["contents"])[
+                "richItemRenderer"
+            ]["content"]["videoRenderer"]
             watch_url = "https://www.youtube.com/watch?v=" + random_video["videoId"]
-            download_url = YouTube(watch_url).streams.get_highest_resolution().url
             title = random_video["title"]["runs"][0]["text"]
             channel = random_video["ownerText"]["runs"][0]["text"]
             channel_url = (
@@ -89,13 +141,7 @@ class ShortsBotCommand(CommandInterface):
             logging.error("An error occured while extracting the Youtube short data.")
             logging.error("Key %s doesn't exist.", exception)
             return None
-
-        caption = f"{title}\n{watch_url}\n{views}\nSource: {channel}\n {channel_url}"
-
-        return [
-            BotAction(
-                BOT_ACTION_TYPE_REPLY_VIDEO_ONLINE,
-                reply_online_media_url=download_url,
-                reply_text=caption,
-            )
-        ]
+        return (
+            f"[{title}]({watch_url})\n{views}\nSource: {channel}\n {channel_url}",
+            watch_url,
+        )

@@ -1,6 +1,6 @@
 requests
 pillow
 html2text
-pytube
+yt-dlp
 matplotlib
 sympy

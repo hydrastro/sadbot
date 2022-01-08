@@ -1,0 +1,4 @@
+{
+    "python.formatting.provider": "black",
+    "python.pythonPath": "/nix/store/n6jgssv771561i9yfkbfw05445mir99r-python3-3.9.6-env/bin/python3.9"
+}
