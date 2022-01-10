@@ -6,6 +6,7 @@ from typing import Optional, List
 import random
 from sympy.plotting import plot, plot3d
 from sympy.parsing.maxima import parse_maxima
+from sympy import symbols
 
 from sadbot.command_interface import CommandInterface, BOT_HANDLER_TYPE_MESSAGE
 from sadbot.message import Message
@@ -29,7 +30,9 @@ class PlotBotCommand(CommandInterface):
         """Returns the regex for matching function plot commands"""
         return r"((!|\.)([Pp][Ll][Oo][Tt])([3][Dd])?)\s.*"
 
-    def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
+    def get_reply(  # pylint: disable=too-many-locals
+        self, message: Optional[Message] = None
+    ) -> Optional[List[BotAction]]:
         """Plots"""
         if message is None or message.text is None:
             return None
@@ -58,10 +61,16 @@ class PlotBotCommand(CommandInterface):
             if expressions == []:
                 return self.exit_message("Please enter at least one valid expression.")
             if plot_3d:
+                x_var, y_var = symbols("x y")
+                xlim2 = None
+                ylim2 = None
+                if xlim is not None and ylim is not None:
+                    xlim2 = (x_var, xlim[0], xlim[1])
+                    ylim2 = (y_var, ylim[0], ylim[1])
                 da_plot = plot3d(
                     *expressions,
-                    xlim=xlim,
-                    ylim=ylim,
+                    range_x=xlim2,
+                    range_y=ylim2,
                     show=False,
                 )
             else:
