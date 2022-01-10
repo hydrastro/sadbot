@@ -18,7 +18,7 @@ class GitPullBotCommand(CommandInterface):
     @property
     def command_regex(self) -> str:
         """Returns the regex for matching the roll command"""
-        return r"(\.([Gg][Ii][Tt](\s+)?)?[Pp][Uu][Ll]).*"
+        return r"(\.([Gg][Ii][Tt](\s+)?)?[Pp][Uu][Ll]{2}).*"
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
         """Restarts the bot systemd service"""
