@@ -1,13 +1,11 @@
 """Systemd service restart bot command"""
 
 from typing import Optional, List
-import os
 
 from sadbot.command_interface import CommandInterface, BOT_HANDLER_TYPE_MESSAGE
 from sadbot.message import Message
 from sadbot.bot_action import (
     BotAction,
-    BOT_ACTION_TYPE_NONE,
     BOT_ACTION_TYPE_REPLY_TEXT,
 )
 from sadbot.config import OWNER_ID
@@ -33,6 +31,10 @@ class SystemdRestartBotCommand(CommandInterface):
         if message.sender_id != OWNER_ID:
             reply_text = "No."
             return [BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text=reply_text)]
-        # Remember to allow this command in /etc/sudoers
-        os.system("sudo service sadbot restart")
-        return [BotAction(BOT_ACTION_TYPE_NONE)]
+        return [
+            BotAction(
+                BOT_ACTION_TYPE_REPLY_TEXT,
+                reply_text="Restarting the bot.",
+                reply_callback_manager_name="SystemdRestartManager",
+            )
+        ]
