@@ -6,6 +6,7 @@ from typing import Optional, List
 import random
 from sympy.plotting import plot, plot3d
 from sympy.parsing.maxima import parse_maxima
+from sympy import symbols
 
 from sadbot.command_interface import CommandInterface, BOT_HANDLER_TYPE_MESSAGE
 from sadbot.message import Message
@@ -58,10 +59,11 @@ class PlotBotCommand(CommandInterface):
             if expressions == []:
                 return self.exit_message("Please enter at least one valid expression.")
             if plot_3d:
+                x, y = symbols("x y")
                 da_plot = plot3d(
                     *expressions,
-                    xlim=xlim,
-                    ylim=ylim,
+                    range_y=(x, xlim[0], xlim[1]),
+                    range_y=(y, ylim[0], ylim[1]),
                     show=False,
                 )
             else:
