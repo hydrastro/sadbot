@@ -1,4 +1,4 @@
-"""Systemd service restart bot command"""
+"""Git pull bot command"""
 
 from typing import Optional, List
 import os
@@ -7,8 +7,8 @@ from sadbot.command_interface import CommandInterface, BOT_HANDLER_TYPE_MESSAGE
 from sadbot.message import Message
 from sadbot.bot_action import BotAction, BOT_ACTION_TYPE_NONE
 
-class SystemdRestartBotCommand(CommandInterface):
-    """This is the restart bot command class"""
+class GitPullBotCommand(CommandInterface):
+    """This is the git pull bot command class"""
 
     @property
     def handler_type(self) -> int:
@@ -18,10 +18,9 @@ class SystemdRestartBotCommand(CommandInterface):
     @property
     def command_regex(self) -> str:
         """Returns the regex for matching the roll command"""
-        return r"(\.[Rr][Ee][Ss][Tt][Aa][Rr][Tt]).*"
+        return r"(\.([Gg][Ii][Tt](\s+)?)?[Pp][Uu][Ll]).*"
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
         """Restarts the bot systemd service"""
-        # Remember to allow this command in /etc/sudoers
-        os.system("sudo service sadbot restart")
+        os.system("git pull")
         return [BotAction(BOT_ACTION_TYPE_NONE)]
