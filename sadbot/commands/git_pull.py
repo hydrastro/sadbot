@@ -10,14 +10,11 @@ from sadbot.bot_action import (
     BOT_ACTION_TYPE_NONE,
     BOT_ACTION_TYPE_REPLY_TEXT,
 )
-from sadbot.app import App
+from sadbot.config import OWNER_ID
 
 
 class GitPullBotCommand(CommandInterface):
     """This is the git pull bot command class"""
-
-    def __init__(self, app: App):
-        self.app = app
 
     @property
     def handler_type(self) -> int:
@@ -33,7 +30,7 @@ class GitPullBotCommand(CommandInterface):
         """Restarts the bot systemd service"""
         if message is None:
             return None
-        if message.sender_id != self.app.user["result"]["id"]:
+        if message.sender_id != OWNER_ID:
             reply_text = "No."
             return [BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text=reply_text)]
         os.system("git pull")
