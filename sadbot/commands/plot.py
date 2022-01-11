@@ -30,7 +30,9 @@ class PlotBotCommand(CommandInterface):
         """Returns the regex for matching function plot commands"""
         return r"((!|\.)([Pp][Ll][Oo][Tt])([3][Dd])?)\s.*"
 
-    def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
+    def get_reply(  # pylint: disable=too-many-locals
+        self, message: Optional[Message] = None
+    ) -> Optional[List[BotAction]]:
         """Plots"""
         if message is None or message.text is None:
             return None
@@ -59,35 +61,27 @@ class PlotBotCommand(CommandInterface):
             if expressions == []:
                 return self.exit_message("Please enter at least one valid expression.")
             if plot_3d:
-                x, y = symbols("x y")
-                da_plot = plot3d(
-                    *expressions,
-                    range_y=(x, xlim[0], xlim[1]),
-                    range_y=(y, ylim[0], ylim[1]),
-                    show=False,
-                )
+                x_var, y_var = symbols("x y")
+                xlim2 = None
+                ylim2 = None
+                if xlim is not None and ylim is not None:
+                    xlim2 = (x_var, xlim[0], xlim[1])
+                    ylim2 = (y_var, ylim[0], ylim[1])
+                da_plot = plot3d(*expressions, range_x=xlim2, range_y=ylim2, show=False)
             else:
-                da_plot = plot(
-                    *expressions,
-                    xlim=xlim,
-                    ylim=ylim,
-                    show=False,
-                )
+                da_plot = plot(*expressions, xlim=xlim, ylim=ylim, show=False)
         except (SyntaxError, ValueError, TypeError) as caught_exception:
             return self.exit_message(
                 f"An error occured evaluating the expression.\nDetails: {str(caught_exception)}"
             )
-        name = str(random.randint(14124124124, 1412412412414124124124)) + ".png"
+        name = (
+            str(random.randint(14_124_124_124, 1_412_412_412_414_124_124_124)) + ".png"
+        )
         da_plot.save(name)
         with open(name, "rb") as file:
             byte_array = file.read()
         os.remove(name)
-        return [
-            BotAction(
-                BOT_ACTION_TYPE_REPLY_IMAGE,
-                reply_image=byte_array,
-            )
-        ]
+        return [BotAction(BOT_ACTION_TYPE_REPLY_IMAGE, reply_image=byte_array)]
 
     @staticmethod
     def exit_message(reply_text: str) -> Optional[List[BotAction]]:
