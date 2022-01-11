@@ -2,7 +2,7 @@
 
 import os
 import re
-from typing import Optional, List
+from typing import Optional, List, Any
 import random
 from sympy.plotting import plot, plot3d
 from sympy.parsing.maxima import parse_maxima
@@ -47,6 +47,9 @@ class PlotBotCommand(CommandInterface):
         expressions = []
         xlim = None
         ylim = None
+        range_x = None
+        range_y = None
+        x_var, y_var = symbols("x y")
         if len(ranges) > 1:
             temp = ranges[-1].split()
             if len(temp) < 3:
@@ -55,19 +58,22 @@ class PlotBotCommand(CommandInterface):
                 )
             xlim = (temp[0], temp[1])
             ylim = (temp[2], temp[3])
+            range_x = (x_var, temp[0], temp[1])
+            range_y = (y_var, temp[2], temp[3])
         try:
             for expression in split:
                 expressions.append(parse_maxima(expression))
             if expressions == []:
                 return self.exit_message("Please enter at least one valid expression.")
             if plot_3d:
-                x_var, y_var = symbols("x y")
-                xlim2 = None
-                ylim2 = None
-                if xlim is not None and ylim is not None:
-                    xlim2 = (x_var, xlim[0], xlim[1])
-                    ylim2 = (y_var, ylim[0], ylim[1])
-                da_plot = plot3d(*expressions, range_x=xlim2, range_y=ylim2, show=False)
+                temp_exp = []
+                for expression in expressions:
+                    temp2: List[Any] = [expression]
+                    if range_x is not None and range_y is not None:
+                        temp2.append(range_x)
+                        temp2.append(range_y)
+                    temp_exp.append(tuple(temp2))
+                da_plot = plot3d(*temp_exp, show=False)
             else:
                 da_plot = plot(*expressions, xlim=xlim, ylim=ylim, show=False)
         except (SyntaxError, ValueError, TypeError) as caught_exception:
