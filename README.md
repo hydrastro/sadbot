@@ -189,12 +189,66 @@ Managers may behave like containers for multiple sub-managers.
 
 ## Todo list
 - [ ] Antiflood, samewords count and newlines count
+- [ ] Flush completed TODOs (lol)
 - [ ] VC Radio
 - [ ] Group admin settings: enabled modules etc.
 - [ ] Add new tables: for images, for edits and for usernames
-- [ ] Report command
-- [ ] Good morning / Good night messages/gifs (later)
-- [ ] Add warn reason
+- [ ] Add user-requested assets to the commands
+- [ ] Fix rand command regex: add leading dot / exclamation mark
+- [ ] Update go schizo regex: allow "goschizo" without space
+- [ ] Restart command: better reply message
+- [ ] Git pull command: better reply message
+- [ ] Fix uwu command: sometimes it doesn't reply, probably because it loads a
+previous empty message
+- [ ] Compliment command: update regex in order to reply to "Thanks bot"
+- [ ] Change captcha kick time in config.py to 5 minutes
+- [ ] Fix translate command: it doesn't support newlines
+- [ ] Update weed command with "cool 50 ways to say no to weed" (search it on
+google lmao)
+- [ ] Fix activity output message (whitespace alignment)
+- [ ] Fix bookmark command (it says he found bookmarks even if it didn't)
+- [ ] Fix mute - sometimes it doesn't work
+- [ ] Fix ban - sometimes it doesn't work
+- [ ] Fix kick - sometimes it doesn't work
+- [ ] Fix seen command - sometimes it doesn't work. It may be a username case
+sensivity issue
+- [ ] Del command
+- [ ] Flush command (deletes every message after the selected one)
+- [ ] Create a function that returns {username} / {sender_name} / "User" so we
+don't repeat the same code in every command (mute, ban, kick, warn, etc.)
+- [ ] Slowmode command
+- [ ] Deepfry image command
+- [ ] Good morning / Good night messages/gifs (see how .setrules work); we have
+to write a manager for this
+- [ ] Update README.md (check it overall and complete the description for the
+bot managers)
+- [ ] Meme caption adder command: adds some text to an image or a video
+- [ ] Add warn reason (and clean old warnings please...)
+- [ ] Translate command: images translate with Tesseract.
+- [ ] Username change detector (see the UPDATE query on the usernames table;
+it's halfway done: the table with the data is already there, we just need a
+callback to send the message)
+- [ ] Plot3D animated videos
+- [ ] Fix `BOT_ACTION_TYPE_NONE` managers callback: they are dispatched only
+after a message is sent, therefore it fails do dispatch new managers
+- [X] Git pull & restart command for the bot owner
+- [X] Report command
+- [X] Fix seen command
+- [X] Fix .remindme (it doesn't work when reminder time is very small)
+- [X] Check if the mute/unmute replies are correct (or if it doesn't handle the
+'@' before the usernames)
+- [X] .slap command
+- [X] Random hug gifs?
+- [X] .getchatid command
+- [X] Fix roulette command: initialize (and store) the instance outside the
+command, in sadbot/classes/revolver.py: the commands call that class and gets
+the response, period, all the "logic" should be in there. (Because commands are
+not persistent in memory)
+- [X] Fix roulette revolver regex
+- [X] .hug command
+- [X] Redefine the data directories to sadbot/data/command_name (no command
+should ever write outside of his data directory. So we have to just change the
+dir of the captcha image command, and of some other stuff)
 - [X] Fix .remindme
 - [X] Fix roulette command
 - [X] Check if the mute/unmute replies are correct
