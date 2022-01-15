@@ -466,6 +466,7 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
                 }
             )
             if reply.reply_restrict_until_date is not None:
+                reply.reply_restrict_until_date += 30
                 data.update({"until_date": reply.reply_restrict_until_date})
         elif reply.reply_type == BOT_ACTION_TYPE_ANSWER_CALLBACK_QUERY:
             api_method = "answerCallbackQuery"
