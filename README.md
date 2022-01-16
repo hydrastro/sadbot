@@ -216,6 +216,9 @@ sensivity issue
 - [ ] Flush command (deletes every message after the selected one)
 - [ ] Create a function that returns {username} / {sender_name} / "User" so we
 don't repeat the same code in every command (mute, ban, kick, warn, etc.)
+- [ ] Specific thread post retrival
+- [ ] Translate voice command
+- [ ] Fix mute command short interval
 - [ ] Slowmode command
 - [ ] Deepfry image command
 - [ ] Good morning / Good night messages/gifs (see how .setrules work); we have
