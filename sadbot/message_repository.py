@@ -95,6 +95,12 @@ class MessageRepository:  # pylint: disable=R0904
                     continue
                 self.insert_message(heal_message)
 
+    def run_query(self, query: str) -> List:
+        """Runs a generic query"""
+        cur = self.con.cursor()
+        cur.execute(query)
+        return cur.fetchall()
+
     def delete_old_bot_triggers_logs(self, time: int) -> None:
         """Deletes old bot triggers"""
         query = """
@@ -289,12 +295,7 @@ class MessageRepository:  # pylint: disable=R0904
         manager = Manager()
         result_list: List = manager.list()
         message_process = Process(
-            target=self.get_previous_message_worker,
-            args=(
-                result_list,
-                message,
-                regex,
-            ),
+            target=self.get_previous_message_worker, args=(result_list, message, regex)
         )
         message_process.start()
         message_process.join(2)

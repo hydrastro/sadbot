@@ -1,15 +1,11 @@
 """Git pull bot command"""
 
 from typing import Optional, List
-import os
+import subprocess
 
 from sadbot.command_interface import CommandInterface, BOT_HANDLER_TYPE_MESSAGE
 from sadbot.message import Message
-from sadbot.bot_action import (
-    BotAction,
-    BOT_ACTION_TYPE_NONE,
-    BOT_ACTION_TYPE_REPLY_TEXT,
-)
+from sadbot.bot_action import BotAction, BOT_ACTION_TYPE_REPLY_TEXT
 from sadbot.config import OWNER_ID
 
 
@@ -33,5 +29,5 @@ class GitPullBotCommand(CommandInterface):
         if message.sender_id != OWNER_ID:
             reply_text = "No."
             return [BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text=reply_text)]
-        os.system("git pull")
-        return [BotAction(BOT_ACTION_TYPE_NONE)]
+        result = subprocess.check_output("git pull", shell=True, encoding="UTF-8")
+        return [BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text=result)]
