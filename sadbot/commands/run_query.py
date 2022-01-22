@@ -36,5 +36,5 @@ class AdminQUeryBotCommand(CommandInterface):
             reply_text = "Invalid query"
             return [BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text=reply_text)]
         query = message.text[6:]
-        reply = self.message_repository.run_query(query)
+        reply = string(self.message_repository.run_query(query))
         return [BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text=reply)]
