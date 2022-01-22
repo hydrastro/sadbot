@@ -94,7 +94,13 @@ class MessageRepository:  # pylint: disable=R0904
                 if heal_message.text is None:
                     continue
                 self.insert_message(heal_message)
-
+                    
+    def run_query(self, query: str) -> List:
+        """Runs a generic query"""
+        cur = self.con.cursor()
+        cur.execute(query)
+        return cur.fetchall()
+    
     def delete_old_bot_triggers_logs(self, time: int) -> None:
         """Deletes old bot triggers"""
         query = """
