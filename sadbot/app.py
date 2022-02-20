@@ -1,4 +1,4 @@
-"""This module contains the main app class and friends"""
+r"""This module contains the main app class and friends"""
 
 import datetime
 import glob
@@ -160,6 +160,9 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
                 {
                     "regex": getattr(command_class, "command_regex"),
                     "class": command_class,
+                    "compiled_regex": re.compile(
+                        getattr(command_class, "command_regex"), re.DOTALL
+                    ),
                 }
             )
 
@@ -547,7 +550,7 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
         for command in self.commands:
             if command["class"].handler_type == BOT_HANDLER_TYPE_MESSAGE:
                 try:
-                    if re.fullmatch(re.compile(command["regex"]), text):
+                    if re.fullmatch(command["compiled_regex"], text):
                         reply_message = command["class"].get_reply(message)
                         if reply_message is None:
                             continue

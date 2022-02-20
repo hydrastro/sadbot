@@ -44,7 +44,7 @@ class TranslateBotCommand(CommandInterface):
                 return None
             url = f"https://translate.google.com/m?q={quote}&tl={lang}"
             req = requests.get(url)
-            result = re.findall(r"result-container\">(.*?)</", req.text)
+            result = re.findall(r"result-container\">(.*?)</", req.text, re.DOTALL)
             if not result:
                 return None
             return [
