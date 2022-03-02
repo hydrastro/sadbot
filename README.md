@@ -194,17 +194,18 @@ Managers may behave like containers for multiple sub-managers.
 - [ ] Group admin settings: enabled modules etc.
 - [ ] Add new tables: for images, for edits and for usernames
 - [ ] Add user-requested assets to the commands
-- [ ] Fix rand command regex: add leading dot / exclamation mark
-- [ ] Update go schizo regex: allow "goschizo" without space
-- [ ] Restart command: better reply message
-- [ ] Git pull command: better reply message
+- [X] Fix rand command regex: add leading dot / exclamation mark
+- [X] Update go schizo regex: allow "goschizo" without space
+- ~~[ ] Git pull command: better reply message~~
 - [ ] Fix uwu command: sometimes it doesn't reply, probably because it loads a
 previous empty message
-- [ ] Compliment command: update regex in order to reply to "Thanks bot"
-- [ ] Change captcha kick time in config.py to 5 minutes
-- [ ] Fix translate command: it doesn't support newlines
+- [X] Compliment command: update regex in order to reply to "Thanks bot"
+- [X] Change captcha kick time in config.py to 5 minutes
+- [X] Fix translate command: it doesn't support newlines
 - [ ] Update weed command with "cool 50 ways to say no to weed" (search it on
 google lmao)
+- [ ] Matplotlib/Sympy plots: return the bytearray instead of writing it into
+a file
 - [ ] Fix activity output message (whitespace alignment)
 - [ ] Fix bookmark command (it says he found bookmarks even if it didn't)
 - [ ] Fix mute - sometimes it doesn't work
@@ -229,6 +230,7 @@ bot managers)
 - [ ] Meme caption adder command: adds some text to an image or a video
 - [ ] Add warn reason (and clean old warnings please...)
 - [ ] Translate command: images translate with Tesseract.
+- [ ] Restart command: better reply message: reply message on startup
 - [ ] Username change detector (see the UPDATE query on the usernames table;
 it's halfway done: the table with the data is already there, we just need a
 callback to send the message)
