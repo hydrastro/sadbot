@@ -6,11 +6,11 @@
 #
 certifi==2021.10.8
     # via requests
-charset-normalizer==2.0.10
+charset-normalizer==2.0.12
     # via requests
 cycler==0.11.0
     # via matplotlib
-fonttools==4.28.5
+fonttools==4.29.1
     # via matplotlib
 html2text==2020.1.16
     # via -r requirements.in
@@ -24,17 +24,17 @@ mpmath==1.2.1
     # via sympy
 mutagen==1.45.1
     # via yt-dlp
-numpy==1.21.5
+numpy==1.22.2
     # via matplotlib
 packaging==21.3
     # via matplotlib
-pillow==9.0.0
+pillow==9.0.1
     # via
     #   -r requirements.in
     #   matplotlib
-pycryptodomex==3.12.0
+pycryptodomex==3.14.1
     # via yt-dlp
-pyparsing==3.0.6
+pyparsing==3.0.7
     # via
     #   matplotlib
     #   packaging
@@ -48,7 +48,7 @@ sympy==1.9
     # via -r requirements.in
 urllib3==1.26.8
     # via requests
-websockets==10.1
+websockets==10.2
     # via yt-dlp
-yt-dlp==2021.12.27
+yt-dlp==2022.2.4
     # via -r requirements.in
