@@ -1,4 +1,5 @@
 requests
+types-requests
 pillow
 html2text
 yt-dlp

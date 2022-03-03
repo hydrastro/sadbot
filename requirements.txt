@@ -46,6 +46,10 @@ six==1.16.0
     # via python-dateutil
 sympy==1.9
     # via -r requirements.in
+types-requests==2.27.11
+    # via -r requirements.in
+types-urllib3==1.26.10
+    # via types-requests
 urllib3==1.26.8
     # via requests
 websockets==10.2
