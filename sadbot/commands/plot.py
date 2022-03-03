@@ -63,7 +63,7 @@ class PlotBotCommand(CommandInterface):
         try:
             for expression in split:
                 expressions.append(parse_maxima(expression))
-            if expressions == []:
+            if not expressions:
                 return self.exit_message("Please enter at least one valid expression.")
             if plot_3d:
                 temp_exp = []

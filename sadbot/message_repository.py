@@ -301,7 +301,7 @@ class MessageRepository:  # pylint: disable=R0904
         message_process.join(2)
         message_process.kill()
         message_process.join()
-        if result_list == []:
+        if not result_list:
             return None
         return Message(*result_list)
 
