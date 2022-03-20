@@ -1,6 +1,7 @@
 """Translate bot command"""
 
 from typing import Optional, List
+import html
 import re
 import urllib.parse
 import requests
@@ -45,11 +46,12 @@ class TranslateBotCommand(CommandInterface):
             url = f"https://translate.google.com/m?q={quote}&tl={lang}"
             req = requests.get(url)
             result = re.findall(r"result-container\">(.*?)</", req.text, re.DOTALL)
+            text = html.unescape(result[0])
             if not result:
                 return None
             return [
                 BotAction(
-                    BOT_ACTION_TYPE_REPLY_TEXT, reply_text="Translation: " + result[0]
+                    BOT_ACTION_TYPE_REPLY_TEXT, reply_text="Translation: " + text
                 )
             ]
         except (re.error, requests.ConnectionError):
