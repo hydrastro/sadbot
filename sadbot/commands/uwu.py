@@ -59,7 +59,7 @@ class UwuBotCommand(CommandInterface):
             )
         if previous_message is None:
             return None
-        if previous_message.text is None:
+        if previous_message.text is None or previous_message.text == "":
             return None
         try:
             # uwu-mocking the message found
