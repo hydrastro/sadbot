@@ -1,10 +1,8 @@
 """Activity bot command"""
-
-from typing import Optional, List, Tuple
+import io
+from typing import Optional, List
 import time
 import math
-import os
-import random
 from datetime import datetime
 import requests
 import matplotlib.pyplot as plt
@@ -40,7 +38,7 @@ class ActivityBotCommand(CommandInterface):
         """Returns the regex for matching activity commands"""
         return r"(.|!)([aA][cC][tT][iI][vV][iI][tT][yY]).*"
 
-    def get_image(self, chat_id: int, message_text: str) -> Tuple[str, bytes]:
+    def get_image(self, chat_id: int, message_text: str) -> bytes:
         """Get image lol"""
         dates: List[datetime] = []
         counts: List[int] = []
@@ -72,31 +70,29 @@ class ActivityBotCommand(CommandInterface):
             plt.xlabel("time")
             plt.ylabel("count")
             plt.legend(frameon=False)
-
-            filename = str(random.randint(14124124124, 1412412412414124124124)) + ".png"
-            plt.savefig(filename, dpi=300)
-        with open(filename, "rb") as file:
-            byte_array = file.read()
-        os.remove(filename)
-        return (filename, byte_array)
+            bytes_io = io.BytesIO()
+            plt.savefig(bytes_io, dpi=300, format="png")
+        bytes_io.seek(0)
+        image = bytes_io.read()
+        return image
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
         """Activity"""
         if message is None or message.text is None:
             return None
-        filename, byte_array = self.get_image(message.chat_id, message.text)
+        image = self.get_image(message.chat_id, message.text)
         try:
-            req = requests.post("https://oshi.at", files={filename: byte_array})
+            req = requests.post("https://oshi.at", files={"activity.png": image})
             url = req.text.splitlines()[1].split(" ")[1]
         except (requests.ConnectionError, IndexError):
             return [
                 BotAction(
                     BOT_ACTION_TYPE_REPLY_IMAGE,
-                    reply_image=byte_array,
+                    reply_image=image,
                 )
             ]
         reply_text = (
-            """Here's the chat activity, you can click on the link to see the"""
+            """Here's the chat activity, you can click on the link to see the """
             + f"""full quality image:\n{url}"""
         )
         return [

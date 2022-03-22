@@ -5,8 +5,13 @@ Which main feature is its sed command, the famous UNIX command.
 ## Dependencies
 The bot has the following dependencies:
 - `requests`
-- `html2text`
+- `types-requests`
 - `pillow`
+- `html2text`
+- `yt-dlp`
+- `matplotlib`
+- `sympy`
+
 
 Which can be installed with:
 ```
@@ -65,13 +70,6 @@ Then you can easily start the bot with:
 ```shell
 sudo docker run -it sadbot
 ```
-
-### NixOS
-If you use NixOS you can easily run the project using the `flake.nix` file:
-```sh
-nix run
-```
-Don't forget to setup the token.
 
 
 ## Contributing
@@ -197,16 +195,16 @@ Managers may behave like containers for multiple sub-managers.
 - [X] Fix rand command regex: add leading dot / exclamation mark
 - [X] Update go schizo regex: allow "goschizo" without space
 - ~~[ ] Git pull command: better reply message~~
-- [ ] Fix uwu command: sometimes it doesn't reply, probably because it loads a
+- [X] Fix uwu command: sometimes it doesn't reply, probably because it loads a
 previous empty message
 - [X] Compliment command: update regex in order to reply to "Thanks bot"
 - [X] Change captcha kick time in config.py to 5 minutes
 - [X] Fix translate command: it doesn't support newlines
-- [ ] Update weed command with "cool 50 ways to say no to weed" (search it on
+- [X] Update weed command with "cool 50 ways to say no to weed" (search it on
 google lmao)
-- [ ] Matplotlib/Sympy plots: return the bytearray instead of writing it into
+- [ ] Sympy plots: return the bytearray instead of writing it into
 a file
-- [ ] Fix activity output message (whitespace alignment)
+- [X] Fix activity output message (whitespace alignment)
 - [ ] Fix bookmark command (it says he found bookmarks even if it didn't)
 - [ ] Fix mute - sometimes it doesn't work
 - [ ] Fix ban - sometimes it doesn't work
