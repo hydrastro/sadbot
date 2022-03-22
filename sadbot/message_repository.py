@@ -13,6 +13,8 @@ from sadbot.message import Message
 
 def regex_lambda(x_val: str, y_val: str) -> int:
     """Regex lambda function for the SQL queries"""
+    if y_val is None:
+        return 0
     try:
         return 1 if re.search(str(x_val), str(y_val)) else 0
     except re.error:
