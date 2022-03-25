@@ -422,7 +422,8 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
             api_method = "sendMessage"
             if reply_text is None:
                 return None
-            if len(reply_text) > MAX_REPLY_LENGTH:
+            parse_mode = reply.reply_text_parse_mode
+            if len(reply_text) > MAX_REPLY_LENGTH and parse_mode is None:
                 reply_text = reply_text[:MAX_REPLY_LENGTH] + "..."
             data.update({"text": reply_text})
             parse_mode = reply.reply_text_parse_mode
