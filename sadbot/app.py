@@ -420,6 +420,8 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
         parse_mode = reply.reply_text_parse_mode
         if parse_mode is not None:
             data.update({"parse_mode": parse_mode})
+        if len(reply_text) > MAX_REPLY_LENGTH:
+            reply_text = reply_text[:MAX_REPLY_LENGTH] + "..."
         if reply.reply_type == BOT_ACTION_TYPE_REPLY_TEXT:
             api_method = "sendMessage"
             if reply_text is None:
