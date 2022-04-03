@@ -25,7 +25,6 @@ from sadbot.message import (
 from sadbot.message_repository import MessageRepository
 from sadbot.config import (
     OFFLINE_ANTIFLOOD_TIMEOUT,
-    MAX_REPLY_LENGTH,
     UPDATES_TIMEOUT,
     UPDATE_PROCESSING_MAX_TIMEOUT,
     OUTGOING_REQUESTS_TIMEOUT,
@@ -418,17 +417,14 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
         reply_text = reply.reply_text
         if reply.reply_type == BOT_ACTION_TYPE_NONE:
             return None
+        parse_mode = reply.reply_text_parse_mode
+        if parse_mode is not None:
+            data.update({"parse_mode": parse_mode})
         if reply.reply_type == BOT_ACTION_TYPE_REPLY_TEXT:
             api_method = "sendMessage"
             if reply_text is None:
                 return None
-            parse_mode = reply.reply_text_parse_mode
-            if len(reply_text) > MAX_REPLY_LENGTH and parse_mode is None:
-                reply_text = reply_text[:MAX_REPLY_LENGTH] + "..."
             data.update({"text": reply_text})
-            parse_mode = reply.reply_text_parse_mode
-            if parse_mode is not None:
-                data.update({"parse_mode": parse_mode})
         elif reply.reply_type == BOT_ACTION_TYPE_REPLY_IMAGE:
             api_method = "sendPhoto"
             files = {"photo": reply.reply_image}
