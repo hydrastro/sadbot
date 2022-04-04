@@ -6,6 +6,7 @@ from typing import Optional, List
 import os
 import random
 import requests
+import validators
 from yt_dlp.YoutubeDL import YoutubeDL
 
 from sadbot.command_interface import CommandInterface, BOT_HANDLER_TYPE_MESSAGE
@@ -85,6 +86,8 @@ def handle_post(post) -> Optional[List[BotAction]]:
             f"*{title}*\nScore: {score}\n"
             + f"[Number of comments: {num_comments}](reddit.com{permalink})"
         )
+        if not validators.url(post["thumbnail"]):
+            return None
         img = requests.get(post["thumbnail"], headers=headers)
         action = BotAction(
             BOT_ACTION_TYPE_REPLY_IMAGE,
@@ -144,9 +147,9 @@ class RedditBotCommand(CommandInterface):
                 ]
             data = res.json()
             children = data["data"]["children"]
-        except requests.RequestException:
+        except (requests.RequestException, json.JSONDecodeError) as _:
             return [BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text="Internal error")]
-        except json.JSONDecodeError:
+        if not children:
             return [BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text="Internal error")]
         post = random.choice(children)["data"]
         return handle_post(post)

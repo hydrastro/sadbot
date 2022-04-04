@@ -24,6 +24,7 @@ from sadbot.message import (
 )
 from sadbot.message_repository import MessageRepository
 from sadbot.config import (
+    MAX_REPLY_LENGTH,
     OFFLINE_ANTIFLOOD_TIMEOUT,
     UPDATES_TIMEOUT,
     UPDATE_PROCESSING_MAX_TIMEOUT,
@@ -420,7 +421,7 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
         parse_mode = reply.reply_text_parse_mode
         if parse_mode is not None:
             data.update({"parse_mode": parse_mode})
-        if len(reply_text) > MAX_REPLY_LENGTH:
+        if reply_text is not None and len(reply_text) > MAX_REPLY_LENGTH:
             reply_text = reply_text[:MAX_REPLY_LENGTH] + "..."
         if reply.reply_type == BOT_ACTION_TYPE_REPLY_TEXT:
             api_method = "sendMessage"
@@ -708,7 +709,8 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
                 if "caption" in item["message"]:
                     message.text = str(item["message"]["caption"])
                 message.file_type = MESSAGE_FILE_TYPE_PHOTO
-                message.file_id = item["message"]["photo"][2]["file_id"]
+                max_index = len(item["message"]["photo"]) - 1
+                message.file_id = item["message"]["photo"][max_index]["file_id"]
                 self.handle_photos(message)
             if "video" in item["message"]:
                 if "caption" in item["message"]:
