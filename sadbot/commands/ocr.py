@@ -35,7 +35,7 @@ class OcrBotCommand(CommandInterface):
             photo = self.get_photo_from_message(message)
         else:
             reply_message = self.message_repository.get_message_from_id(
-                message.chat_id, message.reply_id
+                message.reply_id, message.chat_id
             )
             if reply_message is None:
                 return None

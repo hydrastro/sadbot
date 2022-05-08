@@ -24,6 +24,11 @@ via:
 ```shell
 sudo apt install fonts-freefont-ttf
 ```
+The OCR command depends on `tesseract-ocr`, which can be installed with:
+```shell
+sudo apt install tesseract-ocr
+```
+
 
 ## Installation
 You have to place your bot token either in the environment variables or in the
