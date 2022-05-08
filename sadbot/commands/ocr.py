@@ -2,7 +2,6 @@
 
 from typing import Optional, List
 
-
 from sadbot.command_interface import CommandInterface, BOT_HANDLER_TYPE_MESSAGE
 from sadbot.message import Message, MESSAGE_FILE_TYPE_PHOTO
 from sadbot.message_repository import MessageRepository

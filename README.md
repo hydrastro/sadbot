@@ -195,7 +195,6 @@ Managers may behave like containers for multiple sub-managers.
 - [ ] Flush completed TODOs (lol)
 - [ ] VC Radio
 - [ ] Group admin settings: enabled modules etc.
-- [ ] Add new tables: for images, for edits and for usernames
 - [ ] Add user-requested assets to the commands
 - [ ] Sympy plots: return the bytearray instead of writing it into
 a file
@@ -205,8 +204,7 @@ a file
 - [ ] Fix kick - sometimes it doesn't work
 - [ ] Fix seen command - sometimes it doesn't work. It may be a username case
 sensivity issue
-- [ ] Del command
-- [ ] Flush command (deletes every message after the selected one)
+- [ ] Flush command (deletes every message after the selected one) (dangerous)
 - [ ] Create a function that returns {username} / {sender_name} / "User" so we
 don't repeat the same code in every command (mute, ban, kick, warn, etc.)
 - [ ] Specific thread post retrival
@@ -227,6 +225,9 @@ callback to send the message)
 - [ ] Plot3D animated videos
 - [ ] Fix `BOT_ACTION_TYPE_NONE` managers callback: they are dispatched only
 after a message is sent, therefore it fails do dispatch new managers
+- [X] ~~Add new tables: for images, for edits and for usernames~~ Updated
+existing table
+- [X] ~~Del command~~ useless
 - [X] Fix rand command regex: add leading dot / exclamation mark
 - [X] Update go schizo regex: allow "goschizo" without space
 - [X] ~~Git pull command: better reply message~~
