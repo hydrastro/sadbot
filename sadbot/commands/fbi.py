@@ -121,7 +121,7 @@ class FbiBotCommand(CommandInterface):
         query = """
           SELECT
             SenderID,
-            Count,
+            SUM(Count) as foo,
             usernames.Username
           FROM
             fbi_entries
@@ -129,7 +129,7 @@ class FbiBotCommand(CommandInterface):
           ON usernames.UserID=fbi_entries.SenderID
           WHERE ChatID = ?
           GROUP BY SenderID
-          ORDER BY Count DESC
+          ORDER BY foo DESC
           LIMIT ?
         """
         cur = self.con.cursor()
@@ -169,6 +169,7 @@ class FbiBotCommand(CommandInterface):
         if data is None:
             pass
         count = data[3] + 1
+        print(data)
         query = """
           UPDATE fbi_entries
           SET count = ?

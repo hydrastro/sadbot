@@ -1,4 +1,4 @@
-"""This module contains the main app class and friends"""
+r"""This module contains the main app class and friends"""
 
 import datetime
 import glob
@@ -24,8 +24,8 @@ from sadbot.message import (
 )
 from sadbot.message_repository import MessageRepository
 from sadbot.config import (
-    OFFLINE_ANTIFLOOD_TIMEOUT,
     MAX_REPLY_LENGTH,
+    OFFLINE_ANTIFLOOD_TIMEOUT,
     UPDATES_TIMEOUT,
     UPDATE_PROCESSING_MAX_TIMEOUT,
     OUTGOING_REQUESTS_TIMEOUT,
@@ -52,7 +52,7 @@ from sadbot.bot_action import (
     BOT_ACTION_TYPE_REPLY_VIDEO_ONLINE,
     BOT_ACTION_TYPE_REPLY_PHOTO_ONLINE,
     # BOT_ACTION_PRIORITY_LOW,
-    # BOT_ACTION_PRIORITY_MEDIUM,
+    BOT_ACTION_PRIORITY_MEDIUM,
     BOT_ACTION_PRIORITY_HIGH,
 )
 from sadbot.command_interface import (
@@ -88,10 +88,11 @@ def pascal_to_snake_case(pascal_str: str):
 def is_bot_action_message(action_type: int) -> bool:
     """Checks if a bot outgoing action will result in/is a message"""
     return action_type in [
+        BOT_ACTION_TYPE_REPLY_TEXT,
         BOT_ACTION_TYPE_REPLY_IMAGE,
         BOT_ACTION_TYPE_REPLY_AUDIO,
+        BOT_ACTION_TYPE_REPLY_VIDEO,
         BOT_ACTION_TYPE_REPLY_FILE,
-        BOT_ACTION_TYPE_REPLY_TEXT,
         BOT_ACTION_TYPE_REPLY_VOICE,
         BOT_ACTION_TYPE_REPLY_VIDEO_ONLINE,
     ]
@@ -105,6 +106,7 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
         logging.info("Started sadbot")
         self.base_url = f"https://api.telegram.org/bot{token}/"
         self.base_file_url = f"https://api.telegram.org/file/bot{token}/"
+        self.user = self.get_me()
         self.update_id = None
         self.classes: Dict[str, object] = {"App": self}
         con = sqlite3.connect("./messages.db", check_same_thread=False)
@@ -158,6 +160,9 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
                 {
                     "regex": getattr(command_class, "command_regex"),
                     "class": command_class,
+                    "compiled_regex": re.compile(
+                        getattr(command_class, "command_regex"), re.DOTALL
+                    ),
                 }
             )
 
@@ -172,6 +177,22 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
                 continue
             manager_class = self.classes[class_name]
             self.managers[class_name] = manager_class
+
+    def get_me(self):
+        """Get information about the bot"""
+        api_method = "getMe"
+        try:
+            req = requests.post(
+                f"{self.base_url}{api_method}",
+                timeout=OUTGOING_REQUESTS_TIMEOUT,
+            )
+        except requests.exceptions.RequestException:
+            logging.error("An error occurred sending the getChatMember request")
+            return None
+        if not req.ok:
+            logging.error("Failed sending message - details: %s", req.json())
+            return None
+        return json.loads(req.content)
 
     def get_chat_permissions_api_json(
         self, chat_id: int, user_id: int = None
@@ -189,7 +210,26 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
                 timeout=OUTGOING_REQUESTS_TIMEOUT,
             )
         except requests.exceptions.RequestException:
-            logging.error("An error occured sending the getChatMember request")
+            logging.error("An error occurred sending the getChatMember request")
+            return None
+        if not req.ok:
+            logging.error("Failed sending message - details: %s", req.json())
+            return None
+        return json.loads(req.content)
+
+    def get_chat_administrators(self, chat_id: int) -> Optional[Dict]:
+        """Gets all the chat administrators"""
+        data = {"chat_id": chat_id}
+        api_method = "getChatAdministrators"
+        try:
+            req = requests.post(
+                f"{self.base_url}{api_method}",
+                data=data,
+                timeout=OUTGOING_REQUESTS_TIMEOUT,
+            )
+
+        except requests.exceptions.RequestException:
+            logging.error("An error occured sending the getChatAdministrators request")
             return None
         if not req.ok:
             logging.error("Failed sending message - details: %s", req.json())
@@ -307,6 +347,7 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
             message.message_time is not None
             and message.message_time != 0
             and time.time() - message.message_time > OFFLINE_ANTIFLOOD_TIMEOUT
+            and reply_info.reply_priority != BOT_ACTION_PRIORITY_MEDIUM
         ):
             logging.warning("Dropping message: I am too late")
             return None
@@ -356,6 +397,7 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
                 result["from"].get("username", None),
                 True,
                 result["date"],
+                # TODO: file stuff
             )
             self.message_repository.insert_message(sent_message_dataclass)
             if reply_info.reply_callback_manager_name is not None:
@@ -377,16 +419,16 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
         reply_text = reply.reply_text
         if reply.reply_type == BOT_ACTION_TYPE_NONE:
             return None
+        parse_mode = reply.reply_text_parse_mode
+        if parse_mode is not None:
+            data.update({"parse_mode": parse_mode})
+        if reply_text is not None and len(reply_text) > MAX_REPLY_LENGTH:
+            reply_text = reply_text[:MAX_REPLY_LENGTH] + "..."
         if reply.reply_type == BOT_ACTION_TYPE_REPLY_TEXT:
             api_method = "sendMessage"
             if reply_text is None:
                 return None
-            if len(reply_text) > MAX_REPLY_LENGTH:
-                reply_text = reply_text[:MAX_REPLY_LENGTH] + "..."
             data.update({"text": reply_text})
-            parsemode = reply.reply_text_parsemode
-            if parsemode is not None:
-                data.update({"parsemode": parsemode})
         elif reply.reply_type == BOT_ACTION_TYPE_REPLY_IMAGE:
             api_method = "sendPhoto"
             files = {"photo": reply.reply_image}
@@ -428,6 +470,7 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
                 }
             )
             if reply.reply_restrict_until_date is not None:
+                reply.reply_restrict_until_date += 30
                 data.update({"until_date": reply.reply_restrict_until_date})
         elif reply.reply_type == BOT_ACTION_TYPE_ANSWER_CALLBACK_QUERY:
             api_method = "answerCallbackQuery"
@@ -491,7 +534,7 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
                 timeout=OUTGOING_REQUESTS_TIMEOUT,
             )
         except requests.exceptions.RequestException:
-            logging.error("An error occured sending the message request")
+            logging.error("An error occurred sending the message request")
             return None
         logging.info("Sent message")
         if not req.ok:
@@ -508,7 +551,7 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
         for command in self.commands:
             if command["class"].handler_type == BOT_HANDLER_TYPE_MESSAGE:
                 try:
-                    if re.fullmatch(re.compile(command["regex"]), text):
+                    if re.fullmatch(command["compiled_regex"], text):
                         reply_message = command["class"].get_reply(message)
                         if reply_message is None:
                             continue
@@ -667,7 +710,8 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
                 if "caption" in item["message"]:
                     message.text = str(item["message"]["caption"])
                 message.file_type = MESSAGE_FILE_TYPE_PHOTO
-                message.file_id = item["message"]["photo"][2]["file_id"]
+                max_index = len(item["message"]["photo"]) - 1
+                message.file_id = item["message"]["photo"][max_index]["file_id"]
                 self.handle_photos(message)
             if "video" in item["message"]:
                 if "caption" in item["message"]:

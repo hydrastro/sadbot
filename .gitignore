@@ -7,3 +7,5 @@ messages.db
 sadbot.log
 .mypy_cache
 dist
+.idea
+result

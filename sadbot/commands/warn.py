@@ -23,16 +23,16 @@ def mute_time(count: int) -> Optional[Tuple[int, str]]:
     # 3 - 4 hours
     # 4 - 1 day
     # 5 - 3 days
-    # >5 - permamute
+    # >5 - perma mute
     if count < 3:
         return None
     if count == 3:
-        return (14400, "4 hours")
+        return 14400, "4 hours"
     if count == 4:
-        return (86400, "1 day")
+        return 86400, "1 day"
     if count == 5:
-        return (259200, "3 days")
-    return (0, "eternity")
+        return 259200, "3 days"
+    return 0, "eternity"
 
 
 class WarnBotCommand(CommandInterface):
@@ -63,26 +63,34 @@ class WarnBotCommand(CommandInterface):
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
         # pylint: disable=R0911
+        # pylint: disable=R0914
+        # pylint: disable=R0912
         """Returns the command output"""
         if message is None or message.text is None:
             return None
         warn_sender_id = None
+        reason = None
         if message.reply_id is not None:
             warn_message = self.message_repository.get_reply_message(message)
             if warn_message is None:
                 return None
             warn_sender_id = warn_message.sender_id
             warn_username = warn_message.sender_username
+            frags = message.text.split()
+            if len(frags) >= 2:
+                reason = " ".join(frags[1:])
         else:
-            text = message.text.split()
-            if len(text) < 2:
+            frags = message.text.split()
+            if len(frags) < 2:
                 return None
-            warn_username = text[1].replace("@", "")
+            warn_username = frags[1].replace("@", "")
             if warn_username is None:
                 return None
             warn_sender_id = self.message_repository.get_user_id_from_username(
                 warn_username
             )
+            if len(frags) >= 3:
+                reason = " ".join(frags[2:])
         if warn_sender_id is None:
             return None
         user_permissions = self.app.get_user_status_and_permissions(
@@ -110,11 +118,18 @@ class WarnBotCommand(CommandInterface):
         )
         mute = mute_time(count)
         if mute is None:
-            reply_text = (
-                f"{warn_username} has been successfully warned.\n"
-                + f"The user has been warned {count} {'times' if count != 1 else 'time'} "
-                + "in the last week"
-            )
+            if reason is None:
+                reply_text = (
+                    f"{warn_username} has been successfully warned.\n"
+                    + f"The user has been warned {count} {'times' if count != 1 else 'time'} "
+                    + "in the last week"
+                )
+            else:
+                reply_text = (
+                    f"{warn_username} has been successfully warned for `{reason}`\n"
+                    + f"The user has been warned {count} {'times' if count != 1 else 'time'} "
+                    + "in the last week"
+                )
             return [
                 BotAction(
                     BOT_ACTION_TYPE_REPLY_TEXT,

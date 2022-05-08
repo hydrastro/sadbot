@@ -43,12 +43,24 @@ class BanBotCommand(CommandInterface):
             )
         if ban_user_id is None:
             message_text = message.text.split()
+            if len(message_text) < 2:
+                return [
+                    BotAction(
+                        BOT_ACTION_TYPE_REPLY_TEXT,
+                        reply_text="Please specify a user to ban.",
+                    )
+                ]
             ban_username = message_text[1].replace("@", "")
             ban_user_id = self.message_repository.get_user_id_from_username(
                 ban_username
             )
         if ban_user_id is None:
-            return None
+            return [
+                BotAction(
+                    BOT_ACTION_TYPE_REPLY_TEXT,
+                    reply_text="Error: specified user not found.",
+                )
+            ]
         user_permissions = self.app.get_user_status_and_permissions(
             message.chat_id, message.sender_id
         )

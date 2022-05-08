@@ -35,7 +35,7 @@ class ConfigBotCommand(CommandInterface):
     @property
     def command_regex(self) -> str:
         """Returns the regex for matching configs commands"""
-        return r"((!|\.)([Ss][Ee][Tt]))\s.*"
+        return r"((!|\.)([Ss][Ee][Tt]|[Cc][Oo][Nn][Ff][Ii][Gg]))\s.*"
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
         """Sets config"""

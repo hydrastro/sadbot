@@ -51,13 +51,23 @@ class UnmuteBotCommand(CommandInterface):
         if user_id_to_unmute is None:
             message_text = message.text.split()
             if len(message_text) < 2:
-                return None
+                return [
+                    BotAction(
+                        BOT_ACTION_TYPE_REPLY_TEXT,
+                        reply_text="Please sepcify a user to mute.",
+                    )
+                ]
             user_to_unmute = message_text[1].replace("@", "")
             user_id_to_unmute = self.message_repository.get_user_id_from_username(
                 user_to_unmute
             )
         if user_id_to_unmute is None:
-            return None
+            return [
+                BotAction(
+                    BOT_ACTION_TYPE_REPLY_TEXT,
+                    reply_text="Error: specified user not found.",
+                )
+            ]
         user_permissions = self.app.get_user_status_and_permissions(
             message.chat_id, message.sender_id
         )

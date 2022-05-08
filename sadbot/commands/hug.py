@@ -1,4 +1,6 @@
 """Hug bot command"""
+import os
+import random
 from typing import Optional, List
 
 from sadbot.message_repository import MessageRepository
@@ -49,7 +51,8 @@ class HugBotCommand(CommandInterface):
             r_username = r_username.replace(" ", "")
         s_username = message.sender_username or message.sender_name
         text = f"@{s_username} hugs @{r_username}"
-        with open("sadbot/assets/hug/hug.mp4", "rb") as file:
+        choice = random.choice(os.listdir("sadbot/assets/hug"))
+        with open(f"sadbot/assets/hug/{choice}", "rb") as file:
             hug = file.read()
         return [
             BotAction(BOT_ACTION_TYPE_REPLY_VIDEO, reply_video=hug, reply_text=text)

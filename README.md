@@ -5,8 +5,13 @@ Which main feature is its sed command, the famous UNIX command.
 ## Dependencies
 The bot has the following dependencies:
 - `requests`
-- `html2text`
+- `types-requests`
 - `pillow`
+- `html2text`
+- `yt-dlp`
+- `matplotlib`
+- `sympy`
+
 
 Which can be installed with:
 ```
@@ -19,6 +24,11 @@ via:
 ```shell
 sudo apt install fonts-freefont-ttf
 ```
+The OCR command depends on `tesseract-ocr`, which can be installed with:
+```shell
+sudo apt install tesseract-ocr
+```
+
 
 ## Installation
 You have to place your bot token either in the environment variables or in the
@@ -65,13 +75,6 @@ Then you can easily start the bot with:
 ```shell
 sudo docker run -it sadbot
 ```
-
-### NixOS
-If you use NixOS you can easily run the project using the `flake.nix` file:
-```sh
-nix run
-```
-Don't forget to setup the token.
 
 
 ## Contributing
@@ -139,20 +142,28 @@ class UwuBotCommand(CommandInterface):
         # the last message directly
         if message is None:
             return None
-        previous_message = self.message_repository.get_previous_message(
-            message, r"^(?!\s*$).+"
-        )
+        if message.reply_id is not None:
+            previous_message = self.message_repository.get_message_from_id(
+                message.reply_id, message.chat_id
+            )
+        else:
+            matching_message = Message(chat_id=message.chat_id)
+            previous_message = self.message_repository.get_previous_message(
+                matching_message, r"^(?!\s*$).+"
+            )
         if previous_message is None:
             return None
-        if previous_message.text is None:
+        if previous_message.text is None or previous_message.text == "":
             return None
         try:
             # uwu-mocking the message found
             reply_text = re.sub(r"(\w{3})", r"\1w", previous_message.text)
         except re.error:
             return None
-        # here is how you open/set an image for the bot action
-        with open("./sadbot/assets/uwu.jpg", mode="rb") as reply_image_file:
+        # here is how you open/set an image for the bot action, please note that in
+        # this project the standard directory for storing command assets is:
+        # ./sadbot/assets/{command_name}/
+        with open("./sadbot/assets/uwu/uwu.jpg", mode="rb") as reply_image_file:
             reply_image = reply_image_file.read()
         return [
             BotAction(
@@ -181,15 +192,79 @@ Managers may behave like containers for multiple sub-managers.
 
 ## Todo list
 - [ ] Antiflood, samewords count and newlines count
+- [ ] Flush completed TODOs (lol)
 - [ ] VC Radio
 - [ ] Group admin settings: enabled modules etc.
 - [ ] Add new tables: for images, for edits and for usernames
-- [ ] .slap command
-- [ ] Fix roulette revolver regex
-- [ ] Report command
-- [ ] Fix .remindme
-- [ ] Random hug gifs?
-- [ ] Check if the mute/unmute replies are correct
+- [ ] Add user-requested assets to the commands
+- [ ] Sympy plots: return the bytearray instead of writing it into
+a file
+- [ ] Fix bookmark command (it says he found bookmarks even if it didn't)
+- [ ] Fix mute - sometimes it doesn't work
+- [ ] Fix ban - sometimes it doesn't work
+- [ ] Fix kick - sometimes it doesn't work
+- [ ] Fix seen command - sometimes it doesn't work. It may be a username case
+sensivity issue
+- [ ] Del command
+- [ ] Flush command (deletes every message after the selected one)
+- [ ] Create a function that returns {username} / {sender_name} / "User" so we
+don't repeat the same code in every command (mute, ban, kick, warn, etc.)
+- [ ] Specific thread post retrival
+- [ ] Meteadata command
+- [ ] Translate voice command
+- [ ] Fix mute command short interval
+- [ ] Slowmode command
+- [ ] Good morning / Good night messages/gifs (see how .setrules work); we have
+to write a manager for this
+- [ ] Update README.md (check it overall and complete the description for the
+bot managers)
+- [ ] Meme caption adder command: adds some text to an image or a video
+- [ ] Add warn reason (and clean old warnings please...)
+- [ ] Restart command: better reply message: reply message on startup
+- [ ] Username change detector (see the UPDATE query on the usernames table;
+it's halfway done: the table with the data is already there, we just need a
+callback to send the message)
+- [ ] Plot3D animated videos
+- [ ] Fix `BOT_ACTION_TYPE_NONE` managers callback: they are dispatched only
+after a message is sent, therefore it fails do dispatch new managers
+- [X] Fix rand command regex: add leading dot / exclamation mark
+- [X] Update go schizo regex: allow "goschizo" without space
+- [X] ~~Git pull command: better reply message~~
+- [X] Fix uwu command: sometimes it doesn't reply, probably because it loads a
+previous empty message
+- [X] Compliment command: update regex in order to reply to "Thanks bot"
+- [X] Change captcha kick time in config.py to 5 minutes
+- [X] Fix translate command: it doesn't support newlines
+- [X] Update weed command with "cool 50 ways to say no to weed" (search it on
+google lmao)
+- [X] Fix activity output message (whitespace alignment)
+- [X] Deepfry image command
+- [X] ~~Translate~~ OCR command: images ~~translate~~ OCR with Tesseract.
+- [X] Git pull & restart command for the bot owner
+- [X] Report command
+- [X] Fix seen command
+- [X] Fix .remindme (it doesn't work when reminder time is very small)
+- [X] Check if the mute/unmute replies are correct (or if it doesn't handle the
+'@' before the usernames)
+- [X] .slap command
+- [X] Random hug gifs?
+- [X] .getchatid command
+- [X] Fix roulette command: initialize (and store) the instance outside the
+command, in sadbot/classes/revolver.py: the commands call that class and gets
+the response, period, all the "logic" should be in there. (Because commands are
+not persistent in memory)
+- [X] Fix roulette revolver regex
+- [X] .hug command
+- [X] Redefine the data directories to sadbot/data/command_name (no command
+should ever write outside of his data directory. So we have to just change the
+dir of the captcha image command, and of some other stuff)
+- [X] Fix .remindme
+- [X] Fix roulette command
+- [X] Check if the mute/unmute replies are correct
+- [X] Random hug gifs?
+- [X] Fix roulette revolver regex
+- [X] .getchatid command
+- [X] .slap command
 - [X] .hug command
 - [X] Redefine the data directories to sadbot/assets/command_name and the commands with assets
 - [X] Reminder tag/bookmark command

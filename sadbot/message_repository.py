@@ -13,6 +13,8 @@ from sadbot.message import Message
 
 def regex_lambda(x_val: str, y_val: str) -> int:
     """Regex lambda function for the SQL queries"""
+    if y_val is None:
+        return 0
     try:
         return 1 if re.search(str(x_val), str(y_val)) else 0
     except re.error:
@@ -33,7 +35,9 @@ def get_messages_table_creation_query() -> str:
       IsBot            bool,
       MessageTime      int,
       FileType         int,
-      FileID           text
+      FileID           text,
+      MimeType         text,
+      Entities         text
     )
     """
 
@@ -94,6 +98,12 @@ class MessageRepository:  # pylint: disable=R0904
                 if heal_message.text is None:
                     continue
                 self.insert_message(heal_message)
+
+    def run_query(self, query: str) -> List:
+        """Runs a generic query"""
+        cur = self.con.cursor()
+        cur.execute(query)
+        return cur.fetchall()
 
     def delete_old_bot_triggers_logs(self, time: int) -> None:
         """Deletes old bot triggers"""
@@ -222,7 +232,7 @@ class MessageRepository:  # pylint: disable=R0904
           SET Username = ?
           WHERE UserID = ?
         """
-        self.con.execute(query, [user_id, username])
+        self.con.execute(query, [username, user_id])
         self.con.commit()
         return True
 
@@ -260,8 +270,10 @@ class MessageRepository:  # pylint: disable=R0904
             IsBot,
             MessageTime,
             FileType,
-            FileID
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            FileID,
+            MimeType,
+            Entities
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """
         self.con.execute(
             query,
@@ -277,6 +289,8 @@ class MessageRepository:  # pylint: disable=R0904
                 message.message_time,
                 message.file_type,
                 message.file_id,
+                message.mime_type,
+                message.entities,
             ),
         )
         self.con.commit()
@@ -289,18 +303,13 @@ class MessageRepository:  # pylint: disable=R0904
         manager = Manager()
         result_list: List = manager.list()
         message_process = Process(
-            target=self.get_previous_message_worker,
-            args=(
-                result_list,
-                message,
-                regex,
-            ),
+            target=self.get_previous_message_worker, args=(result_list, message, regex)
         )
         message_process.start()
         message_process.join(2)
         message_process.kill()
         message_process.join()
-        if result_list == []:
+        if not result_list:
             return None
         return Message(*result_list)
 

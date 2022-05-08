@@ -6,7 +6,11 @@ from typing import Optional, List, Dict
 from sadbot.message import Message
 from sadbot.message_repository import MessageRepository
 from sadbot.action_manager_interface import ActionManagerInterface
-from sadbot.bot_action import BotAction, BOT_ACTION_TYPE_REPLY_TEXT
+from sadbot.bot_action import (
+    BotAction,
+    BOT_ACTION_TYPE_REPLY_TEXT,
+    BOT_ACTION_PRIORITY_MEDIUM,
+)
 
 
 def get_reminders_table_creation_query() -> str:
@@ -58,7 +62,7 @@ class RemindMeManager(ActionManagerInterface):
           RemindTime
         ) VALUES (?, ?, ?, ?, ?)
         """
-        remind_time = datetime.datetime.utcnow().timestamp() + duration
+        remind_time = int(datetime.datetime.utcnow().timestamp()) + duration
         self.con.execute(
             query,
             [
@@ -71,14 +75,13 @@ class RemindMeManager(ActionManagerInterface):
         )
         self.con.commit()
 
-    def delete_expired_reminders(self) -> None:
+    def delete_expired_reminders(self, current_time: int) -> None:
         """Removes expired reminders"""
         query = """
         DELETE FROM reminders
         WHERE RemindTime < ?
         """
-        message_time = datetime.datetime.utcnow().timestamp()
-        self.con.execute(query, [message_time])
+        self.con.execute(query, [current_time])
         self.con.commit()
 
     def get_reminders(self) -> Optional[List]:
@@ -124,6 +127,7 @@ class RemindMeManager(ActionManagerInterface):
                 BOT_ACTION_TYPE_REPLY_TEXT,
                 reply_text=reply_text,
                 reply_to_message_id=reminder_message_id,
+                reply_priority=BOT_ACTION_PRIORITY_MEDIUM,
             )
         ]
         return [trigger_message, actions]
@@ -134,10 +138,11 @@ class RemindMeManager(ActionManagerInterface):
         if knowledge is None:
             return None
         actions = []
+        current_time = int(datetime.datetime.utcnow().timestamp())
         for reminder in knowledge:
-            if reminder[4] < datetime.datetime.utcnow().timestamp():
+            if reminder[4] < current_time:
                 actions.append(
                     self.get_remind_reply(reminder[0], reminder[1], reminder[2])
                 )
-        self.delete_expired_reminders()
+        self.delete_expired_reminders(current_time)
         return actions

@@ -63,15 +63,16 @@ class MuteBotCommand(CommandInterface):
                     )
                 else:
                     until_date = convert_to_seconds(message_text[1])
+                    until_text = " " + message_text[1]
             if len(message_text) == 3:
                 user_to_mute = message_text[1].replace("@", "")
                 user_id_to_mute = self.message_repository.get_user_id_from_username(
                     user_to_mute
                 )
                 until_date = convert_to_seconds(message_text[2])
-        until_text = "ever, lmao"
-        if until_date is not None and until_date >= 30:
-            until_text = " " + str(message_text[2])
+                until_text = " " + message_text[2]
+        if until_date is None or until_date < 30:
+            until_text = "ever, lmao"
         until_date += int(time.time())
         until_date += 2  # Delay for the api request and elaboration time
         if user_id_to_mute is None:

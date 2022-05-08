@@ -20,7 +20,7 @@ class RandBotCommand(CommandInterface):
     @property
     def command_regex(self) -> str:
         """Returns the regex for matching the rand command"""
-        return r"[Rr][Aa][Nn][Dd]\([-]?[0-9]+,(\s+)?[-]?[0-9]+\).*"
+        return r"(!|\.)?[Rr][Aa][Nn][Dd]\([-]?[0-9]+,(\s+)?[-]?[0-9]+\).*"
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
         """Gets a random number in a user-defined range"""

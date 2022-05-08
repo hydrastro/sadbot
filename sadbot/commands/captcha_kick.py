@@ -54,6 +54,7 @@ class CaptchaKickBotCommand(CommandInterface):
             f"Welcome {new_user}",
             f"!! Yooo welcome {new_user}",
             f"W-w-welcome {new_user} ~~",
+            f"验证码已输入，用户已验证。欢迎加入群组 {new_user}",
         ]
         return random.choice(welcome_replies)
 
@@ -63,6 +64,7 @@ class CaptchaKickBotCommand(CommandInterface):
         not_your_captcha_replies = [
             "That's not your captcha.",
             "Yoo tf you doing that ain't your business",
+            "你在幹嘛？",
         ]
         return random.choice(not_your_captcha_replies)
 
@@ -176,6 +178,7 @@ class CaptchaKickBotCommand(CommandInterface):
             else f"@{message.sender_username}"
         )
         kick_text_replies = [
+            "还没有及时完成验证码。用户 已被踢出。",
             "Begone bot",
             "lol i knew it was a bot",
             "There's space for only one bot here, and that's me",
