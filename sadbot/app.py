@@ -397,6 +397,7 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
                 result["from"].get("username", None),
                 True,
                 result["date"],
+                # TODO: file stuff
             )
             self.message_repository.insert_message(sent_message_dataclass)
             if reply_info.reply_callback_manager_name is not None:

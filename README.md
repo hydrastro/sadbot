@@ -197,19 +197,8 @@ Managers may behave like containers for multiple sub-managers.
 - [ ] Group admin settings: enabled modules etc.
 - [ ] Add new tables: for images, for edits and for usernames
 - [ ] Add user-requested assets to the commands
-- [X] Fix rand command regex: add leading dot / exclamation mark
-- [X] Update go schizo regex: allow "goschizo" without space
-- ~~[ ] Git pull command: better reply message~~
-- [X] Fix uwu command: sometimes it doesn't reply, probably because it loads a
-previous empty message
-- [X] Compliment command: update regex in order to reply to "Thanks bot"
-- [X] Change captcha kick time in config.py to 5 minutes
-- [X] Fix translate command: it doesn't support newlines
-- [X] Update weed command with "cool 50 ways to say no to weed" (search it on
-google lmao)
 - [ ] Sympy plots: return the bytearray instead of writing it into
 a file
-- [X] Fix activity output message (whitespace alignment)
 - [ ] Fix bookmark command (it says he found bookmarks even if it didn't)
 - [ ] Fix mute - sometimes it doesn't work
 - [ ] Fix ban - sometimes it doesn't work
@@ -225,14 +214,12 @@ don't repeat the same code in every command (mute, ban, kick, warn, etc.)
 - [ ] Translate voice command
 - [ ] Fix mute command short interval
 - [ ] Slowmode command
-- [ ] Deepfry image command
 - [ ] Good morning / Good night messages/gifs (see how .setrules work); we have
 to write a manager for this
 - [ ] Update README.md (check it overall and complete the description for the
 bot managers)
 - [ ] Meme caption adder command: adds some text to an image or a video
 - [ ] Add warn reason (and clean old warnings please...)
-- [ ] Translate command: images translate with Tesseract.
 - [ ] Restart command: better reply message: reply message on startup
 - [ ] Username change detector (see the UPDATE query on the usernames table;
 it's halfway done: the table with the data is already there, we just need a
@@ -240,6 +227,19 @@ callback to send the message)
 - [ ] Plot3D animated videos
 - [ ] Fix `BOT_ACTION_TYPE_NONE` managers callback: they are dispatched only
 after a message is sent, therefore it fails do dispatch new managers
+- [X] Fix rand command regex: add leading dot / exclamation mark
+- [X] Update go schizo regex: allow "goschizo" without space
+- [X] ~~Git pull command: better reply message~~
+- [X] Fix uwu command: sometimes it doesn't reply, probably because it loads a
+previous empty message
+- [X] Compliment command: update regex in order to reply to "Thanks bot"
+- [X] Change captcha kick time in config.py to 5 minutes
+- [X] Fix translate command: it doesn't support newlines
+- [X] Update weed command with "cool 50 ways to say no to weed" (search it on
+google lmao)
+- [X] Fix activity output message (whitespace alignment)
+- [X] Deepfry image command
+- [X] ~~Translate~~ OCR command: images ~~translate~~ OCR with Tesseract.
 - [X] Git pull & restart command for the bot owner
 - [X] Report command
 - [X] Fix seen command

@@ -2,6 +2,7 @@
 
 from typing import Optional, List
 
+
 from sadbot.command_interface import CommandInterface, BOT_HANDLER_TYPE_MESSAGE
 from sadbot.message import Message, MESSAGE_FILE_TYPE_PHOTO
 from sadbot.message_repository import MessageRepository
@@ -11,7 +12,7 @@ from sadbot.classes.ocr import get_text
 
 
 class OcrBotCommand(CommandInterface):
-    """This is the sed bot command class"""
+    """This is the ocr bot command class"""
 
     def __init__(self, app: App, message_repository: MessageRepository):
         self.app = app
@@ -28,7 +29,7 @@ class OcrBotCommand(CommandInterface):
         return r"((!|\.)([Oo][Cc][Rr])).*"
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
-        """Performs the sed command on a given message"""
+        """Performs the ocr command on a given message"""
         if message is None or message.text is None:
             return None
         if message.reply_id is None:
