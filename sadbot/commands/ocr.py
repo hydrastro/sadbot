@@ -44,10 +44,10 @@ class OcrBotCommand(CommandInterface):
             return [
                 BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text="An error occured")
             ]
-        # split = message.text.split()[-1]
+        split = message.text.split()
         lang = "eng"
-        # if split in langs:
-        #    lang = split
+        if len(split) > 1:
+            lang = split[1]
         reply_text = "OCR:\n" + get_text(lang, photo)
         return [BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text=reply_text)]
 
