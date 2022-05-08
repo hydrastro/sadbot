@@ -35,7 +35,9 @@ def get_messages_table_creation_query() -> str:
       IsBot            bool,
       MessageTime      int,
       FileType         int,
-      FileID           text
+      FileID           text,
+      MimeType         text,
+      Entities         text
     )
     """
 
@@ -268,8 +270,10 @@ class MessageRepository:  # pylint: disable=R0904
             IsBot,
             MessageTime,
             FileType,
-            FileID
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            FileID,
+            MimeType,
+            Entities
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """
         self.con.execute(
             query,
@@ -285,6 +289,8 @@ class MessageRepository:  # pylint: disable=R0904
                 message.message_time,
                 message.file_type,
                 message.file_id,
+                message.mime_type,
+                message.entities,
             ),
         )
         self.con.commit()
