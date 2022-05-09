@@ -113,7 +113,7 @@ class PluginsKeyboard:
             )
         keyboard_data = [
             grid[n : n + page_columns * 2]
-            for n in range(0, len(keyboard_data), page_columns * 2)
+            for n in range(0, len(grid), page_columns * 2)
         ]
         previous_next_buttons = []
         if current_page != 0:
