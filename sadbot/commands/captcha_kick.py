@@ -130,11 +130,11 @@ class CaptchaKickBotCommand(CommandInterface):
             ),
         ]
         rules = self.group_configs.get_group_config(message.chat_id, "rules")
-        if rules is not None and "rules" in rules:
-            if "text" in rules["rules"]:
-                if rules["rules"]["text"] is not None:
-                    welcome_reply += "\n" + rules["rules"].get("text", "")
-            if "photo" in rules["rules"] and rules["rules"]["photo"] is not None:
+        if rules is not None:
+            if "text" in rules:
+                if rules["text"] is not None:
+                    welcome_reply += "\n" + rules.get("text", "")
+            if "photo" in rules and rules["photo"] is not None:
                 try:
                     with open(
                         f"./sadbot/assets/rules/{message.chat_id}.jpg", mode="rb"
