@@ -50,7 +50,14 @@ class PluginsCallbackBotCommand(CommandInterface):
             user_type != CHAT_MEMBER_STATUS_CREATOR
             and not user_permissions[1].can_restrict_members
         ):
-            return None
+            return [
+                BotAction(
+                    BOT_ACTION_TYPE_ANSWER_CALLBACK_QUERY,
+                    reply_callback_query_id=message.message_id,
+                    reply_text="Yo you don't have permissions kiddo.",
+                    reply_priority=BOT_ACTION_PRIORITY_HIGH,
+                )
+            ]
         callback_data = message.text.split(".")
         chat_id = int(callback_data[1])
         current_page = int(callback_data[2])
