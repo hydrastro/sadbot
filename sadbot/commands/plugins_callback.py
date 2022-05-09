@@ -50,12 +50,7 @@ class PluginsCallbackBotCommand(CommandInterface):
             user_type != CHAT_MEMBER_STATUS_CREATOR
             and not user_permissions[1].can_restrict_members
         ):
-            return [
-                BotAction(
-                    BOT_ACTION_TYPE_REPLY_TEXT,
-                    reply_text="You don't have enough rights to handle plugins, kiddo.",
-                )
-            ]
+            return None
         callback_data = message.text.split(".")
         chat_id = int(callback_data[1])
         current_page = int(callback_data[2])
