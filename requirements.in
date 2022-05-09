@@ -1,6 +1,9 @@
 requests
+types-requests
 pillow
 html2text
 yt-dlp
 matplotlib
 sympy
+beautifulsoup4
+validators

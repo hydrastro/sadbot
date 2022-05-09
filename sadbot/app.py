@@ -24,8 +24,8 @@ from sadbot.message import (
 )
 from sadbot.message_repository import MessageRepository
 from sadbot.config import (
-    OFFLINE_ANTIFLOOD_TIMEOUT,
     MAX_REPLY_LENGTH,
+    OFFLINE_ANTIFLOOD_TIMEOUT,
     UPDATES_TIMEOUT,
     UPDATE_PROCESSING_MAX_TIMEOUT,
     OUTGOING_REQUESTS_TIMEOUT,
@@ -167,6 +167,9 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
                     "regex": getattr(command_class, "command_regex"),
                     "class": command_class,
                     "command_name": command_name,
+                    "compiled_regex": re.compile(
+                        getattr(command_class, "command_regex"), re.DOTALL
+                    ),
                 }
             )
             self.command_list.append(class_name)
@@ -402,6 +405,7 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
                 result["from"].get("username", None),
                 True,
                 result["date"],
+                # TODO: file stuff. pylint: disable=fixme
             )
             self.message_repository.insert_message(sent_message_dataclass)
             if reply_info.reply_callback_manager_name is not None:
@@ -423,16 +427,16 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
         reply_text = reply.reply_text
         if reply.reply_type == BOT_ACTION_TYPE_NONE:
             return None
+        parse_mode = reply.reply_text_parse_mode
+        if parse_mode is not None:
+            data.update({"parse_mode": parse_mode})
+        if reply_text is not None and len(reply_text) > MAX_REPLY_LENGTH:
+            reply_text = reply_text[:MAX_REPLY_LENGTH] + "..."
         if reply.reply_type == BOT_ACTION_TYPE_REPLY_TEXT:
             api_method = "sendMessage"
             if reply_text is None:
                 return None
-            if len(reply_text) > MAX_REPLY_LENGTH:
-                reply_text = reply_text[:MAX_REPLY_LENGTH] + "..."
             data.update({"text": reply_text})
-            parse_mode = reply.reply_text_parse_mode
-            if parse_mode is not None:
-                data.update({"parse_mode": parse_mode})
         elif reply.reply_type == BOT_ACTION_TYPE_REPLY_IMAGE:
             api_method = "sendPhoto"
             files = {"photo": reply.reply_image}
@@ -573,7 +577,7 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
                 continue
             if command["class"].handler_type == BOT_HANDLER_TYPE_MESSAGE:
                 try:
-                    if re.fullmatch(re.compile(command["regex"]), text):
+                    if re.fullmatch(command["compiled_regex"], text):
                         reply_message = command["class"].get_reply(message)
                         if reply_message is None:
                             continue
@@ -732,7 +736,8 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
                 if "caption" in item["message"]:
                     message.text = str(item["message"]["caption"])
                 message.file_type = MESSAGE_FILE_TYPE_PHOTO
-                message.file_id = item["message"]["photo"][2]["file_id"]
+                max_index = len(item["message"]["photo"]) - 1
+                message.file_id = item["message"]["photo"][max_index]["file_id"]
                 self.handle_photos(message)
             if "video" in item["message"]:
                 if "caption" in item["message"]:

@@ -19,7 +19,9 @@ class InsultBotCommand(CommandInterface):
     @property
     def command_regex(self) -> str:
         """Returns the regex for matching insults"""
-        return r".*(([Bb][Aa][Dd]|[Ss][Tt][Uu][Pp][Ii][Dd]|[Ss][Hh][Ii][Tt])(\s+[Bb][Oo][Tt])).*"
+        regex = r".*(([Rr][Ee][Tt][Aa][Rr][Dd]|[Bb][Aa][Dd]|[Ss][Tt][Uu][Pp][Ii][Dd]|"
+        regex += r"[Ss][Hh][Ii][Tt])(\s+[Bb][Oo][Tt])).*"
+        return regex
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
         """Gets a reply for when the bot receives an insult"""

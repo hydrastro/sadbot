@@ -24,6 +24,7 @@ from sadbot.config import (
 )
 from sadbot.message_repository import MessageRepository
 from sadbot.chat_permissions import ChatPermissions
+from sadbot.functions import convert_time
 
 
 class CaptchaWelcomeBotCommand(CommandInterface):
@@ -86,6 +87,7 @@ class CaptchaWelcomeBotCommand(CommandInterface):
     @staticmethod
     def get_welcome_message(new_user: str) -> str:
         """Returns a 'welcome' message lol"""
+        time_string = convert_time(CAPTCHA_EXPIRATION)
         welcome_message_replies = [
             f"Welcome {new_user}\nPlease solve the captcha.",
             f"""W-w.. welcomee {new_user} ~~ uwu~\nP-p pweaswe c-c.. *blushing* c- c-an """
@@ -94,6 +96,9 @@ class CaptchaWelcomeBotCommand(CommandInterface):
             + """one bot here, and that's me.\nHere's your test.""",
             f"Yoo {new_user} wassup\nCan ya solve da captcha?",
             f"{new_user} looking kinda sus, ngl.\nProve us ur not the impostor.",
+            f"""嗨 {new_user}，歡迎加入群。 請填寫驗證碼以驗證您是人類。 {time_string}"""
+            + """內不輸入驗證碼，會被自動踢出群。 在此之前，您將無法發送消息。 """
+            + """這個組裡只有一個機器人，那個機器人就是我。""",
         ]
         return random.choice(welcome_message_replies)
 

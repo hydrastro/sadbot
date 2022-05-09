@@ -19,7 +19,9 @@ class ComplimentBotCommand(CommandInterface):
     @property
     def command_regex(self) -> str:
         """Returns the regex for matching compliments"""
-        return r".*(([Gg][Oo]{2}[Dd]|[Bb][Aa][Ss][Ee][Dd]|[Nn][Ii][Cc][Ee])(\s+[Bb][Oo][Tt])).*"
+        regex = r".*(([Gg][Oo]{2}[Dd]|[Bb][Aa][Ss][Ee][Dd]|[Nn][Ii][Cc][Ee]|"
+        regex += r"[Tt][Hh][Aa][Nn][Kk])(\s+[Bb][Oo][Tt])).*"
+        return regex
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
         """Gets a reply for when the bot receives a compliment"""
