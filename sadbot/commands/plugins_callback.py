@@ -52,8 +52,10 @@ class PluginsCallbackBotCommand(CommandInterface):
         ):
             return [
                 BotAction(
-                    BOT_ACTION_TYPE_REPLY_TEXT,
-                    reply_text="You don't have enough rights to handle plugins, kiddo.",
+                    BOT_ACTION_TYPE_ANSWER_CALLBACK_QUERY,
+                    reply_callback_query_id=message.message_id,
+                    reply_text="Yo you don't have permissions kiddo.",
+                    reply_priority=BOT_ACTION_PRIORITY_HIGH,
                 )
             ]
         callback_data = message.text.split(".")
