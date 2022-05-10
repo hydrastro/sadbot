@@ -8,7 +8,6 @@ from sadbot.message import Message
 from sadbot.bot_action import (
     BotAction,
     BOT_ACTION_TYPE_ANSWER_CALLBACK_QUERY,
-    BOT_ACTION_TYPE_REPLY_TEXT,
     BOT_ACTION_TYPE_EDIT_MESSAGE_TEXT,
     BOT_ACTION_PRIORITY_HIGH,
 )
