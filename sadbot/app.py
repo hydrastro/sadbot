@@ -1,4 +1,4 @@
-r"""This module contains the main app class and friends"""
+"""This module contains the main app class and friends"""
 
 import datetime
 import glob
@@ -51,6 +51,7 @@ from sadbot.bot_action import (
     BOT_ACTION_TYPE_NONE,
     BOT_ACTION_TYPE_REPLY_VIDEO_ONLINE,
     BOT_ACTION_TYPE_REPLY_PHOTO_ONLINE,
+    BOT_ACTION_TYPE_EDIT_MESSAGE_TEXT,
     # BOT_ACTION_PRIORITY_LOW,
     BOT_ACTION_PRIORITY_MEDIUM,
     BOT_ACTION_PRIORITY_HIGH,
@@ -64,6 +65,7 @@ from sadbot.command_interface import (
     BOT_HANDLER_TYPE_MESSAGE,
 )
 from sadbot.chat_permissions import ChatPermissions
+from sadbot.classes.group_configs import GroupConfigs
 
 CHAT_MEMBER_STATUS_CREATOR = 0
 CHAT_MEMBER_STATUS_ADMIN = 1
@@ -95,6 +97,7 @@ def is_bot_action_message(action_type: int) -> bool:
         BOT_ACTION_TYPE_REPLY_FILE,
         BOT_ACTION_TYPE_REPLY_VOICE,
         BOT_ACTION_TYPE_REPLY_VIDEO_ONLINE,
+        BOT_ACTION_TYPE_EDIT_MESSAGE_TEXT,
     ]
 
 
@@ -113,8 +116,11 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
         self.classes["Connection"] = con
         self.message_repository = MessageRepository(con)
         self.classes["MessageRepository"] = self.message_repository
+        self.group_configs = GroupConfigs(con)
+        self.classes["GroupConfigs"] = self.group_configs
         self.managers: Dict[str, object] = {}
         self.commands: List[Dict] = []
+        self.command_list: List[str] = []
         self.updates_workers: Dict[float, multiprocessing.Process] = {}
         self.manager = multiprocessing.Manager()
         self.outgoing_messages: Dict[float, List] = self.manager.dict()
@@ -160,11 +166,13 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
                 {
                     "regex": getattr(command_class, "command_regex"),
                     "class": command_class,
+                    "command_name": command_name,
                     "compiled_regex": re.compile(
                         getattr(command_class, "command_regex"), re.DOTALL
                     ),
                 }
             )
+            self.command_list.append(class_name)
 
     def load_managers(self) -> None:
         """Loads the bot managers"""
@@ -397,7 +405,7 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
                 result["from"].get("username", None),
                 True,
                 result["date"],
-                # TODO: file stuff
+                # TODO: file stuff. pylint: disable=fixme
             )
             self.message_repository.insert_message(sent_message_dataclass)
             if reply_info.reply_callback_manager_name is not None:
@@ -513,6 +521,15 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
                 data.update({"can_invite_users": True})
             if permissions_class.can_pin_messages is not None:
                 data.update({"can_pin_messages": True})
+        elif reply.reply_type == BOT_ACTION_TYPE_EDIT_MESSAGE_TEXT:
+            api_method = "editMessageText"  # TODO: add images support & stuff pylint: disable=fixme
+            data.update(
+                {
+                    "chat_id": chat_id,
+                    "message_id": reply.reply_target_message_id,
+                    "text": reply_text,
+                }
+            )
         else:
             return None
         if reply.reply_inline_keyboard is not None:
@@ -545,10 +562,19 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
     def get_replies(self, message: Message) -> Optional[List]:
         """Checks if a bot command is triggered and gets its reply"""
         text = message.text
+        chat_id = message.chat_id
         if not text:
             return None
         actions: List[BotAction] = []
+        disabled_plugins = self.group_configs.get_group_config(
+            chat_id, "disabled_plugins"
+        )
         for command in self.commands:
+            if (
+                isinstance(disabled_plugins, list)
+                and command["command_name"] in disabled_plugins
+            ):
+                continue
             if command["class"].handler_type == BOT_HANDLER_TYPE_MESSAGE:
                 try:
                     if re.fullmatch(command["compiled_regex"], text):

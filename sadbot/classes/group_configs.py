@@ -22,13 +22,13 @@ class GroupConfigs:
         self.con = con
         self.con.execute(get_group_configs_table_creation_query())
 
-    def get_group_config(self, chat_id: int, config_key: str) -> Optional[Dict]:
+    def get_group_config(self, chat_id: int, config_key: str) -> Optional[Any]:
         """Retrieves a group single config"""
         configs = self.get_group_configs(chat_id)
         if configs is None:
             return None
         if config_key in configs:
-            return {config_key: configs[config_key]}
+            return configs[config_key]
         return None
 
     def set_group_config(self, chat_id: int, config_key: str, config: Any) -> None:
