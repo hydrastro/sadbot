@@ -85,8 +85,7 @@ class DeepfryBotCommand(CommandInterface):
         img = ImageEnhance.Sharpness(img).enhance(100.0)
         img_byte = io.BytesIO()
         img.save(img_byte, format="png")
-        img_byte = img_byte.getvalue()
-        return img_byte
+        return img_byte.getvalue()
 
     def get_photo_from_message(self, message: Message) -> Optional[bytes]:
         """Returns the image to process"""

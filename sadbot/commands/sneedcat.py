@@ -92,7 +92,7 @@ def handle_media(title: str, node: dict) -> Optional[Media]:
                     biggest = variant
         media = Media(MediaType.VIDEO, title, biggest["url"])
     else:
-        media = None
+        return None
     return media
 
 
