@@ -7,3 +7,5 @@ matplotlib
 sympy
 beautifulsoup4
 validators
+opencv-python
+scipy

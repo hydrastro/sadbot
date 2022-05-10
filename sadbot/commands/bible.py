@@ -1,6 +1,9 @@
 """Bible bot command"""
 
 from typing import Optional, List
+import json
+
+import requests
 
 from sadbot.command_interface import CommandInterface, BOT_HANDLER_TYPE_MESSAGE
 from sadbot.message import Message
@@ -26,12 +29,27 @@ class BibleBotCommand(CommandInterface):
             return None
         if len(message.text) < 8:
             return None
-        verse = message.text[7:]
-        verse.strip()
-        with open(
-            "./sadbot/assets/bible/bible.txt", mode="r", encoding="utf-8"
-        ) as bible:
-            for line in bible:
-                if line.startswith(verse):
-                    return [BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text=line)]
+        verses = message.text[7:]
+        verses = verses.replace(" ", "+")
+        try:
+            url = f"https://bible-api.com/{verses}"
+            print(url)
+            req = requests.get(url)
+            body = req.json()
+            output = ""
+            for entry in body["verses"]:
+                verse: dict = entry
+                line = verse["book_name"]
+                line += f' {str(verse["chapter"])}:{str(verse["verse"])} - '
+                line += verse["text"]
+                output += line + "\n"
+            print(output)
+            return [
+                BotAction(
+                    reply_type=BOT_ACTION_TYPE_REPLY_TEXT,
+                    reply_text=output,
+                )
+            ]
+        except (requests.ConnectionError, json.JSONDecodeError):
+            return None
         return None

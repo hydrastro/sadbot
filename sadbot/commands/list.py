@@ -1,6 +1,6 @@
 """List bot command"""
 import sqlite3
-from typing import Optional, List, Tuple
+from typing import Optional, Tuple, List
 
 from sadbot.command_interface import CommandInterface, BOT_HANDLER_TYPE_MESSAGE
 from sadbot.message import Message
@@ -49,7 +49,7 @@ class ListBotCommand(CommandInterface):
     @property
     def command_regex(self) -> str:
         """Returns the regex for matching letsdo commands"""
-        return r"((!|\.)([Ll][Ii][Ss][Tt]\s+.*))"
+        return r"((!|\.)([Ll][Ii][Ss][Tt](\s+.*)?))"
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
         """Returns reply for list command"""
@@ -58,7 +58,8 @@ class ListBotCommand(CommandInterface):
         frags = message.text.split(" ")
         if len(frags) == 1:
             action = BotAction(
-                BOT_ACTION_TYPE_REPLY_TEXT, reply_text="Not enough arguments."
+                BOT_ACTION_TYPE_REPLY_TEXT,
+                reply_text=self.retrieve_all_lists(),
             )
         elif frags[1] == "create":
             action = self.create_list(message)
@@ -244,3 +245,16 @@ class ListBotCommand(CommandInterface):
         cur = self.con.cursor()
         cur.execute(query, (list_id, link))
         return cur.fetchone() is not None
+
+    def retrieve_all_lists(self) -> str:
+        """Retrieves all lists from the database"""
+        query = """
+        SELECT Name FROM lists
+        """
+        cur = self.con.cursor()
+        cur.execute(query)
+        names = "Current lists from this group chat:\n"
+        for entry in cur.fetchall():
+            names += entry[0]
+            names += "\n"
+        return names
