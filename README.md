@@ -208,9 +208,12 @@ sensivity issue
 - [ ] Create a function that returns {username} / {sender_name} / "User" so we
 don't repeat the same code in every command (mute, ban, kick, warn, etc.)
 - [ ] Specific thread post retrival
-- [ ] Meteadata command
+- [ ] Bible json asset
+- [ ] Move lists code into its own separate class?
+- [ ] Virustotal command
+- [X] Metadata command
 - [ ] Translate voice command
-- [ ] Fix mute command short interval
+- [X] ~~Fix mute command short interval~~
 - [ ] Slowmode command
 - [ ] Good morning / Good night messages/gifs (see how .setrules work); we have
 to write a manager for this
@@ -223,7 +226,7 @@ bot managers)
 it's halfway done: the table with the data is already there, we just need a
 callback to send the message)
 - [ ] Plot3D animated videos
-- [ ] Fix `BOT_ACTION_TYPE_NONE` managers callback: they are dispatched only
+- [X] Fix `BOT_ACTION_TYPE_NONE` managers callback: they are dispatched only
 after a message is sent, therefore it fails do dispatch new managers
 - [X] ~~Add new tables: for images, for edits and for usernames~~ Updated
 existing table

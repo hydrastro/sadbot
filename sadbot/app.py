@@ -311,7 +311,7 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
         self,
         class_name: str,
         trigger_message: Message,
-        sent_message: Message,
+        sent_message: Optional[Message],
         callback_manager_info: Optional[Dict],
     ) -> None:
         """Dispatches a new manager"""
@@ -391,6 +391,13 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
         )
         sent_message = self.send_message(chat_id, reply_info)
         if sent_message is None:
+            if reply_info.reply_callback_manager_name is not None:
+                self.dispatch_manager(
+                    reply_info.reply_callback_manager_name,
+                    message,
+                    None,
+                    reply_info.reply_callback_manager_info,
+                )
             return None
         # this needs to be done better, along with the storage for non-text messages
         if sent_message.get("result") and is_bot_action_message(reply_info.reply_type):

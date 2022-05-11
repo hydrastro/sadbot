@@ -330,7 +330,9 @@ class MessageRepository:  # pylint: disable=R0904
             IsBot,
             MessageTime,
             FileType,
-            FileID
+            FileID,
+            MimeType,
+            Entities
           FROM messages
           WHERE 1=1
         """
@@ -380,7 +382,9 @@ class MessageRepository:  # pylint: disable=R0904
             IsBot,
             MessageTime,
             FileType,
-            FileID
+            FileID,
+            MimeType,
+            Entities
           FROM messages
           WHERE MessageID = ? AND ChatID = ?
         """
@@ -406,7 +410,9 @@ class MessageRepository:  # pylint: disable=R0904
             IsBot,
             MessageTime,
             FileType,
-            FileID
+            FileID,
+            MimeType,
+            Entities
           FROM messages
           WHERE MessageID = ?
           AND ChatID = ?
@@ -432,7 +438,9 @@ class MessageRepository:  # pylint: disable=R0904
             IsBot,
             MessageTime,
             FileType,
-            FileID
+            FileID,
+            MimeType,
+            Entities
           FROM messages
           WHERE SenderID = ? AND ChatID = ?
           ORDER BY MessageTime DESC
@@ -459,7 +467,9 @@ class MessageRepository:  # pylint: disable=R0904
             IsBot,
             MessageTime,
             FileType,
-            FileID
+            FileID,
+            MimeType,
+            Entities
           FROM messages
           WHERE SenderID = ?
           ORDER BY RANDOM()
