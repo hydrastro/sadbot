@@ -5,7 +5,6 @@ from os.path import dirname, basename, isfile, join
 from math import ceil
 
 from sadbot.classes.group_configs import GroupConfigs
-from sadbot.message import Message
 
 
 class PluginsKeyboard:
@@ -72,21 +71,21 @@ class PluginsKeyboard:
             chat_id, "disabled_plugins", self.get_default_disabled_plugins()
         )
 
-    def get_keyboard(self, message: Message, current_page: int) -> List:
+    def get_keyboard(self, chat_id: int, current_page: int) -> List:
         """Displays the available plugins in a keyboard"""
         keyboard_data: List[List[Dict[str, str]]] = []
         grid = []
         # callback data is so ugly because the api has a limit on its length
-        callback_prefix = f"pk.{message.chat_id}.{current_page}"
+        callback_prefix = f"pk.{chat_id}.{current_page}"
         page_columns = 2
         page_rows = 6
         elements_per_page = page_columns * page_rows
         max_pages = ceil(len(self.commands) / elements_per_page)
         disabled_plugins = self.group_configs.get_group_config(
-            message.chat_id, "disabled_plugins"
+            chat_id, "disabled_plugins"
         )
         if disabled_plugins is None:
-            self.set_default_configs(message.chat_id)
+            self.set_default_configs(chat_id)
             disabled_plugins = self.get_default_disabled_plugins()
         for i in range(
             (current_page) * elements_per_page,

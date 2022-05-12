@@ -58,13 +58,18 @@ class PluginsBotCommand(CommandInterface):
             return self.exit_message(
                 "You don't have enough rights to handle plugins, kiddo."
             )
-        inline_keyboard = self.plugins_keyboard.get_keyboard(message, 0)
+        inline_keyboard = self.plugins_keyboard.get_keyboard(message.chat_id, 0)
         return [
+            BotAction(
+                BOT_ACTION_TYPE_REPLY_TEXT,
+                reply_text="Sup boss, I sent you the control panel in our private chat.",
+            ),
             BotAction(
                 BOT_ACTION_TYPE_REPLY_TEXT,
                 reply_text="Here you can enable or disable the bot commands:",
                 reply_inline_keyboard=inline_keyboard,
-            )
+                reply_chat_id=message.sender_id,
+            ),
         ]
 
     @staticmethod

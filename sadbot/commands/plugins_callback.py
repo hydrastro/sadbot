@@ -32,14 +32,23 @@ class PluginsCallbackBotCommand(CommandInterface):
     @property
     def command_regex(self) -> str:
         """Returns the regex for matching plugins (in the callback query data)"""
+        # pk.(chat_id).{current_page}.
+        #                             command.(command).info
+        #                             command.(command).(action=enable/disable)
+        #                             page.current
+        #                             page.(number)
+        #                             enable (all)
+        #                             disable (all)
         return r"pk.*"
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
         """Handles the plugins keyboard"""
         if message is None or message.text is None:
             return None
+        callback_data = message.text.split(".")
+        chat_id = int(callback_data[1])
         user_permissions = self.app.get_user_status_and_permissions(
-            message.chat_id, message.sender_id
+            chat_id, message.sender_id
         )
         if user_permissions is None:
             logging.error("User permissions not found.")
@@ -57,17 +66,8 @@ class PluginsCallbackBotCommand(CommandInterface):
                     reply_priority=BOT_ACTION_PRIORITY_HIGH,
                 )
             ]
-        callback_data = message.text.split(".")
-        chat_id = int(callback_data[1])
         current_page = int(callback_data[2])
         callback_reply_message = ""
-        # pk.(chat_id).{current_page}.
-        #                             command.(command).info
-        #                             command.(command).(action=enable/disable)
-        #                             page.current
-        #                             page.(number)
-        #                             enable (all)
-        #                             disable (all)
         if callback_data[3] == "c":
             if callback_data[5] == "e":
                 self.plugins_keyboard.enable_plugin(chat_id, callback_data[4])
@@ -85,7 +85,7 @@ class PluginsCallbackBotCommand(CommandInterface):
                 page = int(callback_data[4]) + 1
                 callback_reply_message = f"Going to page {page}"
                 inline_keyboard = self.plugins_keyboard.get_keyboard(
-                    message, int(callback_data[4])
+                    chat_id, int(callback_data[4])
                 )
                 return [
                     BotAction(
@@ -109,7 +109,7 @@ class PluginsCallbackBotCommand(CommandInterface):
         elif callback_data[3] == "d":
             self.plugins_keyboard.disable_all_plugins(chat_id)
             callback_reply_message = "Commands successfully disabled."
-        inline_keyboard = self.plugins_keyboard.get_keyboard(message, current_page)
+        inline_keyboard = self.plugins_keyboard.get_keyboard(chat_id, current_page)
         return [
             BotAction(
                 BOT_ACTION_TYPE_EDIT_MESSAGE_TEXT,
