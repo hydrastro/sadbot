@@ -5,10 +5,11 @@ import datetime
 import re
 import json
 import sqlite3
+from dataclasses import asdict
 from typing import Optional, List, Any
 from multiprocessing import Manager, Process
 
-from sadbot.message import Message
+from sadbot.message import Message, Entity
 
 
 def regex_lambda(x_val: str, y_val: str) -> int:
@@ -275,6 +276,7 @@ class MessageRepository:  # pylint: disable=R0904
             Entities
           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """
+        entities_dump = self.get_entities_dump(message.entities)
         self.con.execute(
             query,
             (
@@ -290,7 +292,7 @@ class MessageRepository:  # pylint: disable=R0904
                 message.file_type,
                 message.file_id,
                 message.mime_type,
-                json.dumps(message.entities),
+                entities_dump,
             ),
         )
         self.con.commit()
@@ -301,17 +303,18 @@ class MessageRepository:  # pylint: disable=R0904
         """Calls a worker which tries to retrieve, from the database, a message matching some things
         or a regex pattern and  eventually kills it if it gets stuck"""
         manager = Manager()
-        result_list: List = manager.list()
+        result_tuple: List = manager.list()
         message_process = Process(
-            target=self.get_previous_message_worker, args=(result_list, message, regex)
+            target=self.get_previous_message_worker, args=(result_tuple, message, regex)
         )
         message_process.start()
         message_process.join(2)
         message_process.kill()
         message_process.join()
-        if not result_list:
+        if not result_tuple:
             return None
-        result_list[12] = json.loads(result_list[12])
+        result_list = list(result_tuple)
+        result_tuple[12] = self.load_entities_list(result_list[12])
         return Message(*result_list)
 
     def get_previous_message_worker(
@@ -393,8 +396,9 @@ class MessageRepository:  # pylint: disable=R0904
         cur.execute(query, params)
         data = cur.fetchone()
         if data is not None:
-            data[12] = json.loads(data[12])
-            return Message(*data)
+            result_list = list(data)
+            result_list[12] = self.load_entities_list(result_list[12])
+            return Message(*result_list)
         return None
 
     def get_message_from_id(self, message_id: int, chat_id: int) -> Optional[Message]:
@@ -422,8 +426,9 @@ class MessageRepository:  # pylint: disable=R0904
         cur.execute(query, [message_id, chat_id])
         data = cur.fetchone()
         if data is not None:
-            data[12] = json.loads(data[12])
-            return Message(*data)
+            result_list = list(data)
+            result_list[12] = self.load_entities_list(result_list[12])
+            return Message(*result_list)
         return None
 
     def get_user_last_message(self, user_id: int, chat_id: int) -> Optional[Message]:
@@ -452,8 +457,9 @@ class MessageRepository:  # pylint: disable=R0904
         cur.execute(query, [user_id, chat_id])
         data = cur.fetchone()
         if data is not None:
-            data[12] = json.loads(data[12])
-            return Message(*data)
+            result_list = list(data)
+            result_list[12] = self.load_entities_list(result_list[12])
+            return Message(*result_list)
         return None
 
     def get_random_message_from_user(self, user_id: int) -> Optional[Message]:
@@ -482,8 +488,9 @@ class MessageRepository:  # pylint: disable=R0904
         cur.execute(query, [user_id])
         data = cur.fetchone()
         if data is not None:
-            data[12] = json.loads(data[12])
-            return Message(*data)
+            result_list = list(data)
+            result_list[12] = self.load_entities_list(result_list[12])
+            return Message(*result_list)
         return None
 
     def get_user_id_from_message_id(
@@ -494,3 +501,24 @@ class MessageRepository:  # pylint: disable=R0904
         if message is None:
             return None
         return message.sender_id
+
+    @staticmethod
+    def get_entities_dump(entities: Optional[List[Entity]]) -> Optional[str]:
+        """Returns entities json dump"""
+        if entities is None:
+            return None
+        dump_list = []
+        for entity in entities:
+            dump_list.append(asdict(entity))
+        return json.dumps(dump_list)
+
+    @staticmethod
+    def load_entities_list(entities_dump: Optional[str]) -> Optional[List[Entity]]:
+        """Loads entities from a dump"""
+        if entities_dump is None:
+            return None
+        loads = json.loads(entities_dump)
+        entity_list = []
+        for entity in loads:
+            entity_list.append(Entity(*entity))
+        return entity_list
