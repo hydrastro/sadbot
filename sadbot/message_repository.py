@@ -290,7 +290,7 @@ class MessageRepository:  # pylint: disable=R0904
                 message.file_type,
                 message.file_id,
                 message.mime_type,
-                message.entities,
+                json.dumps(message.entities),
             ),
         )
         self.con.commit()
@@ -311,6 +311,7 @@ class MessageRepository:  # pylint: disable=R0904
         message_process.join()
         if not result_list:
             return None
+        result_list[12] = json.loads(result_list[12])
         return Message(*result_list)
 
     def get_previous_message_worker(
@@ -392,6 +393,7 @@ class MessageRepository:  # pylint: disable=R0904
         cur.execute(query, params)
         data = cur.fetchone()
         if data is not None:
+            data[12] = json.loads(data[12])
             return Message(*data)
         return None
 
@@ -420,6 +422,7 @@ class MessageRepository:  # pylint: disable=R0904
         cur.execute(query, [message_id, chat_id])
         data = cur.fetchone()
         if data is not None:
+            data[12] = json.loads(data[12])
             return Message(*data)
         return None
 
@@ -447,9 +450,10 @@ class MessageRepository:  # pylint: disable=R0904
           LIMIT 1
         """
         cur.execute(query, [user_id, chat_id])
-        data = cur.fetchall()
-        if data is not None and data:
-            return Message(*data[0])
+        data = cur.fetchone()
+        if data is not None:
+            data[12] = json.loads(data[12])
+            return Message(*data)
         return None
 
     def get_random_message_from_user(self, user_id: int) -> Optional[Message]:
@@ -478,6 +482,7 @@ class MessageRepository:  # pylint: disable=R0904
         cur.execute(query, [user_id])
         data = cur.fetchone()
         if data is not None:
+            data[12] = json.loads(data[12])
             return Message(*data)
         return None
 
