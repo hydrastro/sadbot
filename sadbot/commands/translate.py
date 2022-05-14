@@ -1,11 +1,9 @@
 """Translate bot command"""
-
 from typing import Optional, List
-import html
 import re
-import urllib.parse
 import requests
 
+from sadbot.commands import googletrans
 from sadbot.command_interface import CommandInterface, BOT_HANDLER_TYPE_MESSAGE
 from sadbot.message import Message
 from sadbot.message_repository import MessageRepository
@@ -37,20 +35,28 @@ class TranslateBotCommand(CommandInterface):
             reply_message = self.message_repository.get_reply_message(message)
             if reply_message is None or reply_message.text is None:
                 return None
-            lang = "en"
-            if len(message.text) > 4:
-                lang = message.text[4:]
-            quote = urllib.parse.quote(reply_message.text)
-            if quote is None:
-                return None
-            url = f"https://translate.google.com/m?q={quote}&tl={lang}"
-            req = requests.get(url)
-            result = re.findall(r"result-container\">(.*?)</", req.text, re.DOTALL)
-            text = html.unescape(result[0])
-            if not result:
-                return None
+            args = message.text.split(" ")
+            dest = "en"
+            src = "auto"
+            if len(args) >= 2:
+                dest = args[1]
+            if len(args) >= 3:
+                src = args[2]
+            translator = googletrans.Translator()
+            try:
+                text = (
+                    "Translation: "
+                    + translator.translate(reply_message.text, dest=dest, src=src).text
+                )
+            except ValueError as error:
+                text = str(error)
             return [
-                BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text="Translation: " + text)
+                BotAction(
+                    BOT_ACTION_TYPE_REPLY_TEXT,
+                    reply_text=text,
+                    reply_to_message_id=reply_message.message_id,
+                )
             ]
+
         except (re.error, requests.ConnectionError):
             return None

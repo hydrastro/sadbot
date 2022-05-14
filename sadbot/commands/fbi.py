@@ -169,7 +169,6 @@ class FbiBotCommand(CommandInterface):
         if data is None:
             pass
         count = data[3] + 1
-        print(data)
         query = """
           UPDATE fbi_entries
           SET count = ?

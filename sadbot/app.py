@@ -444,28 +444,43 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
             if reply_text is None:
                 return None
             data.update({"text": reply_text})
-        elif reply.reply_type == BOT_ACTION_TYPE_REPLY_IMAGE:
+        elif (
+            reply.reply_type == BOT_ACTION_TYPE_REPLY_IMAGE
+            and reply.reply_image is not None
+        ):
             api_method = "sendPhoto"
             files = {"photo": reply.reply_image}
             data.update({"caption": reply_text})
-        elif reply.reply_type == BOT_ACTION_TYPE_REPLY_VIDEO:
+        elif (
+            reply.reply_type == BOT_ACTION_TYPE_REPLY_VIDEO
+            and reply.reply_video is not None
+        ):
             api_method = "sendVideo"
             files = {"video": reply.reply_video}
             data.update({"caption": reply_text})
         elif reply.reply_type == BOT_ACTION_TYPE_REPLY_VIDEO_ONLINE:
             api_method = "sendVideo"
             data.update({"video": reply.reply_online_media_url, "caption": reply_text})
-        elif reply.reply_type == BOT_ACTION_TYPE_REPLY_AUDIO:
+        elif (
+            reply.reply_type == BOT_ACTION_TYPE_REPLY_AUDIO
+            and reply.reply_audio is not None
+        ):
             api_method = "sendAudio"
             files = {"audio": reply.reply_audio}
-        elif reply.reply_type == BOT_ACTION_TYPE_REPLY_FILE:
+        elif (
+            reply.reply_type == BOT_ACTION_TYPE_REPLY_FILE
+            and reply.reply_file is not None
+        ):
             api_method = "sendDocument"
             files = {"file": reply.reply_file}
             data.update({"caption": reply_text})
         elif reply.reply_type == BOT_ACTION_TYPE_REPLY_PHOTO_ONLINE:
             api_method = "sendPhoto"
             data.update({"photo": reply.reply_online_photo_url, "caption": reply_text})
-        elif reply.reply_type == BOT_ACTION_TYPE_REPLY_VOICE:
+        elif (
+            reply.reply_type == BOT_ACTION_TYPE_REPLY_VOICE
+            and reply.reply_voice is not None
+        ):
             api_method = "sendVoice"
             files = {"voice": reply.reply_voice}
         elif reply.reply_type == BOT_ACTION_TYPE_BAN_USER:
@@ -551,12 +566,19 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
             data.update({"reply_to_message_id": reply.reply_to_message_id})
             data.update({"allow_sending_without_reply": True})
         try:
-            req = requests.post(
-                f"{self.base_url}{api_method}",
-                data=data,
-                files=files,
-                timeout=OUTGOING_REQUESTS_TIMEOUT,
-            )
+            if files is not None:
+                req = requests.post(
+                    f"{self.base_url}{api_method}",
+                    data=data,
+                    files=files,
+                    timeout=OUTGOING_REQUESTS_TIMEOUT,
+                )
+            else:
+                req = requests.post(
+                    f"{self.base_url}{api_method}",
+                    data=data,
+                    timeout=OUTGOING_REQUESTS_TIMEOUT,
+                )
         except requests.exceptions.RequestException:
             logging.error("An error occurred sending the message request")
             return None

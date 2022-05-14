@@ -38,7 +38,6 @@ class DdgBotCommand(CommandInterface):
             req = requests.post(url, headers=headers, data=data)
             soup = bs4.BeautifulSoup(req.text, "html.parser")
         except requests.RequestException:
-            print("HELP")
             return None
         results = soup.find_all("div", attrs={"class": "result"})
         counter = 1
