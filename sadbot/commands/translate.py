@@ -1,16 +1,13 @@
 """Translate bot command"""
-
 from typing import Optional, List
-import html
 import re
-import urllib.parse
 import requests
+import googletrans
 
 from sadbot.command_interface import CommandInterface, BOT_HANDLER_TYPE_MESSAGE
 from sadbot.message import Message
 from sadbot.message_repository import MessageRepository
 from sadbot.bot_action import BotAction, BOT_ACTION_TYPE_REPLY_TEXT
-
 
 class TranslateBotCommand(CommandInterface):
     """This is the translate bot command class"""
@@ -39,16 +36,9 @@ class TranslateBotCommand(CommandInterface):
                 return None
             lang = "en"
             if len(message.text) > 4:
-                lang = message.text[4:]
-            quote = urllib.parse.quote(reply_message.text)
-            if quote is None:
-                return None
-            url = f"https://translate.google.com/m?q={quote}&tl={lang}"
-            req = requests.get(url)
-            result = re.findall(r"result-container\">(.*?)</", req.text, re.DOTALL)
-            text = html.unescape(result[0])
-            if not result:
-                return None
+                lang = message.text[5:]
+            translator = googletrans.Translator()
+            text = translator.translate(reply_message.text, dest = lang).text
             return [
                 BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text="Translation: " + text)
             ]

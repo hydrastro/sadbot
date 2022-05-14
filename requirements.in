@@ -10,3 +10,4 @@ validators
 opencv-python
 scipy
 exif
+googletrans==4.0.0rc1
