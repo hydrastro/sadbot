@@ -10,3 +10,4 @@ validators
 opencv-python
 scipy
 exif
+httpx[http2]
