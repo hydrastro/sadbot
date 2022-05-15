@@ -33,7 +33,6 @@ class BibleBotCommand(CommandInterface):
         verses = verses.replace(" ", "+")
         try:
             url = f"https://bible-api.com/{verses}"
-            print(url)
             req = requests.get(url)
             body = req.json()
             output = ""
@@ -43,7 +42,6 @@ class BibleBotCommand(CommandInterface):
                 line += f' {str(verse["chapter"])}:{str(verse["verse"])} - '
                 line += verse["text"]
                 output += line + "\n"
-            print(output)
             return [
                 BotAction(
                     reply_type=BOT_ACTION_TYPE_REPLY_TEXT,
