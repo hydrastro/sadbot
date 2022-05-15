@@ -3,10 +3,11 @@ sadbot/__pycache__
 sadbot/classes/__pycache__
 sadbot/commands/__pycache__
 sadbot/managers/__pycache__
+sadbot/commands/googletrans/__pycache__
 messages.db
 sadbot.log
 .mypy_cache
 dist
 .idea
 result
-.venv
+venv
