@@ -38,7 +38,7 @@ class TranslateBotCommand(CommandInterface):
             if len(message.text) > 4:
                 lang = message.text[5:]
             translator = googletrans.Translator()
-            text = translator.translate(reply_message.text, dest = lang).text
+            text = translator.translate(reply_message.text, dest=lang).text
             return [
                 BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text="Translation: " + text)
             ]
