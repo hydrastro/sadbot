@@ -32,7 +32,7 @@ class YtdlpBotCommand(CommandInterface):
         watch_url = message.text[7:]
         file_name = str(random.randint(10000000000, 35000000000))
         ydl_opts = {
-            "format": "(mp4)[filesize<50M]",
+            "merge-output-format": "(mp4)[filesize<50M]",
             "outtmpl": file_name,
         }
         with YoutubeDL(ydl_opts) as ydl:
