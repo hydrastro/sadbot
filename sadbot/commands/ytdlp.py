@@ -34,6 +34,7 @@ class YtdlpBotCommand(CommandInterface):
         ydl_opts = {
             "merge-output-format": "mp4",
             "outtmpl": file_name,
+            "max_filesize" : "50M",
         }
         with YoutubeDL(ydl_opts) as ydl:
             try:
