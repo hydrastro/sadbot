@@ -30,9 +30,13 @@ class YtdlpBotCommand(CommandInterface):
         if message is None or message.text is None:
             return []
         watch_url = message.text[7:]
-        file_name = str(random.randint(10000000000, 35000000000))
+        file_name = str(random.randint(10000000000, 35000000000)) + ".mp4"
         ydl_opts = {
-            "format": "[filesize<50M]",
+            "extractor_args": {
+                "youtube": {
+                    "player_client": ["ios"],
+                },
+            },
             "merge-output-format": "mp4",
             "outtmpl": file_name,
         }
