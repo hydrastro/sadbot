@@ -63,7 +63,7 @@ class PluginsKeyboard:
     @staticmethod
     def get_default_disabled_plugins() -> List[str]:
         """Returns the list of the plugins disabled by default"""
-        return ["cope"]
+        return ["amogus", "bookmark", "close_thread", "cope", "fbi", "install_kde"]
 
     def set_default_configs(self, chat_id: int) -> None:
         """Sets the default groups configs"""
