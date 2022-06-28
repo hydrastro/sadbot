@@ -105,7 +105,7 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
     """Main app class, starts the bot when it's called"""
 
     def __init__(self, token: str) -> None:
-        logging.basicConfig(filename="sadbot.log", level=logging.INFO)
+        logging.basicConfig(filename="sadbot.log", level=logging.WARNING)
         logging.info("Started sadbot")
         self.base_url = f"https://api.telegram.org/bot{token}/"
         self.base_file_url = f"https://api.telegram.org/file/bot{token}/"
@@ -194,8 +194,9 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
                 f"{self.base_url}{api_method}",
                 timeout=OUTGOING_REQUESTS_TIMEOUT,
             )
-        except requests.exceptions.RequestException:
+        except requests.exceptions.RequestException as c_exception:
             logging.error("An error occurred sending the getChatMember request")
+            logging.error(c_exception)
             return None
         if not req.ok:
             logging.error("Failed sending message - details: %s", req.json())
@@ -217,8 +218,9 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
                 data=data,
                 timeout=OUTGOING_REQUESTS_TIMEOUT,
             )
-        except requests.exceptions.RequestException:
+        except requests.exceptions.RequestException as c_exception:
             logging.error("An error occurred sending the getChatMember request")
+            logging.error(c_exception)
             return None
         if not req.ok:
             logging.error("Failed sending message - details: %s", req.json())
@@ -337,8 +339,9 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
             url = f"{url}&offset={offset + 1}"
         try:
             req = requests.get(url, timeout=UPDATES_TIMEOUT)
-        except requests.exceptions.RequestException:
+        except requests.exceptions.RequestException as c_exception:
             logging.error("An error occurred sending the getUpdates request")
+            logging.error(c_exception)
             return None
         if not req.ok:
             logging.error(
@@ -579,8 +582,9 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
                     data=data,
                     timeout=OUTGOING_REQUESTS_TIMEOUT,
                 )
-        except requests.exceptions.RequestException:
+        except requests.exceptions.RequestException as c_exception:
             logging.error("An error occurred sending the message request")
+            logging.error(c_exception)
             return None
         logging.info("Sent message")
         if not req.ok:
@@ -704,8 +708,9 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
         url = f"{self.base_url}getFile?file_id={file_id}"
         try:
             req = requests.get(url, timeout=UPDATES_TIMEOUT)
-        except requests.exceptions.RequestException:
+        except requests.exceptions.RequestException as c_exception:
             logging.error("An error occurred sending the getFile request")
+            logging.error(c_exception)
             return None
         if not req.ok:
             logging.error(
@@ -725,8 +730,9 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
         url = f"{self.base_file_url}{file_path}"
         try:
             req = requests.get(url, timeout=UPDATES_TIMEOUT)
-        except requests.exceptions.RequestException:
+        except requests.exceptions.RequestException as c_exception:
             logging.error("An error occurred sending the request")
+            logging.error(c_exception)
             return None
         if not req.ok:
             logging.error(
