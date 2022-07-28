@@ -8,7 +8,7 @@ import multiprocessing
 import re
 import sqlite3
 import time
-from dataclasses import asdict
+from dataclasses import asdict, is_dataclass
 from os.path import basename, dirname, isfile, join
 from typing import Any, Dict, List, Optional
 
@@ -494,6 +494,11 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
             data.update({"chat_id": chat_id, "user_id": reply.reply_ban_user_id})
         elif reply.reply_type == BOT_ACTION_TYPE_RESTRICT_CHAT_MEMBER:
             api_method = "restrictChatMember"
+            if not is_dataclass(reply.reply_permissions):
+                logging.error(
+                    "Given permissions are not a dataclass: something went wrong."
+                )
+                return None
             permissions = json.dumps(asdict(reply.reply_permissions))
             data.update(
                 {
