@@ -8,6 +8,7 @@ import sqlite3
 from dataclasses import asdict
 from typing import Optional, List, Any
 from multiprocessing import Manager, Process
+from multiprocessing.managers import ListProxy
 
 from sadbot.message import Message, Entity
 
@@ -303,7 +304,7 @@ class MessageRepository:  # pylint: disable=R0904
         """Calls a worker which tries to retrieve, from the database, a message matching some things
         or a regex pattern and  eventually kills it if it gets stuck"""
         manager = Manager()
-        result_tuple: List = manager.list()
+        result_tuple: ListProxy = manager.list()
         message_process = Process(
             target=self.get_previous_message_worker, args=(result_tuple, message, regex)
         )

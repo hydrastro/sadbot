@@ -11,6 +11,7 @@ import time
 from dataclasses import asdict, is_dataclass
 from os.path import basename, dirname, isfile, join
 from typing import Any, Dict, List, Optional
+from multiprocessing.managers import DictProxy
 
 import requests
 
@@ -123,7 +124,7 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
         self.command_list: List[str] = []
         self.updates_workers: Dict[float, multiprocessing.Process] = {}
         self.manager = multiprocessing.Manager()
-        self.outgoing_messages: Dict[float, List] = self.manager.dict()
+        self.outgoing_messages: DictProxy[float, List] = self.manager.dict()
         self.load_commands()
         self.load_managers()
         self.start_bot()
@@ -672,7 +673,7 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
         for command in self.commands:
             if command["class"].handler_type == BOT_HANDLER_TYPE_CALLBACK_QUERY:
                 try:
-                    if re.fullmatch(re.compile(command["regex"]), message.text):
+                    if re.fullmatch(re.compile(command["regex"]), str(message.text)):
                         reply_message = command["class"].get_reply(message)
                         if reply_message is None:
                             continue
@@ -762,6 +763,8 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
                 False,
                 item["message"]["date"],
             )
+            if "title" in item["message"]["chat"]:
+                message.chat_name = item["message"]["chat"]["title"]
             if "entities" in item["message"]:
                 entities: List[Entity] = []
                 for entity in item["message"]["entities"]:

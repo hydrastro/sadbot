@@ -36,3 +36,4 @@ class Message:  # pylint: disable=too-many-instance-attributes
     file_id: Optional[str] = None
     mime_type: Optional[str] = None
     entities: Optional[List[Entity]] = None
+    chat_name: Optional[str] = None

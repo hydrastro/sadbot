@@ -59,6 +59,9 @@ class PluginsBotCommand(CommandInterface):
                 "You don't have enough rights to handle plugins, kiddo."
             )
         inline_keyboard = self.plugins_keyboard.get_keyboard(message.chat_id, 0)
+        reply_text = (
+            f"Here you can manage the bot commands for the chat '{message.chat_name}':"
+        )
         return [
             BotAction(
                 BOT_ACTION_TYPE_REPLY_TEXT,
@@ -66,7 +69,7 @@ class PluginsBotCommand(CommandInterface):
             ),
             BotAction(
                 BOT_ACTION_TYPE_REPLY_TEXT,
-                reply_text="Here you can enable or disable the bot commands:",
+                reply_text=reply_text,
                 reply_inline_keyboard=inline_keyboard,
                 reply_chat_id=message.sender_id,
             ),
