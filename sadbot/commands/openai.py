@@ -30,6 +30,10 @@ class OpenaiBotCommand(CommandInterface):
         """This function can return some bot actions/replies that will  be sent later"""
         if message is None:
             return None
+        words = []
+        if message.text is not None:
+            words = message.text.split()
+            words = words[1:]
         with open(
             "./sadbot/assets/openai/all.json", mode="r", encoding="utf-8"
         ) as dictionary_stream:
