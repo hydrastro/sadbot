@@ -33,10 +33,10 @@ class OpenaiBotCommand(CommandInterface):
         words = []
         words_count = 3
         if message.text is not None:
-            split = message.text.split(" ", 1)
-            words_count = int(split[0])
-            if len(split) > 1:
-                words = split[1].split()
+            split = message.text.split(" ")
+            words_count = int(split[1])
+            if len(split) > 2:
+                words = split[2:]
             else:
                 words = []
         with open(
