@@ -10,6 +10,7 @@ from sadbot.command_interface import CommandInterface, BOT_HANDLER_TYPE_MESSAGE
 from sadbot.message import Message
 from sadbot.config import OPENAI_API_KEY
 from sadbot.bot_action import BotAction, BOT_ACTION_TYPE_REPLY_IMAGE
+from sadbot.functions import safe_cast
 
 
 class OpenaiBotCommand(CommandInterface):
@@ -34,7 +35,7 @@ class OpenaiBotCommand(CommandInterface):
         words_count = 3
         if message.text is not None:
             split = message.text.split(" ")
-            words_count = int(split[1])
+            words_count = safe_cast(split[1], int, 0)
             if len(split) > 2:
                 words = split[2:]
             else:
