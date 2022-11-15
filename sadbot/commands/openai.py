@@ -31,17 +31,21 @@ class OpenaiBotCommand(CommandInterface):
         if message is None:
             return None
         words = []
+        words_count = 3
         if message.text is not None:
-            words = message.text.split()
-            words = words[1:]
+            split = message.text.split(" ", 1)
+            words_count = int(split[0])
+            if len(split) > 1:
+                words = split[1].split()
+            else:
+                words = []
         with open(
             "./sadbot/assets/openai/all.json", mode="r", encoding="utf-8"
         ) as dictionary_stream:
             dictionary_content = dictionary_stream.read()
         dictionary = json.loads(dictionary_content)
         dictionary_length = len(dictionary)
-        words = []
-        for _ in range(3):
+        for _ in range(words_count):
             words.append(dictionary[random.randint(0, dictionary_length)])
         try:
             openai.api_key = OPENAI_API_KEY
