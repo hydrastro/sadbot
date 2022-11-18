@@ -56,6 +56,6 @@ class YtdlpAudioBotCommand(CommandInterface):
         return [
             BotAction(
                 BOT_ACTION_TYPE_REPLY_AUDIO,
-                reply_video=buf,
+                reply_audio=buf,
             )
         ]
