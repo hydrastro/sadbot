@@ -9,7 +9,7 @@ from yt_dlp import YoutubeDL
 
 from sadbot.command_interface import CommandInterface, BOT_HANDLER_TYPE_MESSAGE
 from sadbot.message import Message
-from sadbot.bot_action import BotAction, BOT_ACTION_TYPE_REPLY_VIDEO
+from sadbot.bot_action import BotAction, BOT_ACTION_TYPE_REPLY_AUDIO
 
 
 class YtdlpAudioBotCommand(CommandInterface):
@@ -55,7 +55,7 @@ class YtdlpAudioBotCommand(CommandInterface):
         os.remove(file_name)
         return [
             BotAction(
-                BOT_ACTION_TYPE_REPLY_VIDEO,
+                BOT_ACTION_TYPE_REPLY_AUDIO,
                 reply_video=buf,
             )
         ]
