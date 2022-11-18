@@ -4,8 +4,8 @@ from typing import Optional, List
 
 import random
 import os
+from io import BytesIO
 from yt_dlp import YoutubeDL
-
 
 from sadbot.command_interface import CommandInterface, BOT_HANDLER_TYPE_MESSAGE
 from sadbot.message import Message
@@ -55,8 +55,9 @@ class YtdlpAudioBotCommand(CommandInterface):
                     )
                 ]
         with open(file_name, "rb") as file:
-            buf = file.read()
+            buf = BytesIO(file.read())
+            buf.name = title
         os.remove(file_name)
         return [
-            BotAction(BOT_ACTION_TYPE_REPLY_AUDIO, reply_audio=buf, reply_text=title)
+            BotAction(BOT_ACTION_TYPE_REPLY_AUDIO, reply_audio=buf)
         ]

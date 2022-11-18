@@ -2,6 +2,7 @@
 
 from typing import Optional, List, Dict
 from dataclasses import dataclass
+from io import BytesIO
 
 from sadbot.chat_permissions import ChatPermissions
 
@@ -35,7 +36,7 @@ class BotAction:  # pylint: disable=too-many-instance-attributes
     reply_text_parse_mode: Optional[str] = None
     reply_image: Optional[bytes] = None
     reply_video: Optional[bytes] = None
-    reply_audio: Optional[bytes] = None
+    reply_audio: Optional[BytesIO] = None
     reply_file: Optional[bytes] = None
     reply_voice: Optional[bytes] = None
     reply_online_media_url: Optional[str] = None
