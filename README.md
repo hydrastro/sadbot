@@ -211,10 +211,10 @@ don't repeat the same code in every command (mute, ban, kick, warn, etc.)
 - [ ] Bible json asset
 - [ ] Move lists code into its own separate class?
 - [ ] Virustotal command
-- [X] Metadata command
 - [ ] Translate voice command
-- [X] ~~Fix mute command short interval~~
 - [ ] Slowmode command
+- [ ] **IMPORTANT** Update all the files-handling code in order to make it work
+with `BytesIO` rather than `bytes`
 - [ ] Good morning / Good night messages/gifs (see how .setrules work); we have
 to write a manager for this
 - [ ] Update README.md (check it overall and complete the description for the
@@ -226,6 +226,8 @@ bot managers)
 it's halfway done: the table with the data is already there, we just need a
 callback to send the message)
 - [ ] Plot3D animated videos
+- [X] Metadata command
+- [X] ~~Fix mute command short interval~~
 - [X] Fix `BOT_ACTION_TYPE_NONE` managers callback: they are dispatched only
 after a message is sent, therefore it fails do dispatch new managers
 - [X] ~~Add new tables: for images, for edits and for usernames~~ Updated
