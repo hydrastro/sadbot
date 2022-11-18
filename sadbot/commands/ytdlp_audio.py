@@ -32,12 +32,13 @@ class YtdlpAudioBotCommand(CommandInterface):
         watch_url = message.text[5:]
         file_name = str(random.randint(10000000000, 35000000000)) + ".mp3"
         ydl_opts = {
-            'format': 'bestaudio/best',
-            'postprocessors': [{
-                'key': 'FFmpegExtractAudio',
-                'preferredcodec': 'mp3',
-                'preferredquality': '192',
+            "format": "bestaudio/best",
+            "postprocessors": [{
+                "key": "FFmpegExtractAudio",
+                "preferredcodec": "mp3",
+                "preferredquality": "192",
             }],
+            "outtmpl": file_name
         }
         with YoutubeDL(ydl_opts) as ydl:
             try:
