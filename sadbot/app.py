@@ -471,6 +471,7 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
         ):
             api_method = "sendAudio"
             files = {"audio": reply.reply_audio}
+            data.update({"caption": reply_text})
         elif (
             reply.reply_type == BOT_ACTION_TYPE_REPLY_FILE
             and reply.reply_file is not None

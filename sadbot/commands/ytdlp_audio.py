@@ -33,16 +33,19 @@ class YtdlpAudioBotCommand(CommandInterface):
         file_name = str(random.randint(10000000000, 35000000000)) + ".mp3"
         ydl_opts = {
             "format": "bestaudio/best",
-            "postprocessors": [{
-                "key": "FFmpegExtractAudio",
-                "preferredcodec": "mp3",
-                "preferredquality": "192",
-            }],
-            "outtmpl": file_name
+            "postprocessors": [
+                {
+                    "key": "FFmpegExtractAudio",
+                    "preferredcodec": "mp3",
+                    "preferredquality": "192",
+                }
+            ],
+            "outtmpl": file_name,
         }
         with YoutubeDL(ydl_opts) as ydl:
             try:
-                ydl.download([watch_url])
+                info_dict = ydl.extract_info(watch_url)
+                title = info_dict.get("title", None)
             # pylint: disable=bare-except
             except:
                 return [
@@ -55,8 +58,5 @@ class YtdlpAudioBotCommand(CommandInterface):
             buf = file.read()
         os.remove(file_name)
         return [
-            BotAction(
-                BOT_ACTION_TYPE_REPLY_AUDIO,
-                reply_audio=buf,
-            )
+            BotAction(BOT_ACTION_TYPE_REPLY_AUDIO, reply_audio=buf, reply_text=title)
         ]
