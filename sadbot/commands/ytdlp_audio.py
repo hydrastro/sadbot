@@ -29,7 +29,7 @@ class YtdlpAudioBotCommand(CommandInterface):
         """Tries to download a link provided by command"""
         if message is None or message.text is None:
             return []
-        watch_url = message.text[4:]
+        watch_url = message.text[5:]
         file_name = str(random.randint(10000000000, 35000000000)) + ".mp3"
         ydl_opts = {
             'format': 'bestaudio/best',
