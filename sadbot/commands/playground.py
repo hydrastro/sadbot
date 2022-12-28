@@ -43,7 +43,7 @@ class PlaygroundBotCommand(CommandInterface):
     @property
     def command_regex(self) -> str:
         """Returns the regex for matching activity commands"""
-        return r"(.|!)([pP][lL][aA][yY][gG][rR][oO][uU][nN][dD])(.|\s)*"
+        return r"(.|!)([pP][lL][aA][yY][gG][rR][oO][uU][nN][dD]|[Rr][Uu][Nn])(.|\s)*"
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
         """Playground"""
