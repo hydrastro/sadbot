@@ -30,7 +30,7 @@ class YtdlpAudioBotCommand(CommandInterface):
         if message is None or message.text is None:
             return []
         watch_url = message.text[5:]
-        file_name = str(random.randint(10000000000, 35000000000)) + ".mp3"
+        file_name = str(random.randint(10000000000, 35000000000))
         ydl_opts = {
             "format": "bestaudio/best",
             "postprocessors": [
@@ -42,6 +42,7 @@ class YtdlpAudioBotCommand(CommandInterface):
             ],
             "outtmpl": file_name,
         }
+        file_name = file_name + ".mp3"
         with YoutubeDL(ydl_opts) as ydl:
             try:
                 info_dict = ydl.extract_info(watch_url)
@@ -58,6 +59,4 @@ class YtdlpAudioBotCommand(CommandInterface):
             buf = BytesIO(file.read())
             buf.name = title
         os.remove(file_name)
-        return [
-            BotAction(BOT_ACTION_TYPE_REPLY_AUDIO, reply_audio=buf)
-        ]
+        return [BotAction(BOT_ACTION_TYPE_REPLY_AUDIO, reply_audio=buf)]

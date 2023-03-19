@@ -32,11 +32,7 @@ class YtdlpBotCommand(CommandInterface):
         watch_url = message.text[7:]
         file_name = str(random.randint(10000000000, 35000000000)) + ".mp4"
         ydl_opts = {
-            "extractor_args": {
-                "youtube": {
-                    "player_client": ["ios"],
-                },
-            },
+            "format": "mp4",
             "merge-output-format": "mp4",
             "outtmpl": file_name,
         }
