@@ -1,5 +1,6 @@
 """Ban bot command"""
 
+import random
 from typing import Optional, List
 
 from sadbot.app import App, CHAT_MEMBER_STATUS_ADMIN, CHAT_MEMBER_STATUS_CREATOR
@@ -37,6 +38,7 @@ class BanBotCommand(CommandInterface):
             return None
         ban_user_id = None
         ban_username = None
+        bot_actions: list = []
         if message.reply_id is not None:
             ban_user_id = self.message_repository.get_user_id_from_message_id(
                 message.reply_id, message.chat_id
@@ -50,17 +52,10 @@ class BanBotCommand(CommandInterface):
                         reply_text="Please specify a user to ban.",
                     )
                 ]
-            ban_username = message_text[1].replace("@", "")
-            ban_user_id = self.message_repository.get_user_id_from_username(
-                ban_username
-            )
-        if ban_user_id is None:
-            return [
-                BotAction(
-                    BOT_ACTION_TYPE_REPLY_TEXT,
-                    reply_text="Error: specified user not found.",
-                )
-            ]
+            ban_username = [ message_text[i].replace("@", "") for i in message_text[1:] ]
+            ban_user_id = [ self.message_repository.get_user_id_from_username(
+                username
+            ) for username in ban_username ]
         user_permissions = self.app.get_user_status_and_permissions(
             message.chat_id, message.sender_id
         )
@@ -71,20 +66,31 @@ class BanBotCommand(CommandInterface):
             user_type != CHAT_MEMBER_STATUS_CREATOR
             and not user_permissions[1].can_restrict_members
         ):
+            replies = [
+                "You don't have enough rights to mute, kiddo.",
+                "You aren't BASED enough.",
+                "You are not a big guy.",
+                "Why should I obey you?"
+            ]
             return [
                 BotAction(
                     BOT_ACTION_TYPE_REPLY_TEXT,
-                    reply_text="You don't have enough rights to mute, kiddo.",
+                    reply_text=random.choice(replies),
                 )
             ]
-        reply_text = "User successfully banned."
-        if ban_user_id is not None:
-            reply_text = f"{ban_username} has successfully been banned."
-        return [
-            BotAction(
-                BOT_ACTION_TYPE_BAN_USER,
-                reply_ban_user_id=ban_user_id,
-                reply_priority=BOT_ACTION_PRIORITY_HIGH,
-            ),
-            BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text=reply_text),
-        ]
+        
+        reply_text: list = ["The following actions were taken:"]
+        for username, user_id in zip(ban_username, ban_user_id):
+            if user_id is not None:
+                reply_text.append( f" {username} has successfully been banned." )
+                bot_actions.append(
+                    BotAction(
+                        BOT_ACTION_TYPE_BAN_USER,
+                        reply_ban_user_id=user_id,
+                        reply_priority=BOT_ACTION_PRIORITY_HIGH,
+                    )
+                )
+            else: # user_id is None:
+                reply_text.append( f" Error: specified user {username} not found." )
+        bot_actions.append( BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text="\n".join(reply_text)) )
+        return bot_actions
