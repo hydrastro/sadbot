@@ -16,6 +16,7 @@ class Tesseract:
 
     _lib = None
     _api = None
+
     # pylint: disable=too-few-public-methods
     class TessBaseAPI(ctypes._Pointer):  # pylint: disable=protected-access
         """Tesseract Base API class"""
@@ -124,6 +125,7 @@ def convert_to_grayscale(image_data):
 
 def correct_skew(image, delta=1, limit=5):
     """Correct skew function"""
+
     # pylint: disable=too-many-locals
     def determine_score(arr, angle):
         """Determine score function"""
