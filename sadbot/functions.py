@@ -1,6 +1,10 @@
 """Here are some functions used used by more files"""
 
+import os
+import random
+import subprocess
 import time
+from typing import Optional
 
 
 def safe_cast(val, to_type, default=None):
@@ -60,3 +64,27 @@ def convert_to_days(time_string: str) -> int:
     if time_string[-1] not in days_per_unit:
         return safe_cast(time_string, int, 0)
     return safe_cast(time_string[:-1], int, 0) * days_per_unit.get(time_string[-1], 0)
+
+
+def webm_to_mp4_convert(file_bytes: bytes) -> Optional[bytes]:
+    """Converts the input bytes representing a webm into mp4 bytes using ffmpeg"""
+    name = str(random.randint(0, 10000000000))
+    with open(name, "wb") as file:
+        file.write(file_bytes)
+    output = name + ".mp4"
+    retcode = subprocess.call(
+        ["ffmpeg", "-i", name, "-vf", "pad=ceil(iw/2)*2:ceil(ih/2)*2", output],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    if retcode != 0:
+        try:
+            os.remove(name)
+            os.remove(output)
+        except os.error:
+            return None
+    with open(output, "rb") as file:
+        output_bytes = file.read()
+    os.remove(name)
+    os.remove(output)
+    return output_bytes

@@ -98,6 +98,7 @@ def is_bot_action_message(action_type: int) -> bool:
         BOT_ACTION_TYPE_REPLY_FILE,
         BOT_ACTION_TYPE_REPLY_VOICE,
         BOT_ACTION_TYPE_REPLY_VIDEO_ONLINE,
+        BOT_ACTION_TYPE_REPLY_PHOTO_ONLINE,
         BOT_ACTION_TYPE_EDIT_MESSAGE_TEXT,
     ]
 
@@ -417,6 +418,10 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
                 photo = result["photo"][-1]
                 file_id = photo["file_id"]
                 file_type = MESSAGE_FILE_TYPE_PHOTO
+            if "animation" in result:
+                file_id = result["animation"]["file_id"]
+                file_type = MESSAGE_FILE_TYPE_VIDEO
+                mime_type = result["animation"]["mime_type"] or None
             sent_message_dataclass = Message(
                 result["message_id"],
                 result["from"]["first_name"],

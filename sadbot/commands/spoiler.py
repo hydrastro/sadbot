@@ -44,12 +44,13 @@ class SpoilerBotCommand(CommandInterface):
         reply_message = self.message_repository.get_reply_message(message)
         if reply_message is None:
             return None
+        print(reply_message)
         file_bytes = self.app.get_file_from_id(reply_message.file_id)
         action = None
         sender = reply_message.sender_name
         if reply_message.sender_username:
             sender = f"@{reply_message.sender_username}"
-        reply_text = f'Sender: {sender}'
+        reply_text = f"Sender: {sender}"
         if reply_message.text:
             reply_text += f'\n<span class="tg-spoiler">{reply_message.text}</span>'
         if reply_message.file_type == MESSAGE_FILE_TYPE_PHOTO:
@@ -69,8 +70,6 @@ class SpoilerBotCommand(CommandInterface):
                 reply_text_parse_mode="HTML",
             )
         else:
-            return None
-        if file_bytes is None:
             action = BotAction(
                 BOT_ACTION_TYPE_REPLY_TEXT,
                 reply_text=reply_text,
