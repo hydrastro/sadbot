@@ -73,7 +73,6 @@ class Translator:
         http2=True,
         use_fallback=False,
     ):
-
         self.client = httpx.Client(http2=http2, proxies=proxies)
 
         self.client.headers.update(

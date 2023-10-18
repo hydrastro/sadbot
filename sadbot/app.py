@@ -575,6 +575,8 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
         if reply.reply_to_message_id is not None:
             data.update({"reply_to_message_id": reply.reply_to_message_id})
             data.update({"allow_sending_without_reply": True})
+        if reply.reply_spoiler:
+            data.update({"has_spoiler": "True"})
         try:
             if files is not None:
                 req = requests.post(
@@ -779,6 +781,8 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
             if "photo" in item["message"]:
                 if "caption" in item["message"]:
                     message.text = str(item["message"]["caption"])
+                if "mime_type" in item["message"]["photo"]:
+                    message.mime_type = item["message"]["photo"]["mime_type"]
                 message.file_type = MESSAGE_FILE_TYPE_PHOTO
                 max_index = len(item["message"]["photo"]) - 1
                 message.file_id = item["message"]["photo"][max_index]["file_id"]
@@ -786,6 +790,8 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
             if "video" in item["message"]:
                 if "caption" in item["message"]:
                     message.text = str(item["message"]["caption"])
+                if "mime_type" in item["message"]["video"]:
+                    message.mime_type = item["message"]["video"]["mime_type"]
                 message.file_type = MESSAGE_FILE_TYPE_VIDEO
                 message.file_id = item["message"]["video"]["file_id"]
                 self.handle_videos(message)

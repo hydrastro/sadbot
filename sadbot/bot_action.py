@@ -53,3 +53,4 @@ class BotAction:  # pylint: disable=too-many-instance-attributes
     reply_chat_id: Optional[int] = None
     reply_to_message_id: Optional[int] = None
     reply_target_message_id: Optional[int] = None
+    reply_spoiler: Optional[bool] = None
