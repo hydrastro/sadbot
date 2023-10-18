@@ -1,6 +1,6 @@
 """Bot commands modules interface"""
 
-from typing import Optional, List
+from typing import Optional, List, Protocol
 
 from sadbot.message import Message
 from sadbot.bot_action import BotAction
@@ -13,7 +13,7 @@ BOT_HANDLER_TYPE_PICTURE = 4
 BOT_HANDLER_TYPE_DOCUMENT = 5
 
 
-class CommandInterface:
+class CommandInterface(Protocol):
     """This is the interface for the bot commands, every bot command module must implement
     these functions"""
 

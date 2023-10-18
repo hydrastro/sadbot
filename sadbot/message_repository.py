@@ -11,6 +11,7 @@ from multiprocessing import Manager, Process
 from multiprocessing.managers import ListProxy
 
 from sadbot.message import Message, Entity
+from sadbot.user import User
 
 
 def regex_lambda(x_val: str, y_val: str) -> int:
@@ -226,6 +227,38 @@ class MessageRepository:  # pylint: disable=R0904
         if data is None:
             return None
         return data[0]
+
+    def get_user_from_id(self, user_id: int) -> Optional[User]:
+        """Returns a User from a user id"""
+        cur = self.con.cursor()
+        query = """
+              SELECT
+                SenderID,
+                SenderUsername
+              FROM usernames
+              WHERE UserID = ?
+            """
+        cur.execute(query, [user_id])
+        data = cur.fetchone()
+        if data is None:
+            return None
+        return User(data[0], data[1])
+
+    def get_user_from_username(self, username: str) -> Optional[User]:
+        """Returns a User from a username"""
+        cur = self.con.cursor()
+        query = """
+              SELECT
+                SenderID,
+                SenderUsername
+              FROM usernames
+              WHERE SenderUsername = ?
+            """
+        cur.execute(query, [username])
+        data = cur.fetchone()
+        if data is None:
+            return None
+        return User(data[0], data[1])
 
     def update_username(self, user_id: int, username: str) -> bool:
         """Updates a username"""
@@ -523,3 +556,16 @@ class MessageRepository:  # pylint: disable=R0904
         for entity in loads:
             entity_list.append(Entity(*entity))
         return entity_list
+
+    def get_target_user(self, message: Message) -> Optional[User]:
+        """Returns the target user id from a message pointing at it"""
+        target_user = None
+        if message.reply_id is not None:
+            reply = self.get_message_from_id(message.reply_id, message.chat_id)
+            if reply is not None:
+                target_user = self.get_user_from_id(reply.sender_id)
+        if target_user is None and message.text is not None:
+            message_text = message.text.split()
+            if len(message_text) > 1:
+                target_user = self.get_user_from_username(message.text.replace("@", ""))
+        return target_user

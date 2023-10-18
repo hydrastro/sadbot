@@ -205,7 +205,7 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
         return json.loads(req.content)
 
     def get_chat_permissions_api_json(
-        self, chat_id: int, user_id: int = None
+        self, chat_id: int, user_id: Optional[int] = None
     ) -> Optional[Dict]:
         """Returns the json list of a chat or a user's permissions"""
         data = {"chat_id": chat_id}
@@ -496,12 +496,13 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
             data.update({"chat_id": chat_id, "user_id": reply.reply_ban_user_id})
         elif reply.reply_type == BOT_ACTION_TYPE_RESTRICT_CHAT_MEMBER:
             api_method = "restrictChatMember"
-            if not is_dataclass(reply.reply_permissions):
+            if is_dataclass(reply.reply_permissions):
+                permissions = json.dumps(asdict(reply.reply_permissions))  # type: ignore[arg-type]
+            else:
                 logging.error(
                     "Given permissions are not a dataclass: something went wrong."
                 )
                 return None
-            permissions = json.dumps(asdict(reply.reply_permissions))
             data.update(
                 {
                     "chat_id": chat_id,
@@ -750,7 +751,9 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
             return None
         return req.content
 
-    def handle_update(self, item) -> None:  # pylint: disable=too-many-branches
+    def handle_update(  # pylint: disable=too-many-branches, too-many-statements
+        self, item
+    ) -> None:
         """Handles the bot updates"""
         logging.info("Processing update message: process started")
         # catching the text messages
@@ -833,10 +836,11 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
     def remove_inactive_workers(self) -> None:
         """Deletes inactive or expired workers"""
         inactive_workers = []
-        for worker_id, worker in self.updates_workers.items():
+        for worker_id, _worker in self.updates_workers.items():
             if (
-                not worker.is_alive
-                or worker_id + UPDATE_PROCESSING_MAX_TIMEOUT < time.time()
+                # not _worker.is_alive or
+                worker_id + UPDATE_PROCESSING_MAX_TIMEOUT
+                < time.time()
             ):
                 inactive_workers.append(worker_id)
         for inactive_worker_id in inactive_workers:

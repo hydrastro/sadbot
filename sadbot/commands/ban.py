@@ -35,26 +35,8 @@ class BanBotCommand(CommandInterface):
         """Bans a user"""
         if message is None or message.text is None:
             return None
-        ban_user_id = None
-        ban_username = None
-        if message.reply_id is not None:
-            ban_user_id = self.message_repository.get_user_id_from_message_id(
-                message.reply_id, message.chat_id
-            )
-        if ban_user_id is None:
-            message_text = message.text.split()
-            if len(message_text) < 2:
-                return [
-                    BotAction(
-                        BOT_ACTION_TYPE_REPLY_TEXT,
-                        reply_text="Please specify a user to ban.",
-                    )
-                ]
-            ban_username = message_text[1].replace("@", "")
-            ban_user_id = self.message_repository.get_user_id_from_username(
-                ban_username
-            )
-        if ban_user_id is None:
+        ban_user = self.message_repository.get_target_user(message)
+        if ban_user is None:
             return [
                 BotAction(
                     BOT_ACTION_TYPE_REPLY_TEXT,
@@ -78,12 +60,12 @@ class BanBotCommand(CommandInterface):
                 )
             ]
         reply_text = "User successfully banned."
-        if ban_user_id is not None:
-            reply_text = f"{ban_username} has successfully been banned."
+        if ban_user.user_username is not None:
+            reply_text = f"{ban_user.user_username} has successfully been banned."
         return [
             BotAction(
                 BOT_ACTION_TYPE_BAN_USER,
-                reply_ban_user_id=ban_user_id,
+                reply_ban_user_id=ban_user.user_id,
                 reply_priority=BOT_ACTION_PRIORITY_HIGH,
             ),
             BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text=reply_text),
