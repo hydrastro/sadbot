@@ -406,6 +406,17 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
         # this needs to be done better, along with the storage for non-text messages
         if sent_message.get("result") and is_bot_action_message(reply_info.reply_type):
             result = sent_message.get("result", {})
+            file_id = None
+            file_type = None
+            mime_type = None
+            if "video" in result:
+                file_id = result["video"]["file_id"]
+                file_type = MESSAGE_FILE_TYPE_VIDEO
+                mime_type = result["video"]["mime_type"]
+            if "photo" in result:
+                photo = result["photo"][-1]
+                file_id = photo["file_id"]
+                file_type = MESSAGE_FILE_TYPE_PHOTO
             sent_message_dataclass = Message(
                 result["message_id"],
                 result["from"]["first_name"],
@@ -416,6 +427,9 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
                 result["from"].get("username", None),
                 True,
                 result["date"],
+                file_id=file_id,
+                file_type=file_type,
+                mime_type=mime_type
                 # TODO: file stuff. pylint: disable=fixme
             )
             self.message_repository.insert_message(sent_message_dataclass)
