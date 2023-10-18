@@ -50,14 +50,17 @@ class ChannelBotCommand(CommandInterface):
                 r'post op".*?fileThu.*?href=\"[/][/](.*?)\".*?bloc.*?>(.*?)<[/]blo',
                 req.text,
             )
-            subject = re.findall(r'<span class="subject">(.*?)</span>', req.text)
             if not post:
                 return None
+            subject = re.findall(r'<span class="subject">(.*?)</span>', req.text)
             post = post[0]
             media = post[0]
-            md = html2text.html2text(html.unescape(post[1]))
-
-            text = f"Subject: {subject[0]}\nPost: {md}" if subject else f"Post: {md}"
+            md = html2text.html2text(html.unescape(post[1].replace("<br>", "")))
+            text = (
+                f"Subject: {html.unescape(subject[1])}\nPost: {md}\nLink: {req_url}"
+                if subject and len(subject[0]) > 0
+                else f"Post: {md}"
+            )
             action = None
             if media.endswith("webm"):
                 file_bytes = requests.get(f"https://{media}").content
