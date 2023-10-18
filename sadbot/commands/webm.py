@@ -7,6 +7,7 @@ from typing import List, Optional
 from sadbot.app import App
 from sadbot.bot_action import BOT_ACTION_TYPE_REPLY_VIDEO, BotAction
 from sadbot.command_interface import BOT_HANDLER_TYPE_DOCUMENT, CommandInterface
+from sadbot.functions import webm_to_mp4_convert
 from sadbot.message import Message
 
 
@@ -42,24 +43,12 @@ class WebmBotCommand(CommandInterface):
         file_bytes = self.app.get_file_from_id(message.file_id)
         if file_bytes is None:
             return None
-        name = str(random.randint(0, 10000000000))
-        with open(name, "wb") as file:
-            file.write(file_bytes)
-        output = name + ".mp4"
-        retcode = subprocess.call(
-            ["ffmpeg", "-i", name, "-vf", "pad=ceil(iw/2)*2:ceil(ih/2)*2", output],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        )
-        if retcode != 0:
+        mp4 = webm_to_mp4_convert(file_bytes)
+        if not mp4:
             return None
-        with open(output, "rb") as file:
-            output_bytes = file.read()
-        os.remove(name)
-        os.remove(output)
         return [
             BotAction(
                 BOT_ACTION_TYPE_REPLY_VIDEO,
-                reply_video=output_bytes,
+                reply_video=mp4,
             ),
         ]

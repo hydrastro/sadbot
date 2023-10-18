@@ -7,8 +7,15 @@ import requests
 import html2text
 
 from sadbot.command_interface import CommandInterface, BOT_HANDLER_TYPE_MESSAGE
+from sadbot.functions import webm_to_mp4_convert
 from sadbot.message import Message
-from sadbot.bot_action import BotAction, BOT_ACTION_TYPE_REPLY_TEXT
+from sadbot.bot_action import (
+    BOT_ACTION_TYPE_REPLY_VIDEO_ONLINE,
+    BotAction,
+    BOT_ACTION_TYPE_REPLY_TEXT,
+    BOT_ACTION_TYPE_REPLY_PHOTO_ONLINE,
+    BOT_ACTION_TYPE_REPLY_VIDEO,
+)
 
 
 class ChannelBotCommand(CommandInterface):
@@ -43,13 +50,40 @@ class ChannelBotCommand(CommandInterface):
                 r'post op".*?fileThu.*?href=\"[/][/](.*?)\".*?bloc.*?>(.*?)<[/]blo',
                 req.text,
             )
+            subject = re.findall(r'<span class="subject">(.*?)</span>', req.text)
             if not post:
                 return None
             post = post[0]
-            image = post[0]
-            text = html.unescape(post[1])
-            text = html2text.html2text(text)
-            text = "Post: " + text + "\n" + "https://" + image + "\n"
-            return [BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text=text)]
+            media = post[0]
+            md = html2text.html2text(html.unescape(post[1]))
+
+            text = f"Subject: {subject[0]}\nPost: {md}" if subject else f"Post: {md}"
+            action = None
+            if media.endswith("webm"):
+                file_bytes = requests.get(f"https://{media}").content
+                output_bytes = webm_to_mp4_convert(file_bytes)
+                action = BotAction(
+                    BOT_ACTION_TYPE_REPLY_VIDEO,
+                    reply_video=output_bytes,
+                    reply_text=text,
+                )
+            elif media.endswith("gif"):
+                action = BotAction(
+                    BOT_ACTION_TYPE_REPLY_VIDEO_ONLINE,
+                    reply_online_media_url=f"https://{media}",
+                    reply_text=text,
+                )
+            elif media.endswith("png") or media.endswith("jpg"):
+                action = BotAction(
+                    BOT_ACTION_TYPE_REPLY_PHOTO_ONLINE,
+                    reply_text=text,
+                    reply_online_photo_url=f"https://{media}",
+                )
+            else:
+                action = BotAction(
+                    BOT_ACTION_TYPE_REPLY_TEXT,
+                    reply_text=f"{text}\nMedia: https://{media}",
+                )
+            return [action]
         except (re.error, requests.ConnectionError):
             return None
