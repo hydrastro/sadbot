@@ -33,7 +33,7 @@ class WebmDownloadBotCommand(CommandInterface):
     @property
     def command_regex(self) -> str:
         """Returns the regex string that triggers this command"""
-        return r"(.|\s)*"
+        return r"([.]|/)d(.|\s)*"
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
         """Returns the command output"""

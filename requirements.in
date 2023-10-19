@@ -11,3 +11,4 @@ opencv-python
 scipy
 exif
 httpx[http2]
+markdown
