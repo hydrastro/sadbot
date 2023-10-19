@@ -25,7 +25,8 @@ from sadbot.message import (
 )
 from sadbot.message_repository import MessageRepository
 from sadbot.config import (
-    MAX_REPLY_LENGTH,
+    MAX_REPLY_LENGTH_MEDIA,
+    MAX_REPLY_LENGTH_TEXT,
     OFFLINE_ANTIFLOOD_TIMEOUT,
     UPDATES_TIMEOUT,
     UPDATE_PROCESSING_MAX_TIMEOUT,
@@ -460,8 +461,14 @@ class App:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
         parse_mode = reply.reply_text_parse_mode
         if parse_mode is not None:
             data.update({"parse_mode": parse_mode})
-        if reply_text is not None and len(reply_text) > MAX_REPLY_LENGTH:
-            reply_text = reply_text[:MAX_REPLY_LENGTH] + "..."
+        if (
+            reply_text is not None
+            and reply.reply_type == BOT_ACTION_TYPE_REPLY_TEXT
+            and len(reply_text) > MAX_REPLY_LENGTH_TEXT
+        ):
+            reply_text = reply_text[: reply_text[:MAX_REPLY_LENGTH_TEXT].rfind("\n")]
+        elif reply_text is not None and len(reply_text) > MAX_REPLY_LENGTH_MEDIA:
+            reply_text = reply_text[: reply_text[:MAX_REPLY_LENGTH_MEDIA].rfind("\n")]
         if reply.reply_type == BOT_ACTION_TYPE_REPLY_TEXT:
             api_method = "sendMessage"
             if reply_text is None:

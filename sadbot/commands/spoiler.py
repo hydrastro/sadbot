@@ -44,7 +44,6 @@ class SpoilerBotCommand(CommandInterface):
         reply_message = self.message_repository.get_reply_message(message)
         if reply_message is None:
             return None
-        print(reply_message)
         file_bytes = self.app.get_file_from_id(reply_message.file_id)
         action = None
         sender = reply_message.sender_name
