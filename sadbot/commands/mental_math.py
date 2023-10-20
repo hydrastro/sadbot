@@ -10,6 +10,10 @@ from sadbot.bot_action import BotAction, BOT_ACTION_TYPE_REPLY_TEXT
 
 # Define mental math methods, notes, and rules for generating equations
 mental_math_methods = {
+    "fuck_you": {
+        "notes": "what's the riemann integral from 0 to +infinity of sin(x)/x in dx?",
+        "generate_equation": lambda: ("pi/2")
+    },
     "double_and_halve": {
         "notes": "Halve one number (preferably even) and double the other, then multiply. Example: 24 x 5 = (12 x 2) x (5 x 2) = 12 x 10 = 120",
         "generate_equation": lambda: (random.choice(range(10, 100, 2)), random.randint(10, 99))
@@ -79,6 +83,9 @@ def generate_random_equation():
     elif method_key in ["double_and_divide"]:
         answer = equation[0] / equation[1]  # Adjusted for division
         equation_str = f"{equation[0]} ÷ {equation[1]}"  # Adjusted formatting for division
+    elif method_key in ["fuck_you"]:
+        answer = "pi/2"
+        equation_str = "what's the riemann integral from 0 to +infinity of sin(x)/x in dx?"
     else:
         answer = equation[0] + equation[1]  # Default to addition if no other cases match
         equation_str = f"{equation[0]} + {equation[1]}"  # Default formatting for addition
@@ -105,10 +112,10 @@ class MentalMathBotCommand(CommandInterface):
         equation, answer, method_notes = generate_random_equation()
         reply_text = (
             f"Equation: {equation}\n"
-            f"Answer: {answer}\n"
-            f"Method Notes: {method_notes}"
+            f"Answer: <span class='tg-spoiler'>{answer}\n</span>"
+            f"Method Notes: <span class='tg-spoiler'>{method_notes}</span>"
         )
-        return [BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text)]
+        return [BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text, reply_spoiler=True, reply_text_parse_mode="HTML")]
 
 # Usage:
 # equation, answer, method_notes = generate_random_equation()
