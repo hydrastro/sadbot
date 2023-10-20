@@ -77,6 +77,31 @@ def generate_random_equation():
     
     return equation_str, answer, method["notes"]
 
+class MentalMathBotCommand(CommandInterface):
+    """This is the Mental Math bot command class"""
+
+    @property
+    def handler_type(self) -> int:
+        """Returns the type of event handled by the command"""
+        return BOT_HANDLER_TYPE_MESSAGE
+
+    @property
+    def command_regex(self) -> str:
+        """Returns the regex for matching the mental math command"""
+        return r"(!|\.)?[Mm][Aa][Tt][Hh]\s*"
+
+    def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
+        """Generates a random mental math equation"""
+        if message is None or message.text is None:
+            return None
+        equation, answer, method_notes = generate_random_equation()
+        reply_text = (
+            f"Equation: {equation}\n"
+            f"Answer: {answer}\n"
+            f"Method Notes: {method_notes}"
+        )
+        return [BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text)]
+
 # Usage:
 # equation, answer, method_notes = generate_random_equation()
 # print(f"Equation: {equation}")
