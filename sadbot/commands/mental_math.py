@@ -8,6 +8,9 @@ from sadbot.message import Message
 from sadbot.functions import safe_cast
 from sadbot.bot_action import BotAction, BOT_ACTION_TYPE_REPLY_TEXT
 
+def fuck_you():
+    return "What's the Riemann integral from 0 to +infinity of sin(x)/x in dx?", "pi/2", "fuck you lmao"
+
 def double_and_halve():
     num1 = random.choice(range(10, 100, 2))  # Ensure num1 is even for easy halving
     num2 = random.randint(10, 99)
@@ -127,7 +130,8 @@ def generate_random_equation():
         double_and_divide, 
         subtract_in_parts, 
         counting_back_and_up, 
-        thinking_addition
+        thinking_addition,
+        fuck_you
     ]
     # Select a random mental math method function
     method_func = random.choice(methods)
