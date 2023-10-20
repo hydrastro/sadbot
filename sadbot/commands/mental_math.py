@@ -8,89 +8,135 @@ from sadbot.message import Message
 from sadbot.functions import safe_cast
 from sadbot.bot_action import BotAction, BOT_ACTION_TYPE_REPLY_TEXT
 
-# Define mental math methods, notes, and rules for generating equations
-mental_math_methods = {
-    "fuck_you": {
-        "notes": "what's the riemann integral from 0 to +infinity of sin(x)/x in dx?",
-        "generate_equation": lambda: ("pi/2")
-    },
-    "double_and_halve": {
-        "notes": "Halve one number (preferably even) and double the other, then multiply. Example: 24 x 5 = (12 x 2) x (5 x 2) = 12 x 10 = 120",
-        "generate_equation": lambda: (random.choice(range(10, 100, 2)), random.randint(10, 99))
-    },
-    "round_and_compensate": {
-        "notes": "Round one number up or down to make multiplication easier, then adjust the product. Example: 47 x 9 = (47 x 10) - (47 x 1) = 470 - 47 = 423",
-        "generate_equation": lambda: (random.randint(10, 99), random.randint(1, 20))
-    },
-    "distributive_property": {
-        "notes": "Apply distributive property for multiplication over addition or subtraction. Example: 10 x (24 + 16) = 10 x 24 + 10 x 16 = 240 + 160 = 400",
-        "generate_equation": lambda: (random.randint(10, 99), random.randint(1, 50) + random.randint(1, 50))
-    },
-    "bridge_to_ten": {
-        "notes": "For addition, bridge numbers to the nearest ten. Example: 47 + 8 = 47 + 3 + 5 = 50 + 5 = 55",
-        "generate_equation": lambda: (random.randint(1, 99), random.randint(1, 10))
-    },
-    "multiply_by_11": {
-        "notes": "To multiply a two-digit number by 11, add the two digits and place the sum between them. Example: 72 x 11 = 792",
-        "generate_equation": lambda: (random.randint(10, 99), 11)
-    },
-    "near_doubles": {
-        "notes": "Double a number and then adjust. Example: 7 + 8 = double 7 + 1 = 15",
-        "generate_equation": lambda: (random.randint(1, 9), random.randint(1, 9))
-    },
-    "compensation_strategy": {
-        "notes": "Round the second number up to the closest ten, then compensate by subtracting. Example: 47 + 19 = (47 + 20) - 1 = 67 - 1 = 66",
-        "generate_equation": lambda: (random.randint(10, 99), random.randint(1, 9))
-    },
-    "repeated_doubling": {
-        "notes": "To multiply a number by 4 or 8, double it twice or three times respectively. Example: 12 x 4 = double(double(12))",
-        "generate_equation": lambda: (random.randint(1, 25), random.choice([4, 8]))
-    },
-    "double_and_divide": {
-        "notes": "To divide by five mentally: Double the number, then divide by ten. Example: To find the quantity of 5's in 625, double 625 to get 1250, then divide by 10 to get 125.",
-        "generate_equation": lambda: (random.randint(10, 200)*5, 5)
-    },
-    "subtract_in_parts": {
-        "notes": "First, subtract to the previous whole ten, then the rest. Example: For 52 - 27, subtract 20 to get 32, then subtract 7 to get 25.",
-        "generate_equation": lambda: (random.randint(10, 99), random.randint(1, 9))
-    },
-    "counting_back_and_up": {
-        "notes": "Count back for small differences or count up from the smaller number to the larger number. Example: For 52 - 47, count up from 47 to 52, which is 5.",
-        "generate_equation": lambda: (random.randint(10, 99), random.randint(1, 9))
-    },
-    "thinking_addition": {
-        "notes": "Think of subtraction as finding the difference by adding up from the smaller number to the larger number. Example: For 52 - 47, think of what plus 47 equals 52, which is 5.",
-        "generate_equation": lambda: (random.randint(10, 99), random.randint(1, 9))
-    },
-    # ... add more methods as needed
-}
+def fuck_you():
+    return "What's the Riemann integral from 0 to +infinity of sin(x)/x in dx?", "pi/2", "fuck you lmao"
+
+def double_and_halve():
+    num1 = random.choice(range(10, 100, 2))  # Ensure num1 is even for easy halving
+    num2 = random.randint(10, 99)
+    answer = num1 * num2
+    equation_str = f"{num1} x {num2}"
+    method_notes = f"Halve {num1} and double {num2}, then multiply. Example: {equation_str} = ({num1//2} x 2) x ({num2} x 2) = {num1//2} x {num2*2} = {answer}"
+    return equation_str, answer, method_notes
+
+def round_and_compensate():
+    num1 = random.randint(10, 99)
+    num2 = random.randint(1, 20)
+    answer = num1 * num2
+    rounded_num = num1 + (10 - (num1 % 10))
+    compensation = rounded_num - num1
+    equation_str = f"{num1} x {num2}"
+    method_notes = f"Round {num1} to {rounded_num}, multiply, then subtract the compensation. Example: {equation_str} = ({rounded_num} x {num2}) - ({compensation} x {num2}) = {rounded_num * num2} - {compensation * num2} = {answer}"
+    return equation_str, answer, method_notes
+
+def distributive_property():
+    num1 = random.randint(10, 99)
+    num2 = random.randint(1, 50) + random.randint(1, 50)
+    answer = num1 * num2
+    equation_str = f"{num1} x {num2}"
+    method_notes = f"Apply distributive property for multiplication over addition. Example: {equation_str} = {num1} x ({num2//2} + {num2//2}) = {num1} x {num2//2} + {num1} x {num2//2} = {num1*(num2//2)} + {num1*(num2//2)} = {answer}"
+    return equation_str, answer, method_notes
+
+def bridge_to_ten():
+    num1 = random.randint(1, 99)
+    num2 = random.randint(1, 10)
+    answer = num1 + num2
+    bridge = 10 - (num1 % 10)
+    equation_str = f"{num1} + {num2}"
+    method_notes = f"For addition, bridge numbers to the nearest ten. Example: {equation_str} = {num1} + {bridge} + ({num2} - {bridge}) = {num1 + bridge} + {num2 - bridge} = {answer}"
+    return equation_str, answer, method_notes
+
+def multiply_by_11():
+    num1 = random.randint(10, 99)
+    answer = num1 * 11
+    sum_digits = (num1 // 10) + (num1 % 10)
+    equation_str = f"{num1} x 11"
+    method_notes = f"To multiply a two-digit number by 11, add the two digits and place the sum between them. Example: {equation_str} = {num1 // 10}{sum_digits}{num1 % 10} = {answer}"
+    return equation_str, answer, method_notes
+
+def near_doubles():
+    num1 = random.randint(1, 9)
+    num2 = num1 + 1  # ensuring numbers are near doubles
+    answer = num1 + num2
+    equation_str = f"{num1} + {num2}"
+    method_notes = f"Double {num1} and then adjust. Example: {equation_str} = double {num1} + 1 = {num1*2 + 1} = {answer}"
+    return equation_str, answer, method_notes
+
+def compensation_strategy():
+    num1 = random.randint(10, 99)
+    num2 = random.randint(1, 9)
+    answer = num1 + num2
+    rounded_num = num1 + (10 - (num1 % 10))
+    compensation = rounded_num - num1
+    equation_str = f"{num1} + {num2}"
+    method_notes = f"Round {num1} up to {rounded_num}, then compensate by subtracting. Example: {equation_str} = ({rounded_num} + {num2}) - {compensation} = {rounded_num + num2} - {compensation} = {answer}"
+    return equation_str, answer, method_notes
+
+def repeated_doubling():
+    num1 = random.randint(1, 25)
+    num2 = random.choice([4, 8])
+    answer = num1 * num2
+    equation_str = f"{num1} x {num2}"
+    if num2 == 4:
+        method_notes = f"To multiply {num1} by 4, double it twice. Example: {equation_str} = double(double({num1})) = double({num1*2}) = {num1*2*2} = {answer}"
+    else:
+        method_notes = f"To multiply {num1} by 8, double it three times. Example: {equation_str} = double(double(double({num1}))) = double(double({num1*2})) = double({num1*2*2}) = {num1*2*2*2} = {answer}"
+    return equation_str, answer, method_notes
+
+def double_and_divide():
+    num1 = random.randint(10, 200) * 5
+    num2 = 5
+    answer = num1 / num2
+    equation_str = f"{num1} ÷ {num2}"
+    method_notes = f"To divide {num1} by five mentally: Double {num1} to get {num1*2}, then divide by ten to get {answer}. Example: {equation_str} = {num1*2} ÷ 10 = {answer}"
+    return equation_str, answer, method_notes
+
+def subtract_in_parts():
+    num1 = random.randint(10, 99)
+    num2 = random.randint(1, 9)
+    answer = num1 - num2
+    ten_comp = 10 - (num1 % 10)
+    equation_str = f"{num1} - {num2}"
+    method_notes = f"First, subtract to the previous whole ten, then the rest. Example: {equation_str} = {num1} - {ten_comp} - ({num2 - ten_comp}) = {num1 - ten_comp} - {num2 - ten_comp} = {answer}"
+    return equation_str, answer, method_notes
+
+def counting_back_and_up():
+    num1 = random.randint(10, 99)
+    num2 = random.randint(1, 9)
+    answer = num1 - num2
+    equation_str = f"{num1} - {num2}"
+    method_notes = f"Count up from {num2} to {num1}. Example: {equation_str} = {answer} by counting up from {num2} to {num1}."
+    return equation_str, answer, method_notes
+
+def thinking_addition():
+    num1 = random.randint(10, 99)
+    num2 = random.randint(1, 9)
+    answer = num1 - num2
+    equation_str = f"{num1} - {num2}"
+    method_notes = f"Think of subtraction as finding the difference by adding up from {num2} to {num1}. Example: {equation_str} = {answer} by adding {answer} to {num2} to get {num1}."
+    return equation_str, answer, method_notes
 
 def generate_random_equation():
-    # Select a random mental math method
-    method_key = random.choice(list(mental_math_methods.keys()))
-    method = mental_math_methods[method_key]
-    
-    # Generate a random equation based on the selected method
-    equation = method["generate_equation"]()
-    
-    # Return equation, method notes, and the answer
-    if method_key in ["double_and_halve", "round_and_compensate", "distributive_property", "multiply_by_11", "repeated_doubling"]:
-        answer = equation[0] * equation[1]
-        equation_str = f"{equation[0]} x {equation[1]}"
-    elif method_key in ["bridge_to_ten", "near_doubles", "compensation_strategy", "thinking_addition", "counting_back_and_up", "subtract_in_parts"]:
-        answer = equation[0] - equation[1]  # Adjusted for subtraction
-        equation_str = f"{equation[0]} - {equation[1]}"  # Adjusted formatting for subtraction
-    elif method_key in ["double_and_divide"]:
-        answer = equation[0] / equation[1]  # Adjusted for division
-        equation_str = f"{equation[0]} ÷ {equation[1]}"  # Adjusted formatting for division
-    elif method_key in ["fuck_you"]:
-        answer = "pi/2"
-        equation_str = "what's the riemann integral from 0 to +infinity of sin(x)/x in dx?"
-    else:
-        answer = equation[0] + equation[1]  # Default to addition if no other cases match
-        equation_str = f"{equation[0]} + {equation[1]}"  # Default formatting for addition
-    
-    return equation_str, answer, method["notes"]
+    # List of method functions
+    methods = [
+        double_and_halve, 
+        round_and_compensate, 
+        distributive_property, 
+        bridge_to_ten, 
+        multiply_by_11, 
+        near_doubles, 
+        compensation_strategy, 
+        repeated_doubling, 
+        double_and_divide, 
+        subtract_in_parts, 
+        counting_back_and_up, 
+        thinking_addition,
+        fuck_you
+    ]
+    # Select a random mental math method function
+    method_func = random.choice(methods)
+    # Call the selected method function to generate the equation, answer, and method notes
+    return method_func()
 
 class MentalMathBotCommand(CommandInterface):
     """This is the Mental Math bot command class"""
