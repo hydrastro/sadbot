@@ -1,4 +1,12 @@
+"""Math rizz bot command"""
+
 import random
+from typing import Optional, List
+
+from sadbot.command_interface import CommandInterface, BOT_HANDLER_TYPE_MESSAGE
+from sadbot.message import Message
+from sadbot.functions import safe_cast
+from sadbot.bot_action import BotAction, BOT_ACTION_TYPE_REPLY_TEXT
 
 # Define mental math methods, notes, and rules for generating equations
 mental_math_methods = {
@@ -88,7 +96,7 @@ class MentalMathBotCommand(CommandInterface):
     @property
     def command_regex(self) -> str:
         """Returns the regex for matching the mental math command"""
-        return r"(!|\.)?[Mm][Aa][Tt][Hh]\s*"
+        return r"(!|\.)[Rr][Ii][Zz]{2}.*"
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
         """Generates a random mental math equation"""
