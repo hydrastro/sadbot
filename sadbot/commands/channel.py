@@ -46,21 +46,22 @@ class ChannelBotCommand(CommandInterface):
             )
             req_url = url[0]
             req = requests.get(req_url)
-            post = re.findall(
+            finds = re.findall(
                 r'post op".*?fileThu.*?href=\"[/][/](.*?)\".*?bloc.*?>(.*?)<[/]blo',
                 req.text,
             )
-            if not post:
+            if not finds:
                 return None
-            subject = re.findall(r'<span class="subject">(.*?)</span>', req.text)
-            post = post[0]
-            media = post[0]
-            md = html2text.html2text(html.unescape(post[1].replace("<br>", "")))
-            text = (
-                f"Subject: {html.unescape(subject[1])}\nPost: {md}\nLink: {req_url}"
-                if subject and len(subject[0]) > 0
-                else f"Post: {md}"
-            )
+            subject_finds = re.findall(r'<span class="subject">(.*?)</span>', req.text)
+            find = finds[0]
+            media = find[0]
+            post = html2text.html2text(html.unescape(find[1]))
+            if subject_finds and len(subject_finds[1]) > 0:
+                subject = html2text.html2text(html.unescape(subject_finds[1]))
+                text = f"Subject: {subject}\nPost: {post}\nLink: {req_url}\nMedia: https://{media}"
+            else:
+                text = f"Post: {post}\nLink: {req_url}\nMedia: https://{media}"
+
             action = None
             if media.endswith("webm"):
                 file_bytes = requests.get(f"https://{media}").content
@@ -85,7 +86,7 @@ class ChannelBotCommand(CommandInterface):
             else:
                 action = BotAction(
                     BOT_ACTION_TYPE_REPLY_TEXT,
-                    reply_text=f"{text}\nMedia: https://{media}",
+                    reply_text=text,
                 )
             return [action]
         except (re.error, requests.ConnectionError):
