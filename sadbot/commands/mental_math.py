@@ -4,19 +4,19 @@ import random
 mental_math_methods = {
     "double_and_halve": {
         "notes": "Halve one number (preferably even) and double the other, then multiply. Example: 24 x 5 = (12 x 2) x (5 x 2) = 12 x 10 = 120",
-        "generate_equation": lambda: (random.randint(10, 99)*2, random.randint(10, 99)//2)
+        "generate_equation": lambda: (random.choice(range(10, 100, 2)), random.randint(10, 99))
     },
     "round_and_compensate": {
         "notes": "Round one number up or down to make multiplication easier, then adjust the product. Example: 47 x 9 = (47 x 10) - (47 x 1) = 470 - 47 = 423",
-        "generate_equation": lambda: (random.randint(10, 99), random.randint(1, 10))
+        "generate_equation": lambda: (random.randint(10, 99), random.randint(1, 20))
     },
     "distributive_property": {
         "notes": "Apply distributive property for multiplication over addition or subtraction. Example: 10 x (24 + 16) = 10 x 24 + 10 x 16 = 240 + 160 = 400",
-        "generate_equation": lambda: (random.randint(10, 99), random.randint(10, 99) + random.randint(10, 99))
+        "generate_equation": lambda: (random.randint(10, 99), random.randint(1, 50) + random.randint(1, 50))
     },
     "bridge_to_ten": {
         "notes": "For addition, bridge numbers to the nearest ten. Example: 47 + 8 = 47 + 3 + 5 = 50 + 5 = 55",
-        "generate_equation": lambda: (random.randint(1, 9), random.randint(1, 9))
+        "generate_equation": lambda: (random.randint(1, 99), random.randint(1, 10))
     },
     "multiply_by_11": {
         "notes": "To multiply a two-digit number by 11, add the two digits and place the sum between them. Example: 72 x 11 = 792",
@@ -32,7 +32,23 @@ mental_math_methods = {
     },
     "repeated_doubling": {
         "notes": "To multiply a number by 4 or 8, double it twice or three times respectively. Example: 12 x 4 = double(double(12))",
-        "generate_equation": lambda: (random.randint(1, 9), random.choice([4, 8]))
+        "generate_equation": lambda: (random.randint(1, 25), random.choice([4, 8]))
+    },
+    "double_and_divide": {
+        "notes": "To divide by five mentally: Double the number, then divide by ten. Example: To find the quantity of 5's in 625, double 625 to get 1250, then divide by 10 to get 125.",
+        "generate_equation": lambda: (random.randint(10, 200)*5, 5)
+    },
+    "subtract_in_parts": {
+        "notes": "First, subtract to the previous whole ten, then the rest. Example: For 52 - 27, subtract 20 to get 32, then subtract 7 to get 25.",
+        "generate_equation": lambda: (random.randint(10, 99), random.randint(1, 9))
+    },
+    "counting_back_and_up": {
+        "notes": "Count back for small differences or count up from the smaller number to the larger number. Example: For 52 - 47, count up from 47 to 52, which is 5.",
+        "generate_equation": lambda: (random.randint(10, 99), random.randint(1, 9))
+    },
+    "thinking_addition": {
+        "notes": "Think of subtraction as finding the difference by adding up from the smaller number to the larger number. Example: For 52 - 47, think of what plus 47 equals 52, which is 5.",
+        "generate_equation": lambda: (random.randint(10, 99), random.randint(1, 9))
     },
     # ... add more methods as needed
 }
@@ -48,11 +64,18 @@ def generate_random_equation():
     # Return equation, method notes, and the answer
     if method_key in ["double_and_halve", "round_and_compensate", "distributive_property", "multiply_by_11", "repeated_doubling"]:
         answer = equation[0] * equation[1]
-    elif method_key in ["bridge_to_ten", "near_doubles", "compensation_strategy"]:
-        answer = equation[0] + equation[1]
-    # ... add more cases as needed
+        equation_str = f"{equation[0]} x {equation[1]}"
+    elif method_key in ["bridge_to_ten", "near_doubles", "compensation_strategy", "thinking_addition", "counting_back_and_up", "subtract_in_parts"]:
+        answer = equation[0] - equation[1]  # Adjusted for subtraction
+        equation_str = f"{equation[0]} - {equation[1]}"  # Adjusted formatting for subtraction
+    elif method_key in ["double_and_divide"]:
+        answer = equation[0] / equation[1]  # Adjusted for division
+        equation_str = f"{equation[0]} ÷ {equation[1]}"  # Adjusted formatting for division
+    else:
+        answer = equation[0] + equation[1]  # Default to addition if no other cases match
+        equation_str = f"{equation[0]} + {equation[1]}"  # Default formatting for addition
     
-    return f"{equation[0]} x {equation[1]}", answer, method["notes"]
+    return equation_str, answer, method["notes"]
 
 # Usage:
 # equation, answer, method_notes = generate_random_equation()
