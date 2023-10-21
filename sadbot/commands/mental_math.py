@@ -116,6 +116,42 @@ def thinking_addition():
     method_notes = f"Think of subtraction as finding the difference by adding up from {num2} to {num1}. Example: {equation_str} = {answer} by adding {answer} to {num2} to get {num1}."
     return equation_str, answer, method_notes
 
+def splitting_for_addition():
+    num1 = random.randint(30, 99)
+    num2 = random.randint(30, 99)
+    answer = num1 + num2
+    equation_str = f"{num1} + {num2}"
+    tens_num2 = (num2 // 10) * 10
+    units_num2 = num2 % 10
+    method_notes = f"Split {num2} into tens and units, then add. Example: {equation_str} = {num1} + ({tens_num2} + {units_num2}) = {num1 + tens_num2} + {units_num2} = {answer}"
+    return equation_str, answer, method_notes
+
+def adding_numbers_ending_in_9():
+    num1 = random.randint(100, 999)
+    num2 = random.randint(10, 99) + 9  # Ensure num2 ends in 9
+    answer = num1 + num2
+    equation_str = f"{num1} + {num2}"
+    method_notes = f"Add the next number, then subtract 1. Example: {equation_str} = {num1} + ({num2 + 1} - 1) = {num1 + num2 + 1} - 1 = {answer}"
+    return equation_str, answer, method_notes
+
+def adding_11():
+    num1 = random.randint(100, 999)
+    answer = num1 + 11
+    equation_str = f"{num1} + 11"
+    method_notes = f"Add the tens, then add 1. Example: {equation_str} = {num1} + 10 + 1 = {num1 + 10} + 1 = {answer}"
+    return equation_str, answer, method_notes
+
+def rounding_up_to_nearest_ten():
+    num1 = random.randint(30, 99)
+    num2 = random.randint(30, 99)
+    answer = num1 + num2
+    equation_str = f"{num1} + {num2}"
+    round_up_num1 = (num1 // 10 + 1) * 10
+    round_up_num2 = (num2 // 10 + 1) * 10
+    extra = (round_up_num1 - num1) + (round_up_num2 - num2)
+    method_notes = f"Round up to the nearest ten, save the extras, then subtract. Example: {equation_str} = {round_up_num1} + {round_up_num2} - {extra} = {round_up_num1 + round_up_num2} - {extra} = {answer}"
+    return equation_str, answer, method_notes
+
 def generate_random_equation():
     # List of method functions
     methods = [
@@ -131,7 +167,11 @@ def generate_random_equation():
         subtract_in_parts, 
         counting_back_and_up, 
         thinking_addition,
-        fuck_you
+        fuck_you, 
+        splitting_for_addition, 
+        adding_numbers_ending_in_9, 
+        adding_11, 
+        rounding_up_to_nearest_ten
     ]
     # Select a random mental math method function
     method_func = random.choice(methods)
