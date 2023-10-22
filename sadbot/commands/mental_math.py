@@ -13,15 +13,15 @@ def fuck_you():
 
 def double_and_halve():
     num1 = random.choice(range(10, 100, 2))  # Ensure num1 is even for easy halving
-    num2 = random.randint(10, 99)
+    num2 = random.randint(10, 99)  # Adjusted to have at least two digits
     answer = num1 * num2
     equation_str = f"{num1} x {num2}"
     method_notes = f"Halve {num1} and double {num2}, then multiply. Example: {equation_str} = ({num1//2} x 2) x ({num2} x 2) = {num1//2} x {num2*2} = {answer}"
     return equation_str, answer, method_notes
 
 def round_and_compensate():
-    num1 = random.randint(10, 99)
-    num2 = random.randint(1, 20)
+    num1 = random.randint(10, 99)  # Already two digits
+    num2 = random.randint(10, 99)  # Adjusted to have at least two digits
     answer = num1 * num2
     rounded_num = num1 + (10 - (num1 % 10))
     compensation = rounded_num - num1
@@ -30,16 +30,16 @@ def round_and_compensate():
     return equation_str, answer, method_notes
 
 def distributive_property():
-    num1 = random.randint(10, 99)
-    num2 = random.randint(1, 50) + random.randint(1, 50)
+    num1 = random.randint(10, 99)  # Already two digits
+    num2 = (random.randint(10, 50) + random.randint(10, 50))  # Adjusted to have at least two digits
     answer = num1 * num2
     equation_str = f"{num1} x {num2}"
     method_notes = f"Apply distributive property for multiplication over addition. Example: {equation_str} = {num1} x ({num2//2} + {num2//2}) = {num1} x {num2//2} + {num1} x {num2//2} = {num1*(num2//2)} + {num1*(num2//2)} = {answer}"
     return equation_str, answer, method_notes
 
 def bridge_to_ten():
-    num1 = random.randint(1, 99)
-    num2 = random.randint(1, 10)
+    num1 = random.randint(10, 99)  # Adjusted to have at least two digits
+    num2 = random.randint(10, 99)  # Adjusted to have at least two digits
     answer = num1 + num2
     bridge = 10 - (num1 % 10)
     equation_str = f"{num1} + {num2}"
@@ -55,7 +55,7 @@ def multiply_by_11():
     return equation_str, answer, method_notes
 
 def near_doubles():
-    num1 = random.randint(1, 9)
+    num1 = random.randint(10, 90)  # Adjusted to have at least two digits
     num2 = num1 + 1  # ensuring numbers are near doubles
     answer = num1 + num2
     equation_str = f"{num1} + {num2}"
@@ -64,7 +64,7 @@ def near_doubles():
 
 def compensation_strategy():
     num1 = random.randint(10, 99)
-    num2 = random.randint(1, 9)
+    num2 = random.randint(10, 99)  # Adjusted to have at least two digits
     answer = num1 + num2
     rounded_num = num1 + (10 - (num1 % 10))
     compensation = rounded_num - num1
@@ -73,7 +73,7 @@ def compensation_strategy():
     return equation_str, answer, method_notes
 
 def repeated_doubling():
-    num1 = random.randint(1, 25)
+    num1 = random.randint(10, 25)  # Adjusted to have at least two digits
     num2 = random.choice([4, 8])
     answer = num1 * num2
     equation_str = f"{num1} x {num2}"
@@ -93,7 +93,7 @@ def double_and_divide():
 
 def subtract_in_parts():
     num1 = random.randint(10, 99)
-    num2 = random.randint(1, 9)
+    num2 = random.randint(10, 99)  # Adjusted to have at least two digits
     answer = num1 - num2
     ten_comp = 10 - (num1 % 10)
     equation_str = f"{num1} - {num2}"
@@ -102,7 +102,7 @@ def subtract_in_parts():
 
 def counting_back_and_up():
     num1 = random.randint(10, 99)
-    num2 = random.randint(1, 9)
+    num2 = random.randint(10, 99)  # Adjusted to have at least two digits
     answer = num1 - num2
     equation_str = f"{num1} - {num2}"
     method_notes = f"Count up from {num2} to {num1}. Example: {equation_str} = {answer} by counting up from {num2} to {num1}."
@@ -110,10 +110,46 @@ def counting_back_and_up():
 
 def thinking_addition():
     num1 = random.randint(10, 99)
-    num2 = random.randint(1, 9)
+    num2 = random.randint(10, 99)  # Adjusted to have at least two digits
     answer = num1 - num2
     equation_str = f"{num1} - {num2}"
     method_notes = f"Think of subtraction as finding the difference by adding up from {num2} to {num1}. Example: {equation_str} = {answer} by adding {answer} to {num2} to get {num1}."
+    return equation_str, answer, method_notes
+
+def splitting_for_addition():
+    num1 = random.randint(30, 99)
+    num2 = random.randint(30, 99)
+    answer = num1 + num2
+    equation_str = f"{num1} + {num2}"
+    tens_num2 = (num2 // 10) * 10
+    units_num2 = num2 % 10
+    method_notes = f"Split {num2} into tens and units, then add. Example: {equation_str} = {num1} + ({tens_num2} + {units_num2}) = {num1 + tens_num2} + {units_num2} = {answer}"
+    return equation_str, answer, method_notes
+
+def adding_numbers_ending_in_9():
+    num1 = random.randint(100, 999)
+    num2 = random.randint(10, 99) + 9  # Ensure num2 ends in 9
+    answer = num1 + num2
+    equation_str = f"{num1} + {num2}"
+    method_notes = f"Add the next number, then subtract 1. Example: {equation_str} = {num1} + ({num2 + 1} - 1) = {num1 + num2 + 1} - 1 = {answer}"
+    return equation_str, answer, method_notes
+
+def adding_11():
+    num1 = random.randint(100, 999)
+    answer = num1 + 11
+    equation_str = f"{num1} + 11"
+    method_notes = f"Add the tens, then add 1. Example: {equation_str} = {num1} + 10 + 1 = {num1 + 10} + 1 = {answer}"
+    return equation_str, answer, method_notes
+
+def rounding_up_to_nearest_ten():
+    num1 = random.randint(30, 99)
+    num2 = random.randint(30, 99)
+    answer = num1 + num2
+    equation_str = f"{num1} + {num2}"
+    round_up_num1 = (num1 // 10 + 1) * 10
+    round_up_num2 = (num2 // 10 + 1) * 10
+    extra = (round_up_num1 - num1) + (round_up_num2 - num2)
+    method_notes = f"Round up to the nearest ten, save the extras, then subtract. Example: {equation_str} = {round_up_num1} + {round_up_num2} - {extra} = {round_up_num1 + round_up_num2} - {extra} = {answer}"
     return equation_str, answer, method_notes
 
 def generate_random_equation():
@@ -131,7 +167,11 @@ def generate_random_equation():
         subtract_in_parts, 
         counting_back_and_up, 
         thinking_addition,
-        fuck_you
+        fuck_you, 
+        splitting_for_addition, 
+        adding_numbers_ending_in_9, 
+        adding_11, 
+        rounding_up_to_nearest_ten
     ]
     # Select a random mental math method function
     method_func = random.choice(methods)
