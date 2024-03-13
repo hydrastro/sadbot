@@ -5,7 +5,7 @@ from typing import Optional, List
 from sadbot.command_interface import CommandInterface, BOT_HANDLER_TYPE_MESSAGE
 from sadbot.message import Message, MESSAGE_FILE_TYPE_PHOTO
 from sadbot.message_repository import MessageRepository
-from sadbot.bot_action import BotAction, BOT_ACTION_TYPE_REPLY_TEXT
+from sadbot.bot_action import BotAction, BOT_ACTION_TYPE_REPLY_TEXT, BOT_ACTION_TYPE_REPLY_IMAGE
 from sadbot.app import App
 from sadbot.classes.ocr import get_text
 
@@ -45,11 +45,11 @@ class OcrBotCommand(CommandInterface):
                 BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text="An error occured")
             ]
         split = message.text.split()
-        lang = "eng"
+        lang = "en"
         if len(split) > 1:
             lang = split[1]
-        reply_text = "OCR:\n" + get_text(lang, photo)
-        return [BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text=reply_text)]
+        text = get_text(lang, photo)
+        return [BotAction(BOT_ACTION_TYPE_REPLY_TEXT, reply_text=text)]
 
     def get_photo_from_message(self, message: Message) -> Optional[bytes]:
         """Returns the image to process"""
