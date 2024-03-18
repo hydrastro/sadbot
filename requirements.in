@@ -12,3 +12,4 @@ scipy
 exif
 httpx[http2]
 markdown
+easyocr
