@@ -42,7 +42,7 @@ class SpoilerBotCommand(CommandInterface):
     @property
     def command_regex(self) -> str:
         """Returns the regex for matching spoiler commands"""
-        return r"(\.|!|/)([sS])(.*)"
+        return r"(\.|!|/)([sS])\s(.*)"
 
     def get_reply(self, message: Optional[Message] = None) -> Optional[List[BotAction]]:
         """Spoiler"""
